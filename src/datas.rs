@@ -23,10 +23,8 @@ pub struct RawJsonData {
     pub kind_id: String,
     #[serde(rename = "kindName")]
     pub kind_name: String,
-    #[serde(rename = "tagId")]
-    pub tag_id: String,
     #[serde(rename = "tagName")]
-    pub tag_name: String,
+    pub tag_name: Option<String>,
     #[serde(rename = "kindTypeId")]
     pub kind_type_id: String,
     #[serde(rename = "kindTypeName")]
@@ -143,8 +141,7 @@ pub struct AppInfo {
     pub supplier: String,
     pub kind_id: String,
     pub kind_name: String,
-    pub tag_id: String,
-    pub tag_name: String,
+    pub tag_name: Option<String>,
     pub kind_type_id: String,
     pub kind_type_name: String,
     pub icon_url: String,
@@ -189,7 +186,6 @@ impl From<&RawJsonData> for AppInfo {
             supplier: value.supplier.clone(),
             kind_id: value.kind_id.clone(),
             kind_name: value.kind_name.clone(),
-            tag_id: value.tag_id.clone(),
             tag_name: value.tag_name.clone(),
             kind_type_id: value.kind_type_id.clone(),
             kind_type_name: value.kind_type_name.clone(),

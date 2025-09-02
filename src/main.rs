@@ -67,7 +67,7 @@ async fn process_package(
     let data = get_raw_json_data(client, api_url, package, locale).await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
 
-    println!("获取到包 {} 的数据，应用ID: {}", package, data.app_id);
+    println!("获取到包 {} 的数据，应用ID: {}，应用名称: {}", package, data.app_id, data.name);
 
     // 保存数据到数据库（包含重复检查）
     save_app_data(db, &data).await
@@ -92,12 +92,26 @@ async fn get_raw_json_data(
         pkg_name: pkg_name.to_string(),
         locale: locale.to_string(),
     };
-    let data = client
+    
+    let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
         .json(&body)
         .send()
-        .await?
+        .await?;
+
+    // 检查响应状态码
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!("HTTP请求失败，状态码: {}", response.status()));
+    }
+
+    // 检查响应体是否为空
+    let content_length = response.content_length().unwrap_or(0);
+    if content_length == 0 {
+        return Err(anyhow::anyhow!("HTTP响应体为空"));
+    }
+
+    let data = response
         .json::<datas::RawJsonData>()
         .await?;
 
@@ -112,7 +126,7 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
 
     // 检查是否与最后一条数据相同
     if db.is_same_as_last_data(&raw_data.app_id, new_json_value).await? {
-        println!("数据与最后一条记录相同，跳过插入: {}", raw_data.app_id);
+        println!("数据与最后一条记录相同，跳过插入: {} ({})", raw_data.app_id, raw_data.name);
         return Ok(());
     }
 
@@ -134,6 +148,6 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
     // 保存原始JSON数据
     db.insert_raw_data(&new_raw_json).await?;
 
-    println!("应用数据保存成功: {}", raw_data.app_id);
+    println!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name);
     Ok(())
 }

@@ -25,7 +25,7 @@ impl Database {
         let query = r#"
             INSERT INTO app_info (
                 app_id, alliance_app_id, name, pkg_name, dev_id, developer_name,
-                dev_en_name, supplier, kind_id, kind_name, tag_id, tag_name,
+                dev_en_name, supplier, kind_id, kind_name, tag_name,
                 kind_type_id, kind_type_name, icon_url, brief_desc, description,
                 privacy_url, ctype, detail_id, app_level, jocat_id, iap, hms,
                 tariff_type, packing_type, order_app, denpend_gms, denpend_hms,
@@ -35,7 +35,7 @@ impl Database {
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
                 $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
-                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
+                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
             )
             ON CONFLICT (app_id) DO UPDATE SET
                 alliance_app_id = EXCLUDED.alliance_app_id,
@@ -47,7 +47,6 @@ impl Database {
                 supplier = EXCLUDED.supplier,
                 kind_id = EXCLUDED.kind_id,
                 kind_name = EXCLUDED.kind_name,
-                tag_id = EXCLUDED.tag_id,
                 tag_name = EXCLUDED.tag_name,
                 kind_type_id = EXCLUDED.kind_type_id,
                 kind_type_name = EXCLUDED.kind_type_name,
@@ -91,7 +90,6 @@ impl Database {
             .bind(&app_info.supplier)
             .bind(&app_info.kind_id)
             .bind(&app_info.kind_name)
-            .bind(&app_info.tag_id)
             .bind(&app_info.tag_name)
             .bind(&app_info.kind_type_id)
             .bind(&app_info.kind_type_name)

@@ -11,7 +11,6 @@ CREATE TABLE app_info (
     supplier                TEXT,               -- 供应商名称（如 华为软件技术有限公司）
     kind_id                 TEXT,               -- 应用分类ID（如 10000000）
     kind_name               TEXT,               -- 应用分类名称（如 工具）
-    tag_id                  TEXT,               -- 标签ID（如 10022）
     tag_name                TEXT,               -- 标签名称（如 工具）
     kind_type_id            TEXT,               -- 类型ID（如 13）
     kind_type_name          TEXT,               -- 类型名称（如 应用）
