@@ -2,7 +2,7 @@ use sqlx::postgres::{PgPool, PgPoolOptions};
 use sqlx::Row;
 use anyhow::Result;
 use serde_json::Value;
-use crate::datas::{AppInfo, AppMetric, AppPermission, AppRaw};
+use crate::datas::{AppInfo, AppMetric, AppRaw};
 
 #[derive(Debug, Clone)]
 pub struct Database {
@@ -88,10 +88,10 @@ impl Database {
             .bind(&app_info.developer_name)
             .bind(&app_info.dev_en_name)
             .bind(&app_info.supplier)
-            .bind(&app_info.kind_id)
+            .bind(app_info.kind_id)
             .bind(&app_info.kind_name)
             .bind(&app_info.tag_name)
-            .bind(&app_info.kind_type_id)
+            .bind(app_info.kind_type_id)
             .bind(&app_info.kind_type_name)
             .bind(&app_info.icon_url)
             .bind(&app_info.brief_desc)
@@ -110,7 +110,7 @@ impl Database {
             .bind(app_info.denpend_hms)
             .bind(app_info.force_update)
             .bind(&app_info.img_tag)
-            .bind(&app_info.is_pay)
+            .bind(app_info.is_pay)
             .bind(app_info.is_disciplined)
             .bind(app_info.is_shelves)
             .bind(app_info.submit_type)
@@ -122,35 +122,6 @@ impl Database {
             .bind(app_info.pay_install_type)
             .execute(&self.pool)
             .await?;
-
-        Ok(())
-    }
-
-    /// 插入应用权限到 app_permissions 表
-    pub async fn insert_app_permissions(&self, app_id: &str, permissions: &[AppPermission]) -> Result<()> {
-        // 先删除该应用的所有权限记录
-        let delete_query = "DELETE FROM app_permissions WHERE app_id = $1";
-        sqlx::query(delete_query)
-            .bind(app_id)
-            .execute(&self.pool)
-            .await?;
-
-        // 批量插入新的权限记录
-        for permission in permissions {
-            let query = r#"
-                INSERT INTO app_permissions (app_id, group_desc, permission_label, permission_desc, hide)
-                VALUES ($1, $2, $3, $4, $5)
-            "#;
-
-            sqlx::query(query)
-                .bind(app_id)
-                .bind(&permission.group_desc)
-                .bind(&permission.permission_label)
-                .bind(&permission.permission_desc)
-                .bind(&permission.hide)
-                .execute(&self.pool)
-                .await?;
-        }
 
         Ok(())
     }
@@ -176,14 +147,14 @@ impl Database {
             .bind(app_metric.size_bytes)
             .bind(&app_metric.sha256)
             .bind(&app_metric.hot_score)
-            .bind(&app_metric.rate_num)
-            .bind(&app_metric.download_count)
+            .bind(app_metric.rate_num)
+            .bind(app_metric.download_count)
             .bind(&app_metric.price)
             .bind(app_metric.release_date)
             .bind(&app_metric.new_features)
             .bind(&app_metric.upgrade_msg)
-            .bind(&app_metric.target_sdk)
-            .bind(&app_metric.minsdk)
+            .bind(app_metric.target_sdk)
+            .bind(app_metric.minsdk)
             .bind(app_metric.compile_sdk_version)
             .bind(app_metric.min_hmos_api_level)
             .bind(&app_metric.api_release_type)

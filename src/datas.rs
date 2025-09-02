@@ -81,8 +81,6 @@ pub struct RawJsonData {
     pub free_days: i32,
     #[serde(rename = "payInstallType")]
     pub pay_install_type: i32,
-    #[serde(rename = "permissions")]
-    pub permissions: Vec<RawPermission>,
     #[serde(rename = "version")]
     pub version: String,
     #[serde(rename = "versionCode")]
@@ -117,17 +115,6 @@ pub struct RawJsonData {
     pub api_release_type: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct RawPermission {
-    #[serde(rename = "groupDesc")]
-    pub group_desc: String,
-    pub hide: String,
-    #[serde(rename = "permissionDesc")]
-    pub permission_desc: String,
-    #[serde(rename = "permissionLabel")]
-    pub permission_label: String,
-}
-
 /// 2. app_info 表
 #[derive(Debug, Deserialize)]
 pub struct AppInfo {
@@ -139,10 +126,10 @@ pub struct AppInfo {
     pub developer_name: String,
     pub dev_en_name: String,
     pub supplier: String,
-    pub kind_id: String,
+    pub kind_id: i32,
     pub kind_name: String,
     pub tag_name: Option<String>,
-    pub kind_type_id: String,
+    pub kind_type_id: i32,
     pub kind_type_name: String,
     pub icon_url: String,
     pub brief_desc: String,
@@ -152,23 +139,23 @@ pub struct AppInfo {
     pub detail_id: String,
     pub app_level: i32,
     pub jocat_id: i32,
-    pub iap: i32,
-    pub hms: i32,
+    pub iap: bool,
+    pub hms: bool,
     pub tariff_type: String,
     pub packing_type: i32,
     pub order_app: bool,
-    pub denpend_gms: i32,
-    pub denpend_hms: i32,
-    pub force_update: i32,
+    pub denpend_gms: bool,
+    pub denpend_hms: bool,
+    pub force_update: bool,
     pub img_tag: String,
-    pub is_pay: String,
-    pub is_disciplined: i32,
-    pub is_shelves: i32,
+    pub is_pay: bool,
+    pub is_disciplined: bool,
+    pub is_shelves: bool,
     pub submit_type: i32,
-    pub delete_archive: i32,
-    pub charging: i32,
-    pub button_grey: i32,
-    pub app_gift: i32,
+    pub delete_archive: bool,
+    pub charging: bool,
+    pub button_grey: bool,
+    pub app_gift: bool,
     pub free_days: i32,
     pub pay_install_type: i32,
 }
@@ -184,10 +171,10 @@ impl From<&RawJsonData> for AppInfo {
             developer_name: value.developer_name.clone(),
             dev_en_name: value.dev_en_name.clone(),
             supplier: value.supplier.clone(),
-            kind_id: value.kind_id.clone(),
+            kind_id: value.kind_id.parse().unwrap_or(0),
             kind_name: value.kind_name.clone(),
             tag_name: value.tag_name.clone(),
-            kind_type_id: value.kind_type_id.clone(),
+            kind_type_id: value.kind_type_id.parse().unwrap_or(0),
             kind_type_name: value.kind_type_name.clone(),
             icon_url: value.icon_url.clone(),
             brief_desc: value.brief_desc.clone(),
@@ -197,58 +184,26 @@ impl From<&RawJsonData> for AppInfo {
             detail_id: value.detail_id.clone(),
             app_level: value.app_level,
             jocat_id: value.jocat_id,
-            iap: value.iap,
-            hms: value.hms,
+            iap: value.iap != 0,
+            hms: value.hms != 0,
             tariff_type: value.tariff_type.clone(),
             packing_type: value.packing_type,
             order_app: value.order_app,
-            denpend_gms: value.denpend_gms,
-            denpend_hms: value.denpend_hms,
-            force_update: value.force_update,
+            denpend_gms: value.denpend_gms != 0,
+            denpend_hms: value.denpend_hms != 0,
+            force_update: value.force_update != 0,
             img_tag: value.img_tag.clone(),
-            is_pay: value.is_pay.clone(),
-            is_disciplined: value.is_disciplined,
-            is_shelves: value.is_shelves,
+            is_pay: value.is_pay == "1",
+            is_disciplined: value.is_disciplined != 0,
+            is_shelves: value.is_shelves != 0,
             submit_type: value.submit_type,
-            delete_archive: value.delete_archive,
-            charging: value.charging,
-            button_grey: value.button_grey,
-            app_gift: value.app_gift,
+            delete_archive: value.delete_archive != 0,
+            charging: value.charging != 0,
+            button_grey: value.button_grey != 0,
+            app_gift: value.app_gift != 0,
             free_days: value.free_days,
             pay_install_type: value.pay_install_type,
         }
-    }
-}
-
-/// 3. app_permissions 表
-#[derive(Debug, Deserialize)]
-pub struct AppPermission {
-    pub id: i64,
-    pub app_id: String,
-    pub group_desc: String,
-    pub permission_label: String,
-    pub permission_desc: String,
-    pub hide: String,
-}
-
-impl From<&RawPermission> for AppPermission {
-    fn from(value: &RawPermission) -> Self {
-        Self {
-            id: 0,
-            app_id: String::new(),
-            group_desc: value.group_desc.clone(),
-            permission_label: value.permission_label.clone(),
-            permission_desc: value.permission_desc.clone(),
-            hide: value.hide.clone(),
-        }
-    }
-}
-
-impl AppPermission {
-    /// 设置应用ID
-    pub fn with_app_id(mut self, app_id: String) -> Self {
-        self.app_id = app_id;
-        self
     }
 }
 
@@ -262,14 +217,14 @@ pub struct AppMetric {
     pub size_bytes: i64,
     pub sha256: String,
     pub hot_score: String,
-    pub rate_num: String,
-    pub download_count: String,
+    pub rate_num: i64,
+    pub download_count: i64,
     pub price: String,
     pub release_date: i64,
     pub new_features: String,
     pub upgrade_msg: String,
-    pub target_sdk: String,
-    pub minsdk: String,
+    pub target_sdk: i32,
+    pub minsdk: i32,
     pub compile_sdk_version: i32,
     pub min_hmos_api_level: i32,
     pub api_release_type: String,
@@ -286,14 +241,14 @@ impl From<&RawJsonData> for AppMetric {
             size_bytes: value.size_bytes,
             sha256: value.sha256.clone(),
             hot_score: value.hot_score.clone(),
-            rate_num: value.rate_num.clone(),
-            download_count: value.download_count.clone(),
+            rate_num: value.rate_num.parse().unwrap_or(0),
+            download_count: value.download_count.parse().unwrap_or(0),
             price: value.price.clone(),
             release_date: value.release_date,
             new_features: value.new_features.clone(),
             upgrade_msg: value.upgrade_msg.clone(),
-            target_sdk: value.target_sdk.clone(),
-            minsdk: value.min_sdk.clone(),
+            target_sdk: value.target_sdk.parse().unwrap_or(0),
+            minsdk: value.min_sdk.parse().unwrap_or(0),
             compile_sdk_version: value.compile_sdk_version,
             min_hmos_api_level: value.min_hmos_api_level,
             api_release_type: value.api_release_type.clone(),
