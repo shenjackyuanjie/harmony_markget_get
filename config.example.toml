@@ -1,0 +1,23 @@
+[database]
+# PostgreSQL 数据库连接字符串
+# 格式: postgresql://用户名:密码@主机:端口/数据库名
+url = "postgresql://market_user:password@localhost:5432/market_db"
+
+[app]
+# 要查询的应用包名列表
+packages = [
+    "com.huawei.hmsapp.appgallery",
+    "com.chuckfang.meow"
+]
+# 语言地区设置（所有包共用）
+locale = "zh_CN"
+
+[api]
+# 华为应用市场 API 基础 URL
+base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+# API 请求超时时间（秒）
+timeout_seconds = 30
+
+[logging]
+# 日志级别: debug, info, warn, error
+level = "info"

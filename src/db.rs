@@ -1,0 +1,258 @@
+use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::Row;
+use anyhow::Result;
+use serde_json::Value;
+use crate::datas::{AppInfo, AppMetric, AppPermission, AppRaw};
+
+#[derive(Debug, Clone)]
+pub struct Database {
+    pool: PgPool,
+}
+
+impl Database {
+    /// 创建数据库连接池
+    pub async fn new(database_url: &str) -> Result<Self> {
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(database_url)
+            .await?;
+
+        Ok(Self { pool })
+    }
+
+    /// 插入应用信息到 app_info 表
+    pub async fn insert_app_info(&self, app_info: &AppInfo) -> Result<()> {
+        let query = r#"
+            INSERT INTO app_info (
+                app_id, alliance_app_id, name, pkg_name, dev_id, developer_name,
+                dev_en_name, supplier, kind_id, kind_name, tag_id, tag_name,
+                kind_type_id, kind_type_name, icon_url, brief_desc, description,
+                privacy_url, ctype, detail_id, app_level, jocat_id, iap, hms,
+                tariff_type, packing_type, order_app, denpend_gms, denpend_hms,
+                force_update, img_tag, is_pay, is_disciplined, is_shelves,
+                submit_type, delete_archive, charging, button_grey, app_gift,
+                free_days, pay_install_type
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+                $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
+                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
+            )
+            ON CONFLICT (app_id) DO UPDATE SET
+                alliance_app_id = EXCLUDED.alliance_app_id,
+                name = EXCLUDED.name,
+                pkg_name = EXCLUDED.pkg_name,
+                dev_id = EXCLUDED.dev_id,
+                developer_name = EXCLUDED.developer_name,
+                dev_en_name = EXCLUDED.dev_en_name,
+                supplier = EXCLUDED.supplier,
+                kind_id = EXCLUDED.kind_id,
+                kind_name = EXCLUDED.kind_name,
+                tag_id = EXCLUDED.tag_id,
+                tag_name = EXCLUDED.tag_name,
+                kind_type_id = EXCLUDED.kind_type_id,
+                kind_type_name = EXCLUDED.kind_type_name,
+                icon_url = EXCLUDED.icon_url,
+                brief_desc = EXCLUDED.brief_desc,
+                description = EXCLUDED.description,
+                privacy_url = EXCLUDED.privacy_url,
+                ctype = EXCLUDED.ctype,
+                detail_id = EXCLUDED.detail_id,
+                app_level = EXCLUDED.app_level,
+                jocat_id = EXCLUDED.jocat_id,
+                iap = EXCLUDED.iap,
+                hms = EXCLUDED.hms,
+                tariff_type = EXCLUDED.tariff_type,
+                packing_type = EXCLUDED.packing_type,
+                order_app = EXCLUDED.order_app,
+                denpend_gms = EXCLUDED.denpend_gms,
+                denpend_hms = EXCLUDED.denpend_hms,
+                force_update = EXCLUDED.force_update,
+                img_tag = EXCLUDED.img_tag,
+                is_pay = EXCLUDED.is_pay,
+                is_disciplined = EXCLUDED.is_disciplined,
+                is_shelves = EXCLUDED.is_shelves,
+                submit_type = EXCLUDED.submit_type,
+                delete_archive = EXCLUDED.delete_archive,
+                charging = EXCLUDED.charging,
+                button_grey = EXCLUDED.button_grey,
+                app_gift = EXCLUDED.app_gift,
+                free_days = EXCLUDED.free_days,
+                pay_install_type = EXCLUDED.pay_install_type
+        "#;
+
+        sqlx::query(query)
+            .bind(&app_info.app_id)
+            .bind(&app_info.alliance_app_id)
+            .bind(&app_info.name)
+            .bind(&app_info.pkg_name)
+            .bind(&app_info.dev_id)
+            .bind(&app_info.developer_name)
+            .bind(&app_info.dev_en_name)
+            .bind(&app_info.supplier)
+            .bind(&app_info.kind_id)
+            .bind(&app_info.kind_name)
+            .bind(&app_info.tag_id)
+            .bind(&app_info.tag_name)
+            .bind(&app_info.kind_type_id)
+            .bind(&app_info.kind_type_name)
+            .bind(&app_info.icon_url)
+            .bind(&app_info.brief_desc)
+            .bind(&app_info.description)
+            .bind(&app_info.privacy_url)
+            .bind(app_info.ctype)
+            .bind(&app_info.detail_id)
+            .bind(app_info.app_level)
+            .bind(app_info.jocat_id)
+            .bind(app_info.iap)
+            .bind(app_info.hms)
+            .bind(&app_info.tariff_type)
+            .bind(app_info.packing_type)
+            .bind(app_info.order_app)
+            .bind(app_info.denpend_gms)
+            .bind(app_info.denpend_hms)
+            .bind(app_info.force_update)
+            .bind(&app_info.img_tag)
+            .bind(&app_info.is_pay)
+            .bind(app_info.is_disciplined)
+            .bind(app_info.is_shelves)
+            .bind(app_info.submit_type)
+            .bind(app_info.delete_archive)
+            .bind(app_info.charging)
+            .bind(app_info.button_grey)
+            .bind(app_info.app_gift)
+            .bind(app_info.free_days)
+            .bind(app_info.pay_install_type)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 插入应用权限到 app_permissions 表
+    pub async fn insert_app_permissions(&self, app_id: &str, permissions: &[AppPermission]) -> Result<()> {
+        // 先删除该应用的所有权限记录
+        let delete_query = "DELETE FROM app_permissions WHERE app_id = $1";
+        sqlx::query(delete_query)
+            .bind(app_id)
+            .execute(&self.pool)
+            .await?;
+
+        // 批量插入新的权限记录
+        for permission in permissions {
+            let query = r#"
+                INSERT INTO app_permissions (app_id, group_desc, permission_label, permission_desc, hide)
+                VALUES ($1, $2, $3, $4, $5)
+            "#;
+
+            sqlx::query(query)
+                .bind(app_id)
+                .bind(&permission.group_desc)
+                .bind(&permission.permission_label)
+                .bind(&permission.permission_desc)
+                .bind(&permission.hide)
+                .execute(&self.pool)
+                .await?;
+        }
+
+        Ok(())
+    }
+
+    /// 插入应用指标到 app_metrics 表
+    pub async fn insert_app_metric(&self, app_metric: &AppMetric) -> Result<()> {
+        let query = r#"
+            INSERT INTO app_metrics (
+                app_id, version, version_code, size_bytes, sha256, hot_score,
+                rate_num, download_count, price, release_date, new_features,
+                upgrade_msg, target_sdk, minsdk, compile_sdk_version,
+                min_hmos_api_level, api_release_type
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+                $16, $17
+            )
+        "#;
+
+        sqlx::query(query)
+            .bind(&app_metric.app_id)
+            .bind(&app_metric.version)
+            .bind(app_metric.version_code)
+            .bind(app_metric.size_bytes)
+            .bind(&app_metric.sha256)
+            .bind(&app_metric.hot_score)
+            .bind(&app_metric.rate_num)
+            .bind(&app_metric.download_count)
+            .bind(&app_metric.price)
+            .bind(app_metric.release_date)
+            .bind(&app_metric.new_features)
+            .bind(&app_metric.upgrade_msg)
+            .bind(&app_metric.target_sdk)
+            .bind(&app_metric.minsdk)
+            .bind(app_metric.compile_sdk_version)
+            .bind(app_metric.min_hmos_api_level)
+            .bind(&app_metric.api_release_type)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 插入原始 JSON 数据到 app_raw 表
+    pub async fn insert_raw_data(&self, data: &AppRaw) -> Result<()> {
+        let query = r#"
+            INSERT INTO app_raw (app_id, raw_json)
+            VALUES ($1, $2)
+        "#;
+
+        sqlx::query(query)
+            .bind(data.app_id.clone())
+            .bind(&data.raw_json)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 检查应用是否已存在
+    pub async fn app_exists(&self, app_id: &str) -> Result<bool> {
+        let query = "SELECT COUNT(*) FROM app_info WHERE app_id = $1";
+        let count: i64 = sqlx::query(query)
+            .bind(app_id)
+            .fetch_one(&self.pool)
+            .await?
+            .get(0);
+
+        Ok(count > 0)
+    }
+
+    /// 获取指定应用的最后一条原始JSON数据
+    pub async fn get_last_raw_json(&self, app_id: &str) -> Result<Option<Value>> {
+        let query = r#"
+            SELECT raw_json
+            FROM app_raw
+            WHERE app_id = $1
+            ORDER BY created_at DESC
+            LIMIT 1
+        "#;
+
+        let result = sqlx::query(query)
+            .bind(app_id)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        match result {
+            Some(row) => {
+                let raw_json: Value = row.get("raw_json");
+                Ok(Some(raw_json))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// 检查新数据是否与最后一条数据相同
+    pub async fn is_same_as_last_data(&self, app_id: &str, new_data: &Value) -> Result<bool> {
+        if let Some(last_data) = self.get_last_raw_json(app_id).await? {
+            Ok(&last_data == new_data)
+        } else {
+            Ok(false)
+        }
+    }
+}
