@@ -31,17 +31,38 @@ async fn async_main() -> anyhow::Result<()> {
     let locale = config.locale();
     let packages = config.packages();
 
-    println!("{}", format!("开始处理 {} 个应用包...", packages.len()).cyan().bold());
+    println!(
+        "{}",
+        format!("开始处理 {} 个应用包...", packages.len())
+            .cyan()
+            .bold()
+    );
 
     for (index, package) in packages.iter().enumerate() {
-        println!("{}", format!("[{}/{}] 处理包: {}", index + 1, packages.len(), package).yellow());
+        println!(
+            "{}",
+            format!("[{}/{}] 处理包: {}", index + 1, packages.len(), package).yellow()
+        );
 
         match process_package(&client, &db, config.api_base_url(), package, locale).await {
             Ok(_) => {
-                println!("{}", format!("[{}/{}] 包 {} 处理完成", index + 1, packages.len(), package).green());
+                println!(
+                    "{}",
+                    format!("[{}/{}] 包 {} 处理完成", index + 1, packages.len(), package).green()
+                );
             }
             Err(e) => {
-                eprintln!("{}", format!("[{}/{}] 包 {} 处理失败: {:#}", index + 1, packages.len(), package, e).red());
+                eprintln!(
+                    "{}",
+                    format!(
+                        "[{}/{}] 包 {} 处理失败: {:#}",
+                        index + 1,
+                        packages.len(),
+                        package,
+                        e
+                    )
+                    .red()
+                );
                 // 继续处理下一个包，不中断整个流程
                 continue;
             }
@@ -65,13 +86,22 @@ async fn process_package(
     package: &str,
     locale: &str,
 ) -> anyhow::Result<()> {
-    let data = get_raw_json_data(client, api_url, package, locale).await
+    let data = get_raw_json_data(client, api_url, package, locale)
+        .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
 
-    println!("{}", format!("获取到包 {} 的数据，应用ID: {}，应用名称: {}", package, data.app_id, data.name).blue());
+    println!(
+        "{}",
+        format!(
+            "获取到包 {} 的数据，应用ID: {}，应用名称: {}",
+            package, data.app_id, data.name
+        )
+        .blue()
+    );
 
     // 保存数据到数据库（包含重复检查）
-    save_app_data(db, &data).await
+    save_app_data(db, &data)
+        .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
 
     Ok(())
@@ -97,13 +127,20 @@ async fn get_raw_json_data(
     let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
+        .header(
+            "User-Agent",
+            format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
+        )
         .json(&body)
         .send()
         .await?;
 
     // 检查响应状态码
     if !response.status().is_success() {
-        return Err(anyhow::anyhow!("HTTP请求失败，状态码: {}", response.status()));
+        return Err(anyhow::anyhow!(
+            "HTTP请求失败，状态码: {}",
+            response.status()
+        ));
     }
 
     // 检查响应体是否为空
@@ -112,9 +149,7 @@ async fn get_raw_json_data(
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
 
-    let data = response
-        .json::<datas::RawJsonData>()
-        .await?;
+    let data = response.json::<datas::RawJsonData>().await?;
 
     Ok(data)
 }
@@ -126,8 +161,18 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
     let new_json_value = &new_raw_json.raw_json;
 
     // 检查是否与最后一条数据相同
-    if db.is_same_as_last_data(&raw_data.app_id, new_json_value).await? {
-        println!("{}", format!("数据与最后一条记录相同，跳过插入: {} ({})", raw_data.app_id, raw_data.name).bright_black());
+    if db
+        .is_same_as_last_data(&raw_data.app_id, new_json_value)
+        .await?
+    {
+        println!(
+            "{}",
+            format!(
+                "数据与最后一条记录相同，跳过插入: {} ({})",
+                raw_data.app_id, raw_data.name
+            )
+            .bright_black()
+        );
         return Ok(());
     }
 
@@ -142,6 +187,9 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
     // 保存原始JSON数据
     db.insert_raw_data(&new_raw_json).await?;
 
-    println!("{}", format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green());
+    println!(
+        "{}",
+        format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
+    );
     Ok(())
 }

@@ -1,8 +1,8 @@
-use sqlx::postgres::{PgPool, PgPoolOptions};
-use sqlx::Row;
+use crate::datas::{AppInfo, AppMetric, AppRaw};
 use anyhow::Result;
 use serde_json::Value;
-use crate::datas::{AppInfo, AppMetric, AppRaw};
+use sqlx::Row;
+use sqlx::postgres::{PgPool, PgPoolOptions};
 
 #[derive(Debug, Clone)]
 pub struct Database {

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Local};
+use serde::{Deserialize, Serialize};
 
 /// 1. 原始 JSON 数据直接映射
 #[derive(Debug, Deserialize, Serialize)]
@@ -264,7 +264,6 @@ pub struct AppRaw {
     pub app_id: String,
     pub raw_json: serde_json::Value,
     pub created_at: DateTime<Local>,
-
 }
 
 impl From<&RawJsonData> for AppRaw {
