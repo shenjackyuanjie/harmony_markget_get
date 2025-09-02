@@ -12,7 +12,7 @@ def scheduled_task():
         # 使用subprocess运行cargo命令
         # 设置cwd参数可以指定工作目录，如果不在当前目录，请修改为正确的路径
         result = subprocess.run(
-            ["cargo", "run", "--release"],
+            ["cargo run --release"],
             cwd=os.getcwd(),  # 默认使用当前目录，可以修改为具体路径
             capture_output=False,
             text=True,
