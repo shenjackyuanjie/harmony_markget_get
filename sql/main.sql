@@ -72,6 +72,33 @@ CREATE TABLE app_metrics (
     created_at          TIMESTAMPTZ DEFAULT now()            -- 创建时间
 );
 
+CREATE OR REPLACE VIEW app_latest_info AS
+SELECT
+    ai.*,
+    am.version,
+    am.version_code,
+    am.size_bytes,
+    am.sha256,
+    am.hot_score,
+    am.rate_num,
+    am.download_count,
+    am.price,
+    am.release_date,
+    am.new_features,
+    am.upgrade_msg,
+    am.target_sdk,
+    am.minsdk,
+    am.compile_sdk_version,
+    am.min_hmos_api_level,
+    am.api_release_type,
+    am.created_at as metrics_created_at
+FROM app_info ai
+LEFT JOIN (
+    SELECT DISTINCT ON (app_id) *
+    FROM app_metrics
+    ORDER BY app_id, release_date DESC NULLS LAST
+) am ON ai.app_id = am.app_id;
+
 -- 创建索引以提高查询性能
 CREATE INDEX idx_app_info_app_id ON app_info(app_id);
 CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
