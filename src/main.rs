@@ -29,13 +29,17 @@ async fn async_main() -> anyhow::Result<()> {
     let db = db::Database::new(config.database_url()).await?;
 
     let locale = config.locale();
-    let packages = config.packages();
+    let mut packages = config.packages().to_vec();
+
+    for pkg in db.get_all_pkg_names().await?.iter() {
+        if !packages.contains(pkg) {
+            packages.push(pkg.to_string());
+        }
+    }
 
     println!(
         "{}",
-        format!("开始处理 {} 个应用包...", packages.len())
-            .cyan()
-            .bold()
+        format!("开始处理 {} 个应用包...", packages.len()).cyan()
     );
 
     for (index, package) in packages.iter().enumerate() {
@@ -74,7 +78,7 @@ async fn async_main() -> anyhow::Result<()> {
         }
     }
 
-    println!("{}", "所有包处理完成！".green().bold());
+    println!("{}", "所有包处理完成！".green());
     Ok(())
 }
 

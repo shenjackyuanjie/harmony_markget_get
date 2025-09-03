@@ -22,7 +22,7 @@ impl Database {
 
     /// 插入应用信息到 app_info 表
     pub async fn insert_app_info(&self, app_info: &AppInfo) -> Result<()> {
-        let query = r#"
+        const QUERY: &str = r#"
             INSERT INTO app_info (
                 app_id, alliance_app_id, name, pkg_name, dev_id, developer_name,
                 dev_en_name, supplier, kind_id, kind_name, tag_name,
@@ -79,7 +79,7 @@ impl Database {
                 pay_install_type = EXCLUDED.pay_install_type
         "#;
 
-        sqlx::query(query)
+        sqlx::query(QUERY)
             .bind(&app_info.app_id)
             .bind(&app_info.alliance_app_id)
             .bind(&app_info.name)
@@ -128,7 +128,7 @@ impl Database {
 
     /// 插入应用指标到 app_metrics 表
     pub async fn insert_app_metric(&self, app_metric: &AppMetric) -> Result<()> {
-        let query = r#"
+        const QUERY: &str = r#"
             INSERT INTO app_metrics (
                 app_id, version, version_code, size_bytes, sha256, hot_score,
                 rate_num, download_count, price, release_date, new_features,
@@ -140,7 +140,7 @@ impl Database {
             )
         "#;
 
-        sqlx::query(query)
+        sqlx::query(QUERY)
             .bind(&app_metric.app_id)
             .bind(&app_metric.version)
             .bind(app_metric.version_code)
@@ -182,8 +182,8 @@ impl Database {
 
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_id: &str) -> Result<bool> {
-        let query = "SELECT COUNT(*) FROM app_info WHERE app_id = $1";
-        let count: i64 = sqlx::query(query)
+        const QUERY: &str = "SELECT COUNT(*) FROM app_info WHERE app_id = $1";
+        let count: i64 = sqlx::query(QUERY)
             .bind(app_id)
             .fetch_one(&self.pool)
             .await?
@@ -194,7 +194,7 @@ impl Database {
 
     /// 获取指定应用的最后一条原始JSON数据
     pub async fn get_last_raw_json(&self, app_id: &str) -> Result<Option<Value>> {
-        let query = r#"
+        const QUERY: &str = r#"
             SELECT raw_json
             FROM app_raw
             WHERE app_id = $1
@@ -202,7 +202,7 @@ impl Database {
             LIMIT 1
         "#;
 
-        let result = sqlx::query(query)
+        let result = sqlx::query(QUERY)
             .bind(app_id)
             .fetch_optional(&self.pool)
             .await?;
@@ -223,5 +223,19 @@ impl Database {
         } else {
             Ok(false)
         }
+    }
+
+    /// 获取数据库中所有的 pkg_name
+    pub async fn get_all_pkg_names(&self) -> Result<Vec<String>> {
+        const QUERY: &str = "SELECT DISTINCT pkg_name FROM app_info WHERE pkg_name IS NOT NULL";
+
+        let rows = sqlx::query(QUERY).fetch_all(&self.pool).await?;
+
+        let pkg_names = rows
+            .into_iter()
+            .map(|row| row.get::<String, _>("pkg_name"))
+            .collect();
+
+        Ok(pkg_names)
     }
 }
