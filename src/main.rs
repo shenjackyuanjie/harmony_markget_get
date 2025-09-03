@@ -81,20 +81,38 @@ async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
         format!("开始处理 {} 个应用包...", packages.len()).cyan()
     );
 
+    // 统计变量
+    let mut total_processed = 0;
+    let mut total_inserted = 0;
+    let mut total_skipped = 0;
+    let mut total_failed = 0;
+
     for (index, package) in packages.iter().enumerate() {
         println!(
             "{}",
             format!("[{}/{}] 处理包: {}", index + 1, packages.len(), package).yellow()
         );
 
+        total_processed += 1;
+
         match process_package(&client, &db, config.api_base_url(), package, locale).await {
-            Ok(_) => {
-                println!(
-                    "{}",
-                    format!("[{}/{}] 包 {} 处理完成", index + 1, packages.len(), package).green()
-                );
+            Ok(inserted) => {
+                if inserted {
+                    total_inserted += 1;
+                    println!(
+                        "{}",
+                        format!("[{}/{}] 包 {} 处理完成 (新数据已插入)", index + 1, packages.len(), package).green()
+                    );
+                } else {
+                    total_skipped += 1;
+                    println!(
+                        "{}",
+                        format!("[{}/{}] 包 {} 处理完成 (数据相同，已跳过)", index + 1, packages.len(), package).bright_black()
+                    );
+                }
             }
             Err(e) => {
+                total_failed += 1;
                 eprintln!(
                     "{}",
                     format!(
@@ -118,6 +136,18 @@ async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
     }
 
     println!("{}", "所有包处理完成！".green());
+    
+    // 打印统计信息
+    println!();
+    println!("{}", "=".repeat(50).cyan());
+    println!("{}", "处理统计信息:".cyan().bold());
+    println!("{}", "=".repeat(50).cyan());
+    println!("总处理包数: {}", total_processed.to_string().cyan());
+    println!("新插入数据包数: {}", total_inserted.to_string().green());
+    println!("跳过相同数据包数: {}", total_skipped.to_string().bright_black());
+    println!("处理失败包数: {}", total_failed.to_string().red());
+    println!("{}", "=".repeat(50).cyan());
+    
     Ok(())
 }
 
@@ -128,7 +158,7 @@ async fn process_package(
     api_url: &str,
     package: &str,
     locale: &str,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<bool> {
     let data = get_raw_json_data(client, api_url, package, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
@@ -143,11 +173,11 @@ async fn process_package(
     );
 
     // 保存数据到数据库（包含重复检查）
-    save_app_data(db, &data)
+    let inserted = save_app_data(db, &data)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
 
-    Ok(())
+    Ok(inserted)
 }
 
 async fn get_raw_json_data(
@@ -198,7 +228,8 @@ async fn get_raw_json_data(
 }
 
 /// 保存应用数据到数据库
-async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyhow::Result<()> {
+/// 返回布尔值表示是否插入了新数据
+async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyhow::Result<bool> {
     // 转换原始JSON数据用于比较
     let new_raw_json: AppRaw = raw_data.into();
     let new_json_value = &new_raw_json.raw_json;
@@ -216,7 +247,7 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
             )
             .bright_black()
         );
-        return Ok(());
+        return Ok(false);
     }
 
     // 转换并保存应用信息
@@ -234,5 +265,5 @@ async fn save_app_data(db: &db::Database, raw_data: &datas::RawJsonData) -> anyh
         "{}",
         format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
     );
-    Ok(())
+    Ok(true)
 }
