@@ -1,4 +1,6 @@
-use crate::datas::{AppInfo, AppMetric, AppRaw};
+use crate::datas::{AppInfo, AppMetric, AppRaw, RawJsonData};
+
+use colored::Colorize;
 use anyhow::Result;
 use serde_json::Value;
 use sqlx::Row;
@@ -237,5 +239,45 @@ impl Database {
             .collect();
 
         Ok(pkg_names)
+    }
+
+    /// 保存应用数据到数据库
+    /// 返回布尔值表示是否插入了新数据
+    pub async fn save_app_data(&self, raw_data: &RawJsonData) -> anyhow::Result<bool> {
+
+        // 转换原始JSON数据用于比较
+        let new_raw_json: AppRaw = raw_data.into();
+        let new_json_value = &new_raw_json.raw_json;
+
+        // 检查是否与最后一条数据相同
+        if self
+            .is_same_as_last_data(&raw_data.app_id, new_json_value)
+            .await?
+        {
+            println!(
+                "{}",
+                format!(
+                    "数据与最后一条记录相同，跳过插入: {} ({})",
+                    raw_data.app_id, raw_data.name
+                )
+                .bright_black()
+            );
+            return Ok(false);
+        }
+
+        // 转换并保存应用信息
+        self.insert_app_info(&raw_data.into()).await?;
+
+        // 保存指标信息
+        self.insert_app_metric(&raw_data.into()).await?;
+
+        // 保存原始JSON数据
+        self.insert_raw_data(&new_raw_json).await?;
+
+        println!(
+            "{}",
+            format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
+        );
+        Ok(true)
     }
 }

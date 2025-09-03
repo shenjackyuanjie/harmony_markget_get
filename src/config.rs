@@ -19,8 +19,9 @@ pub struct ApiConfig {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct LoggingConfig {
-    pub level: String,
+pub struct ServeConfig {
+    pub url: String,
+    pub port: u16,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,7 +29,7 @@ pub struct Config {
     pub database: DatabaseConfig,
     pub app: AppConfig,
     pub api: ApiConfig,
-    pub logging: LoggingConfig,
+    pub serve: ServeConfig
 }
 
 impl Config {
@@ -58,7 +59,11 @@ impl Config {
         self.api.timeout_seconds
     }
 
-    pub fn log_level(&self) -> &str {
-        &self.logging.level
+    pub fn serve_url(&self) -> &str {
+        &self.serve.url
+    }
+
+    pub fn serve_port(&self) -> u16 {
+        self.serve.port
     }
 }

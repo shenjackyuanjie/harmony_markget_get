@@ -18,6 +18,6 @@ base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
 # API 请求超时时间（秒）
 timeout_seconds = 30
 
-[logging]
-# 日志级别: debug, info, warn, error
-level = "info"
+[serve]
+url = "localhost"
+port = 3000
