@@ -45,7 +45,7 @@ pub async fn sync_all(
 
         total_processed += 1;
 
-        match process_package(&client, &db, config.api_base_url(), package, locale).await {
+        match process_package(client, db, config.api_base_url(), package, locale).await {
             Ok(inserted) => {
                 if inserted {
                     total_inserted += 1;
