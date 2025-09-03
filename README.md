@@ -116,6 +116,19 @@ level = "info"
 cargo run
 ```
 
+### 使用命令行参数指定包名
+
+```bash
+# 处理单个应用包
+cargo run com.example.app1
+
+# 处理多个应用包
+cargo run com.example.app1 com.example.app2 com.example.app3
+
+# 直接运行编译后的可执行文件
+./target/debug/get_market.exe com.huawei.app1 com.tencent.app2
+```
+
 ### 构建发布版本
 
 ```bash
@@ -131,12 +144,13 @@ cargo run -- --config custom_config.toml
 
 ## 📊 数据采集流程
 
-1. **初始化配置** - 加载配置文件，建立数据库连接
-2. **API请求** - 对每个应用包发送POST请求到华为API
-3. **数据解析** - 解析API返回的JSON数据
-4. **重复检查** - 检查数据是否与最后一条记录相同
-5. **数据存储** - 将解析后的数据插入到相应表中
-6. **进度显示** - 实时显示处理进度和状态
+1. **参数解析** - 解析命令行参数或加载配置文件中的包名
+2. **初始化配置** - 加载配置文件，建立数据库连接
+3. **API请求** - 对每个应用包发送POST请求到华为API
+4. **数据解析** - 解析API返回的JSON数据
+5. **重复检查** - 检查数据是否与最后一条记录相同
+6. **数据存储** - 将解析后的数据插入到相应表中
+7. **进度显示** - 实时显示处理进度和状态
 
 ## 🔧 配置说明
 
@@ -194,6 +208,11 @@ pub struct AppMetric {
 ```
 
 ## 🚨 故障排除
+
+### CLI参数使用问题
+- 命令行参数会覆盖配置文件中的包名设置
+- 如果没有提供命令行参数，则使用配置文件中的包名
+- 命令行参数支持多个包名，用空格分隔
 
 ### 数据库连接问题
 - 检查 PostgreSQL 服务是否运行：`sudo systemctl status postgresql`

@@ -1,5 +1,6 @@
 use colored::*;
 use serde::Serialize;
+use std::env;
 use std::time::Duration;
 
 use crate::datas::AppRaw;
@@ -9,15 +10,42 @@ pub mod datas;
 pub mod db;
 
 fn main() -> anyhow::Result<()> {
+    // 解析命令行参数
+    let args: Vec<String> = env::args().collect();
+    let cli_packages: Vec<String> = if args.len() > 1 {
+        args[1..].iter().map(|s| s.to_string()).collect()
+    } else {
+        Vec::new()
+    };
+
+    // 显示帮助信息（如果有帮助参数）
+    if args.len() == 2 && (args[1] == "-h" || args[1] == "--help") {
+        println!("华为应用市场数据采集工具");
+        println!();
+        println!("用法:");
+        println!("  {} [包名1] [包名2] ...", args[0]);
+        println!("  {} -h | --help", args[0]);
+        println!();
+        println!("参数:");
+        println!("  包名1, 包名2, ...  要查询的应用包名列表");
+        println!("  -h, --help        显示帮助信息");
+        println!();
+        println!("示例:");
+        println!("  {} com.example.app1", args[0]);
+        println!("  {} com.huawei.app1 com.tencent.app2", args[0]);
+        println!("  {} -h", args[0]);
+        return Ok(());
+    }
+
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(4)
         .enable_all()
         .build()?;
 
-    rt.block_on(async_main())
+    rt.block_on(async_main(cli_packages))
 }
 
-async fn async_main() -> anyhow::Result<()> {
+async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
 
@@ -29,7 +57,18 @@ async fn async_main() -> anyhow::Result<()> {
     let db = db::Database::new(config.database_url()).await?;
 
     let locale = config.locale();
-    let mut packages = config.packages().to_vec();
+    let mut packages = if !cli_packages.is_empty() {
+        // 使用命令行参数中的包名
+        println!(
+            "{}",
+            format!("使用命令行参数中的 {} 个包", cli_packages.len()).cyan()
+        );
+        cli_packages
+    } else {
+        // 使用配置文件中的包名
+        println!("{}", "使用配置文件中的包".cyan());
+        config.packages().to_vec()
+    };
 
     for pkg in db.get_all_pkg_names().await?.iter() {
         if !packages.contains(pkg) {
@@ -74,7 +113,7 @@ async fn async_main() -> anyhow::Result<()> {
 
         // 添加短暂延迟，避免请求过于频繁
         if index < packages.len() - 1 {
-            tokio::time::sleep(Duration::from_millis(200)).await;
+            tokio::time::sleep(Duration::from_millis(100)).await;
         }
     }
 
