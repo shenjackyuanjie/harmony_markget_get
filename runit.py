@@ -44,7 +44,7 @@ def main():
     # 注册信号处理
     signal.signal(signal.SIGINT, signal_handler)
 
-    print("Rust项目自动构建器已启动，每10分钟执行一次 cargo run --release")
+    print("Rust项目自动构建器已启动，每1小时执行一次 cargo run --release")
     print("按 Ctrl+C 可退出程序")
 
     try:
@@ -52,9 +52,8 @@ def main():
             # 执行任务
             scheduled_task()
 
-            # 等待10分钟（600秒）
-            print(f"等待10分钟，下次执行时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() + 600))}")
-            time.sleep(600)
+            print(f"等待1小时，下次执行时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() + 60*60))}")
+            time.sleep(60*60)
 
     except KeyboardInterrupt:
         print("\n程序被用户中断")

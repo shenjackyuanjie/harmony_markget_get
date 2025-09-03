@@ -75,6 +75,9 @@ async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
             packages.push(pkg.to_string());
         }
     }
+    // 去重
+    packages.sort();
+    packages.dedup();
 
     println!(
         "{}",
@@ -136,7 +139,7 @@ async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
     }
 
     println!("{}", "所有包处理完成！".green());
-    
+
     // 打印统计信息
     println!();
     println!("{}", "=".repeat(50).cyan());
@@ -147,7 +150,7 @@ async fn async_main(cli_packages: Vec<String>) -> anyhow::Result<()> {
     println!("跳过相同数据包数: {}", total_skipped.to_string().bright_black());
     println!("处理失败包数: {}", total_failed.to_string().red());
     println!("{}", "=".repeat(50).cyan());
-    
+
     Ok(())
 }
 
