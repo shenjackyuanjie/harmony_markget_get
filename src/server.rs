@@ -44,6 +44,7 @@ struct QueryState {
 }
 
 async fn query_pkg(State(state): State<Arc<QueryState>>, Path(pkg_name): Path<String>) -> impl IntoResponse {
+    println!("正在尝试获取 {pkg_name} 的信息");
     match crate::sync::query_package(&state.client, &state.db, state.cfg.api_base_url(), &pkg_name, state.cfg.locale()).await {
         Ok(pkg) => {
             let data: AppMetric = (&pkg).into();

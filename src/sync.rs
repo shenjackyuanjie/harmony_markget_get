@@ -91,7 +91,7 @@ pub async fn sync_all(
 
         // 添加短暂延迟，避免请求过于频繁
         if index < packages.len() - 1 {
-            tokio::time::sleep(Duration::from_millis(100)).await;
+            tokio::time::sleep(Duration::from_millis(50)).await;
         }
     }
 
