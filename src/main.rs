@@ -1,13 +1,12 @@
 use std::time::Duration;
 
 pub mod config;
-pub mod sync;
-pub mod server;
 pub mod datas;
 pub mod db;
+pub mod server;
+pub mod sync;
 
 fn main() -> anyhow::Result<()> {
-
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(4)
         .enable_all()
@@ -25,9 +24,20 @@ async fn async_main() -> anyhow::Result<()> {
         .build()?;
 
     // 初始化数据库连接
-    let db = db::Database::new(config.database_url()).await?;
+    let db_conn = db::Database::new(config.database_url()).await?;
+    let worker_conn = db_conn.clone();
 
-    sync::sync_all(&client, &db, &config, config.packages()).await?;
+    let (worker_send, worker_recv) = tokio::sync::oneshot::channel::<()>();
+
+    sync::sync_all(&client, &db_conn, &config, config.packages()).await?;
+
+    let worker = tokio::spawn(server::worker(config.clone(), worker_conn, worker_recv));
+
+    // 等待 ctrl + c
+    tokio::signal::ctrl_c().await?;
+
+    worker_send.send(()).unwrap();
+    worker.await??;
 
     Ok(())
 }

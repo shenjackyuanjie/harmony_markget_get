@@ -1,11 +1,10 @@
 use std::time::Duration;
 
-use reqwest::Client;
 use colored::Colorize;
+use reqwest::Client;
 use serde::Serialize;
 
-
-use crate::db::Database;
+use crate::{datas::RawJsonData, db::Database};
 
 pub async fn sync_all(
     client: &Client,
@@ -24,7 +23,6 @@ pub async fn sync_all(
 
     packages.sort();
     packages.dedup();
-
 
     println!(
         "{}",
@@ -51,13 +49,25 @@ pub async fn sync_all(
                     total_inserted += 1;
                     println!(
                         "{}",
-                        format!("[{}/{}] 包 {} 处理完成 (新数据已插入)", index + 1, packages.len(), package).green()
+                        format!(
+                            "[{}/{}] 包 {} 处理完成 (新数据已插入)",
+                            index + 1,
+                            packages.len(),
+                            package
+                        )
+                        .green()
                     );
                 } else {
                     total_skipped += 1;
                     println!(
                         "{}",
-                        format!("[{}/{}] 包 {} 处理完成 (数据相同，已跳过)", index + 1, packages.len(), package).bright_black()
+                        format!(
+                            "[{}/{}] 包 {} 处理完成 (数据相同，已跳过)",
+                            index + 1,
+                            packages.len(),
+                            package
+                        )
+                        .bright_black()
                     );
                 }
             }
@@ -94,17 +104,18 @@ pub async fn sync_all(
     println!("{}", "=".repeat(50).cyan());
     println!("总处理包数: {}", total_processed.to_string().cyan());
     println!("新插入数据包数: {}", total_inserted.to_string().green());
-    println!("跳过相同数据包数: {}", total_skipped.to_string().bright_black());
+    println!(
+        "跳过相同数据包数: {}",
+        total_skipped.to_string().bright_black()
+    );
     println!("处理失败包数: {}", total_failed.to_string().red());
     println!("{}", "=".repeat(50).cyan());
 
     Ok(())
 }
 
-
-
 /// 处理单个应用包
-async fn process_package(
+pub async fn process_package(
     client: &reqwest::Client,
     db: &Database,
     api_url: &str,
@@ -125,13 +136,43 @@ async fn process_package(
     );
 
     // 保存数据到数据库（包含重复检查）
-    let inserted = db.save_app_data(&data)
+    let inserted = db
+        .save_app_data(&data)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
 
     Ok(inserted)
 }
 
+/// 查询单个应用包
+pub async fn query_package(
+    client: &reqwest::Client,
+    db: &Database,
+    api_url: &str,
+    package: &str,
+    locale: &str,
+) -> anyhow::Result<RawJsonData> {
+    let data = get_raw_json_data(client, api_url, package, locale)
+        .await
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
+
+    println!(
+        "{}",
+        format!(
+            "获取到包 {} 的数据，应用ID: {}，应用名称: {}",
+            package, data.app_id, data.name
+        )
+        .blue()
+    );
+
+    // 保存数据到数据库（包含重复检查）
+    let inserted = db
+        .save_app_data(&data)
+        .await
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
+
+    Ok(data)
+}
 
 pub async fn get_raw_json_data(
     client: &reqwest::Client,

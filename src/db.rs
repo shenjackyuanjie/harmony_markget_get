@@ -1,7 +1,7 @@
 use crate::datas::{AppInfo, AppMetric, AppRaw, RawJsonData};
 
-use colored::Colorize;
 use anyhow::Result;
+use colored::Colorize;
 use serde_json::Value;
 use sqlx::Row;
 use sqlx::postgres::{PgPool, PgPoolOptions};
@@ -244,7 +244,6 @@ impl Database {
     /// 保存应用数据到数据库
     /// 返回布尔值表示是否插入了新数据
     pub async fn save_app_data(&self, raw_data: &RawJsonData) -> anyhow::Result<bool> {
-
         // 转换原始JSON数据用于比较
         let new_raw_json: AppRaw = raw_data.into();
         let new_json_value = &new_raw_json.raw_json;

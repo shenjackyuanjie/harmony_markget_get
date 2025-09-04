@@ -5,7 +5,9 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0"
-
+axum = { version = "0.8.4", features = [
+  # "macros"
+] }
 chrono = { version = "0.4.41", default-features = false, features = [
   "alloc",
   "clock",
@@ -13,13 +15,13 @@ chrono = { version = "0.4.41", default-features = false, features = [
   "serde",
   "std",
 ] }
-
 colored = "3.0.0"
 reqwest = { version = "0.12.23", default-features = false, features = [
   "json",
   "rustls-tls-native-roots",
 ] }
-
+serde = "1.0"
+serde_json = "1.0"
 sqlx = { version = "0.8.6", features = [
   "chrono",
   "json",
@@ -28,8 +30,4 @@ sqlx = { version = "0.8.6", features = [
   "tls-rustls",
 ] }
 tokio = { version = "1.47", features = ["full"] }
-
 toml = "0.9"
-serde = "1.0"
-serde_json = "1.0"
-axum = "0.8.4"

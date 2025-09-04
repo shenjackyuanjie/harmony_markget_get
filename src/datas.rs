@@ -116,7 +116,7 @@ pub struct RawJsonData {
 }
 
 /// 2. app_info 表
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AppInfo {
     pub app_id: String,
     pub alliance_app_id: String,
@@ -208,7 +208,7 @@ impl From<&RawJsonData> for AppInfo {
 }
 
 /// 4. app_metrics 表
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AppMetric {
     pub id: i64,
     pub app_id: String,
@@ -258,7 +258,7 @@ impl From<&RawJsonData> for AppMetric {
 }
 
 /// 5. app_raw 表
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct AppRaw {
     pub id: i64,
     pub app_id: String,

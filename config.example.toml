@@ -2,6 +2,7 @@
 # PostgreSQL 数据库连接字符串
 # 格式: postgresql://用户名:密码@主机:端口/数据库名
 url = "postgresql://market_user:password@localhost:5432/market_db"
+max_connect = 3
 
 [app]
 # 要查询的应用包名列表
@@ -17,6 +18,8 @@ locale = "zh_CN"
 base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
 # API 请求超时时间（秒）
 timeout_seconds = 30
+# 数据更新间隔 (秒)
+interval_seconds = 1800
 
 [serve]
 url = "localhost"
