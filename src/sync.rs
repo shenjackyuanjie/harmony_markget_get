@@ -166,7 +166,7 @@ pub async fn query_package(
     );
 
     // 保存数据到数据库（包含重复检查）
-    let inserted = db
+    db
         .save_app_data(&data)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;

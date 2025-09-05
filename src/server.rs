@@ -8,7 +8,7 @@ use axum::{
 };
 use reqwest::Client;
 
-use crate::{config::Config, datas::AppMetric, db::Database};
+use crate::{config::Config, datas::{AppInfo, AppMetric}, db::Database};
 
 // pub async fn server(config: &Config, )
 
@@ -63,8 +63,9 @@ async fn query_pkg(
     .await
     {
         Ok(pkg) => {
-            let data: AppMetric = (&pkg).into();
-            Json(serde_json::to_value(data).expect("wtf"))
+            let metric: AppMetric = (&pkg).into();
+            let info: AppInfo = (&pkg).into();
+            Json(serde_json::json!({"info": info, "metric": metric}))
         }
         Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
     }
