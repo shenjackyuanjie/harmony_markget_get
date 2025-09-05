@@ -13,9 +13,9 @@ pub struct Database {
 
 impl Database {
     /// 创建数据库连接池
-    pub async fn new(database_url: &str) -> Result<Self> {
+    pub async fn new(database_url: &str, max_connect: u32) -> Result<Self> {
         let pool = PgPoolOptions::new()
-            .max_connections(5)
+            .max_connections(max_connect)
             .connect(database_url)
             .await?;
 
