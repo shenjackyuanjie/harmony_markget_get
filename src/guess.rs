@@ -39,35 +39,34 @@ async fn async_main() -> anyhow::Result<()> {
         for id in bunch_id.iter() {
             let client = client.clone();
             let db = db.clone();
-            let api_url = config.api_base_url().to_string();
+            let api_url = config.api_info_url().to_string();
             let locale = config.locale().to_string();
             let app_id = format!("{start}{id}");
             join_set.spawn(async move {
-                match crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
+                if let Ok(data) =
+                    crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
                 {
-                    Ok(data) => {
-                        match db.save_app_data(&data).await {
-                            Ok(inserted) => {
-                                if inserted {
-                                    println!("已将 {app_id} 的数据插入数据库");
-                                }
-                                // } else {
-                                //     println!("数据与最后一条记录相同，跳过插入: {app_id}");
-                                // }
+                    if let Ok(star) =
+                        crate::sync::get_star_by_app_id(&client, &api_url, &app_id, &locale).await
+                    {
+                        if let Ok(inserted) = db.save_app_data(&data, &star).await {
+                            if inserted {
+                                println!("已将 {app_id} 的数据插入数据库");
                             }
-                            Err(e) => {
-                                println!("插入数据库时出错: {e}");
-                            }
+                        } else {
+                            println!("插入数据库时出错");
                         }
-                    }
-                    Err(e) => {
-                        // println!("获取 {app_id} 的数据时出错: {e}");
                     }
                 }
             });
         }
         join_set.join_all().await;
-        println!("id {} - {} 的包处理完成，等待 {:?}", bunch_id[0], bunch_id[bunch_id.len()-1], wait_time);
+        println!(
+            "id {} - {} 的包处理完成，等待 {:?}",
+            bunch_id[0],
+            bunch_id[bunch_id.len() - 1],
+            wait_time
+        );
         tokio::time::sleep(wait_time).await;
     }
 

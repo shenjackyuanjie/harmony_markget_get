@@ -16,7 +16,9 @@ pub struct AppConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct ApiConfig {
     /// 华为应用市场 API 基础 URL
-    pub base_url: String,
+    pub info_url: String,
+    /// 应用市场的 detail api
+    pub detail_url: String,
     /// API 请求超时时间（秒）
     pub timeout_seconds: u64,
     /// 数据更新间隔 (秒)
@@ -60,8 +62,12 @@ impl Config {
         &self.app.locale
     }
 
-    pub fn api_base_url(&self) -> &str {
-        &self.api.base_url
+    pub fn api_info_url(&self) -> &str {
+        &self.api.info_url
+    }
+
+    pub fn api_detail_url(&self) -> &str {
+        &self.api.detail_url
     }
 
     pub fn api_timeout_seconds(&self) -> u64 {

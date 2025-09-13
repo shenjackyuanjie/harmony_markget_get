@@ -1,6 +1,34 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
+// "starInfo": "{\"averageRating\":\"2.9\",\"oneStarRatingCount\":348,\"twoStarRatingCount\":129,\"threeStarRatingCount\":129,\"fourStarRatingCount\":81,\"fiveStarRatingCount\":344,\"myStarRating\":0,\"totalStarRatingCount\":1031,\"onlyStarCount\":511,\"fullAverageRating\":\"5.0\",\"sourceType\":\"USER_RATING\"}",
+//
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RawStarData {
+    #[serde(rename = "averageRating")]
+    pub average_rating: String,
+    #[serde(rename = "oneStarRatingCount")]
+    pub star_1_rating_count: i32,
+    #[serde(rename = "twoStarRatingCount")]
+    pub star_2_rating_count: i32,
+    #[serde(rename = "threeStarRatingCount")]
+    pub star_3_rating_count: i32,
+    #[serde(rename = "fourStarRatingCount")]
+    pub star_4_rating_count: i32,
+    #[serde(rename = "fiveStarRatingCount")]
+    pub star_5_rating_count: i32,
+    #[serde(rename = "myStarRating")]
+    pub my_star_rating: i32,
+    #[serde(rename = "totalStarRatingCount")]
+    pub total_star_rating_count: i32,
+    #[serde(rename = "onlyStarCount")]
+    pub only_star_count: i32,
+    #[serde(rename = "fullAverageRating")]
+    pub full_average_rating: String,
+    #[serde(rename = "sourceType")]
+    pub source_type: String,
+}
+
 /// 1. 原始 JSON 数据直接映射
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RawJsonData {
@@ -262,16 +290,18 @@ impl From<&RawJsonData> for AppMetric {
 pub struct AppRaw {
     pub id: i64,
     pub app_id: String,
-    pub raw_json: serde_json::Value,
+    pub raw_json_data: serde_json::Value,
+    pub raw_json_star: serde_json::Value,
     pub created_at: DateTime<Local>,
 }
 
-impl From<&RawJsonData> for AppRaw {
-    fn from(value: &RawJsonData) -> Self {
+impl AppRaw {
+    pub fn from_raw_datas(data: &RawJsonData, star: &RawStarData) -> Self {
         Self {
             id: 0,
-            app_id: value.app_id.clone(),
-            raw_json: serde_json::to_value(value).unwrap(),
+            app_id: data.app_id.clone(),
+            raw_json_data: serde_json::to_value(data).unwrap(),
+            raw_json_star: serde_json::to_value(star).unwrap(),
             created_at: Local::now(),
         }
     }

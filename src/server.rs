@@ -8,7 +8,11 @@ use axum::{
 };
 use reqwest::Client;
 
-use crate::{config::Config, datas::{AppInfo, AppMetric}, db::Database};
+use crate::{
+    config::Config,
+    datas::{AppInfo, AppMetric},
+    db::Database,
+};
 
 // pub async fn server(config: &Config, )
 
@@ -56,7 +60,7 @@ async fn query_pkg(
     match crate::sync::query_package(
         &state.client,
         &state.db,
-        state.cfg.api_base_url(),
+        state.cfg.api_info_url(),
         &pkg_name,
         state.cfg.locale(),
     )

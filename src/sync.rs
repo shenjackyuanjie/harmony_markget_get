@@ -3,7 +3,10 @@ use std::time::Duration;
 use colored::Colorize;
 use reqwest::Client;
 
-use crate::{datas::RawJsonData, db::Database};
+use crate::{
+    datas::{RawJsonData, RawStarData},
+    db::Database,
+};
 
 pub async fn sync_all(
     client: &Client,
@@ -42,7 +45,7 @@ pub async fn sync_all(
 
         total_processed += 1;
 
-        match process_package(client, db, config.api_base_url(), package, locale).await {
+        match process_package(client, db, config.api_info_url(), package, locale).await {
             Ok(inserted) => {
                 if inserted {
                     total_inserted += 1;
@@ -125,6 +128,10 @@ pub async fn process_package(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
+    let star = get_star_by_app_id(client, api_url, &data.app_id, locale)
+        .await
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
+
     println!(
         "{}",
         format!(
@@ -136,7 +143,7 @@ pub async fn process_package(
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
-        .save_app_data(&data)
+        .save_app_data(&data, &star)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
@@ -155,6 +162,10 @@ pub async fn query_package(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
+    let star = get_star_by_app_id(client, api_url, &data.app_id, locale)
+        .await
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
+
     println!(
         "{}",
         format!(
@@ -165,10 +176,52 @@ pub async fn query_package(
     );
 
     // 保存数据到数据库（包含重复检查）
-    db
-        .save_app_data(&data)
+    db.save_app_data(&data, &star)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
+
+    Ok(data)
+}
+
+pub async fn get_star_by_app_id(
+    client: &reqwest::Client,
+    api_url: &str,
+    app_id: impl ToString,
+    locale: impl ToString,
+) -> anyhow::Result<RawStarData> {
+    let body = serde_json::json!({
+        "pageId": format!("webAgAppDetail|{}", app_id.to_string()),
+        "pageNum": 1,
+        "pageSize": 100,
+        "locale": locale.to_string(),
+    });
+
+    let response = client
+        .post(api_url)
+        .header("Content-Type", "application/json")
+        .header(
+            "User-Agent",
+            format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
+        )
+        .json(&body)
+        .send()
+        .await?;
+
+    // 检查响应状态码
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!(
+            "HTTP请求失败,状态码: {}",
+            response.status()
+        ));
+    }
+
+    // 检查响应体是否为空
+    let content_length = response.content_length().unwrap_or(0);
+    if content_length == 0 {
+        return Err(anyhow::anyhow!("HTTP响应体为空"));
+    }
+
+    let data = response.json::<RawStarData>().await?;
 
     Ok(data)
 }
@@ -178,26 +231,27 @@ pub async fn get_pkg_data_by_app_id(
     api_url: &str,
     app_id: impl ToString,
     locale: impl ToString,
-) -> anyhow::Result<crate::datas::RawJsonData> {
+) -> anyhow::Result<RawJsonData> {
     get_pkg_data(client, api_url, app_id, locale, "appId").await
 }
 
-#[inline]
 pub async fn get_pkg_data_by_pkg_name(
     client: &reqwest::Client,
     api_url: &str,
     pkg_name: impl ToString,
     locale: impl ToString,
-) -> anyhow::Result<crate::datas::RawJsonData> {
+) -> anyhow::Result<RawJsonData> {
     get_pkg_data(client, api_url, pkg_name, locale, "pkgName").await
 }
+
+#[inline]
 pub async fn get_pkg_data(
     client: &reqwest::Client,
     api_url: &str,
     name: impl ToString,
     locale: impl ToString,
-    name_type: impl ToString
-) -> anyhow::Result<crate::datas::RawJsonData> {
+    name_type: impl ToString,
+) -> anyhow::Result<RawJsonData> {
     let body = serde_json::json!({
         name_type.to_string(): name.to_string(),
         "locale": locale.to_string(),
@@ -228,7 +282,7 @@ pub async fn get_pkg_data(
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
 
-    let data = response.json::<crate::datas::RawJsonData>().await?;
+    let data = response.json::<RawJsonData>().await?;
 
     Ok(data)
 }
