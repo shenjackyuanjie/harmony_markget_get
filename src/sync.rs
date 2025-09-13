@@ -119,18 +119,18 @@ pub async fn process_package(
     client: &reqwest::Client,
     db: &Database,
     api_url: &str,
-    package: &str,
+    package_name: &str,
     locale: &str,
 ) -> anyhow::Result<bool> {
-    let data = get_raw_json_data(client, api_url, package, locale)
+    let data = get_pkg_data_by_pkg_name(client, api_url, package_name, locale)
         .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
     println!(
         "{}",
         format!(
-            "获取到包 {} 的数据，应用ID: {}，应用名称: {}",
-            package, data.app_id, data.name
+            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
+            package_name, data.app_id, data.name
         )
         .blue()
     );
@@ -139,7 +139,7 @@ pub async fn process_package(
     let inserted = db
         .save_app_data(&data)
         .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
     Ok(inserted)
 }
@@ -149,18 +149,18 @@ pub async fn query_package(
     client: &reqwest::Client,
     db: &Database,
     api_url: &str,
-    package: &str,
+    package_name: &str,
     locale: &str,
 ) -> anyhow::Result<RawJsonData> {
-    let data = get_raw_json_data(client, api_url, package, locale)
+    let data = get_pkg_data_by_pkg_name(client, api_url, package_name, locale)
         .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package, e))?;
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
     println!(
         "{}",
         format!(
-            "获取到包 {} 的数据，应用ID: {}，应用名称: {}",
-            package, data.app_id, data.name
+            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
+            package_name, data.app_id, data.name
         )
         .blue()
     );
@@ -169,12 +169,12 @@ pub async fn query_package(
     db
         .save_app_data(&data)
         .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package, e))?;
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
     Ok(data)
 }
 
-pub async fn get_raw_json_data(
+pub async fn get_pkg_data_by_pkg_name(
     client: &reqwest::Client,
     api_url: &str,
     pkg_name: impl ToString,
@@ -205,7 +205,7 @@ pub async fn get_raw_json_data(
     // 检查响应状态码
     if !response.status().is_success() {
         return Err(anyhow::anyhow!(
-            "HTTP请求失败，状态码: {}",
+            "HTTP请求失败,状态码: {}",
             response.status()
         ));
     }
