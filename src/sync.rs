@@ -174,22 +174,35 @@ pub async fn query_package(
     Ok(data)
 }
 
+pub async fn get_pkg_data_by_app_id(
+    client: &reqwest::Client,
+    api_url: &str,
+    app_id: impl ToString,
+    locale: impl ToString,
+) -> anyhow::Result<crate::datas::RawJsonData> {
+    get_pkg_data(client, api_url, app_id, locale, "appId").await
+}
+
+#[inline]
 pub async fn get_pkg_data_by_pkg_name(
     client: &reqwest::Client,
     api_url: &str,
     pkg_name: impl ToString,
     locale: impl ToString,
 ) -> anyhow::Result<crate::datas::RawJsonData> {
-    #[derive(Debug, Serialize)]
-    struct RequestBody {
-        #[serde(rename = "pkgName")]
-        pkg_name: String,
-        locale: String,
-    }
-    let body = RequestBody {
-        pkg_name: pkg_name.to_string(),
-        locale: locale.to_string(),
-    };
+    get_pkg_data(client, api_url, pkg_name, locale, "pkgName").await
+}
+pub async fn get_pkg_data(
+    client: &reqwest::Client,
+    api_url: &str,
+    name: impl ToString,
+    locale: impl ToString,
+    name_type: impl ToString
+) -> anyhow::Result<crate::datas::RawJsonData> {
+    let body = serde_json::json!({
+        name_type.to_string(): name.to_string(),
+        "locale": locale.to_string(),
+    });
 
     let response = client
         .post(api_url)

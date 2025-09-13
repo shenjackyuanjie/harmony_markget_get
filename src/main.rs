@@ -19,8 +19,6 @@ async fn async_main() -> anyhow::Result<()> {
 
     let (worker_send, worker_recv) = tokio::sync::oneshot::channel::<()>();
 
-    // sync::sync_all(&client, &db_conn, &config, config.packages()).await?;
-
     let worker = tokio::spawn(server::worker(config.clone(), worker_recv));
 
     // 等待 ctrl + c
