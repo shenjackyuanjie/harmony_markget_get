@@ -221,7 +221,20 @@ pub async fn get_star_by_app_id(
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
 
-    let data = response.json::<RawStarData>().await?;
+    // let data = response.json::<RawStarData>().await?;
+    // 华为我谢谢你
+    let data = {
+        let raw = response.json::<serde_json::Value>().await?;
+        let layouts = raw["pages"][0]["data"]["cardlist"]["layoutData"]
+            .as_array()
+            .expect("faild to parse page info");
+        let comment_card = layouts
+            .iter()
+            .filter(|v| v["type"].as_str().expect("type not str") == "fl.card.comment")
+            .collect::<Vec<_>>()[0];
+        let star_str = comment_card["data"][0]["starInfo"].as_str().expect("star info is not str");
+        serde_json::from_str(star_str)?
+    };
 
     Ok(data)
 }

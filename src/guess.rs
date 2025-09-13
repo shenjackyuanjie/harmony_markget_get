@@ -47,15 +47,15 @@ async fn async_main() -> anyhow::Result<()> {
                     crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
                     && let Ok(star) =
                         crate::sync::get_star_by_app_id(&client, &api_url, &app_id, &locale).await
-                    {
-                        if let Ok(inserted) = db.save_app_data(&data, &star).await {
-                            if inserted {
-                                println!("已将 {app_id} 的数据插入数据库");
-                            }
-                        } else {
-                            println!("插入数据库时出错");
+                {
+                    if let Ok(inserted) = db.save_app_data(&data, &star).await {
+                        if inserted {
+                            println!("已将 {app_id} 的数据插入数据库");
                         }
+                    } else {
+                        println!("插入数据库时出错");
                     }
+                }
             });
         }
         join_set.join_all().await;
