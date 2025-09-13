@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use colored::Colorize;
 use reqwest::Client;
-use serde::Serialize;
 
 use crate::{datas::RawJsonData, db::Database};
 
