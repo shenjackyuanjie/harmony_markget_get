@@ -47,7 +47,16 @@ pub async fn sync_all(
 
         total_processed += 1;
 
-        match process_package(client, db, config.api_info_url(), config.api_detail_url(), package, locale).await {
+        match process_package(
+            client,
+            db,
+            config.api_info_url(),
+            config.api_detail_url(),
+            package,
+            locale,
+        )
+        .await
+        {
             Ok(inserted) => {
                 if inserted {
                     total_inserted += 1;
@@ -206,7 +215,10 @@ pub async fn get_star_by_app_id(
             "User-Agent",
             format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
         )
-        .header("Interface-Code", interface_code::GLOBAL_CODE.get_full_token().await)
+        .header(
+            "Interface-Code",
+            interface_code::GLOBAL_CODE.get_full_token().await,
+        )
         .json(&body)
         .send()
         .await?;
@@ -224,7 +236,9 @@ pub async fn get_star_by_app_id(
     // 检查响应体是否为空
     let content_length = response.content_length().unwrap_or(0);
     if content_length == 0 {
-        return Err(anyhow::anyhow!("HTTP响应体为空 \nurl: {api_url} data: {body}"));
+        return Err(anyhow::anyhow!(
+            "HTTP响应体为空 \nurl: {api_url} data: {body}"
+        ));
     }
 
     // let data = response.json::<RawStarData>().await?;
@@ -238,8 +252,12 @@ pub async fn get_star_by_app_id(
             .iter()
             .filter(|v| v["type"].as_str().expect("type not str") == "fl.card.comment")
             .collect::<Vec<_>>()[0];
-        let star_str = comment_card["data"][0]["starInfo"].as_str().expect("star info is not str");
-        serde_json::from_str(star_str)?
+        let star_data = comment_card["data"].get(0).expect("data not found");
+        if let Some(star_str) = star_data.get("starInfo") {
+            serde_json::from_str(star_str.as_str().expect("starInfo not str"))?
+        } else {
+            return Err(anyhow::anyhow!("starInfo not found"));
+        }
     };
 
     Ok(data)
