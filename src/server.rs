@@ -61,6 +61,7 @@ async fn query_pkg(
         &state.client,
         &state.db,
         state.cfg.api_info_url(),
+        state.cfg.api_detail_url(),
         &pkg_name,
         state.cfg.locale(),
     )

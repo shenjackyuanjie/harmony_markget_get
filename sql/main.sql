@@ -44,10 +44,11 @@ CREATE TABLE app_info (
 );
 
 CREATE TABLE app_raw (
-    id          BIGSERIAL PRIMARY KEY,                     -- 主键ID
-    app_id      TEXT REFERENCES app_info(app_id),          -- 对应 app_info 的 app_id
-    raw_json    JSONB,                                     -- 原始JSON数据（完整应用信息）
-    created_at  TIMESTAMPTZ DEFAULT now()                    -- 创建时间
+    id              BIGSERIAL PRIMARY KEY,                     -- 主键ID
+    app_id          TEXT NOT NULL REFERENCES app_info(app_id), -- 对应 app_info 的 app_id
+    raw_json_data   JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始应用数据JSON
+    raw_json_star   JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始评分数据JSON
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()           -- 创建时间
 );
 
 CREATE TABLE app_metrics (
@@ -57,8 +58,8 @@ CREATE TABLE app_metrics (
     version_code        BIGINT,                            -- 版本代码（如 1460302302）
     size_bytes          BIGINT,                            -- 应用大小（字节）（如 76591487）
     sha256              TEXT,                              -- 安装包SHA256校验值
-    hot_score           NUMERIC(3,1),                      -- 热度评分（如 4.5）
-    rate_num            BIGINT,                            -- 评分人数（如 350）
+    info_score          NUMERIC(3,1),                      -- 信息评分（重命名自 hot_score）
+    info_rate_count     BIGINT,                            -- 信息评分人数（重命名自 rate_num）
     download_count      BIGINT,                            -- 下载次数（如 14443706）
     price               NUMERIC(10,2),                     -- 价格（如 0 表示免费）
     release_date        BIGINT,                            -- 发布时间（时间戳毫秒）
@@ -69,6 +70,18 @@ CREATE TABLE app_metrics (
     compile_sdk_version INTEGER,                           -- 编译SDK版本（如 50100）
     min_hmos_api_level  INTEGER,                           -- 最低鸿蒙API等级（如 50001）
     api_release_type    TEXT,                              -- API发布类型（如 Release）
+    -- 新增的页面评分相关字段
+    page_average_rating         NUMERIC(3,1),              -- 页面平均评分
+    page_star_1_rating_count    INTEGER,                   -- 页面1星评分数量
+    page_star_2_rating_count    INTEGER,                   -- 页面2星评分数量
+    page_star_3_rating_count    INTEGER,                   -- 页面3星评分数量
+    page_star_4_rating_count    INTEGER,                   -- 页面4星评分数量
+    page_star_5_rating_count    INTEGER,                   -- 页面5星评分数量
+    page_my_star_rating         INTEGER,                   -- 页面我的评分
+    page_total_star_rating_count INTEGER,                  -- 页面总评分数量
+    page_only_star_count        INTEGER,                   -- 页面仅评分数量
+    page_full_average_rating    NUMERIC(3,1),              -- 页面完整平均评分
+    page_source_type            TEXT,                      -- 页面评分来源类型
     created_at          TIMESTAMPTZ DEFAULT now()            -- 创建时间
 );
 
@@ -79,8 +92,8 @@ SELECT
     am.version_code,
     am.size_bytes,
     am.sha256,
-    am.hot_score,
-    am.rate_num,
+    am.info_score,
+    am.info_rate_count,
     am.download_count,
     am.price,
     am.release_date,
@@ -91,6 +104,17 @@ SELECT
     am.compile_sdk_version,
     am.min_hmos_api_level,
     am.api_release_type,
+    am.page_average_rating,
+    am.page_star_1_rating_count,
+    am.page_star_2_rating_count,
+    am.page_star_3_rating_count,
+    am.page_star_4_rating_count,
+    am.page_star_5_rating_count,
+    am.page_my_star_rating,
+    am.page_total_star_rating_count,
+    am.page_only_star_count,
+    am.page_full_average_rating,
+    am.page_source_type,
     am.created_at as metrics_created_at
 FROM app_info ai
 LEFT JOIN (
@@ -104,3 +128,4 @@ CREATE INDEX idx_app_info_app_id ON app_info(app_id);
 CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
 CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);
+CREATE INDEX idx_app_metrics_download_count ON app_metrics(download_count);

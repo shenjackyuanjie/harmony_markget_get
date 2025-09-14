@@ -45,7 +45,7 @@ pub async fn sync_all(
 
         total_processed += 1;
 
-        match process_package(client, db, config.api_info_url(), package, locale).await {
+        match process_package(client, db, config.api_info_url(), config.api_detail_url(), package, locale).await {
             Ok(inserted) => {
                 if inserted {
                     total_inserted += 1;
@@ -120,15 +120,16 @@ pub async fn sync_all(
 pub async fn process_package(
     client: &reqwest::Client,
     db: &Database,
-    api_url: &str,
+    data_url: &str,
+    star_url: &str,
     package_name: &str,
     locale: &str,
 ) -> anyhow::Result<bool> {
-    let data = get_pkg_data_by_pkg_name(client, api_url, package_name, locale)
+    let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, api_url, &data.app_id, locale)
+    let star = get_star_by_app_id(client, star_url, &data.app_id, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
 
@@ -154,15 +155,16 @@ pub async fn process_package(
 pub async fn query_package(
     client: &reqwest::Client,
     db: &Database,
-    api_url: &str,
+    data_url: &str,
+    star_url: &str,
     package_name: &str,
     locale: &str,
 ) -> anyhow::Result<RawJsonData> {
-    let data = get_pkg_data_by_pkg_name(client, api_url, package_name, locale)
+    let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, api_url, &data.app_id, locale)
+    let star = get_star_by_app_id(client, star_url, &data.app_id, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
 
@@ -193,7 +195,9 @@ pub async fn get_star_by_app_id(
         "pageId": format!("webAgAppDetail|{}", app_id.to_string()),
         "pageNum": 1,
         "pageSize": 100,
-        "locale": locale.to_string(),
+        // "locale": locale.to_string(),
+        "locale": "zh",
+        "zone": ""
     });
 
     let response = client
@@ -210,15 +214,17 @@ pub async fn get_star_by_app_id(
     // 检查响应状态码
     if !response.status().is_success() {
         return Err(anyhow::anyhow!(
-            "HTTP请求失败,状态码: {}",
-            response.status()
+            "HTTP请求失败,状态码: {}\nurl: {} body: {}",
+            response.status(),
+            api_url,
+            body
         ));
     }
 
     // 检查响应体是否为空
     let content_length = response.content_length().unwrap_or(0);
     if content_length == 0 {
-        return Err(anyhow::anyhow!("HTTP响应体为空"));
+        return Err(anyhow::anyhow!("HTTP响应体为空 \nurl: {api_url} data: {body}"));
     }
 
     // let data = response.json::<RawStarData>().await?;

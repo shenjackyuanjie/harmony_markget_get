@@ -132,13 +132,17 @@ impl Database {
     pub async fn insert_app_metric(&self, app_metric: &AppMetric) -> Result<()> {
         const QUERY: &str = r#"
             INSERT INTO app_metrics (
-                app_id, version, version_code, size_bytes, sha256, hot_score,
-                rate_num, download_count, price, release_date, new_features,
+                app_id, version, version_code, size_bytes, sha256, info_score,
+                info_rate_count, download_count, price, release_date, new_features,
                 upgrade_msg, target_sdk, minsdk, compile_sdk_version,
-                min_hmos_api_level, api_release_type
+                min_hmos_api_level, api_release_type, page_average_rating,
+                page_star_1_rating_count, page_star_2_rating_count, page_star_3_rating_count,
+                page_star_4_rating_count, page_star_5_rating_count, page_my_star_rating,
+                page_total_star_rating_count, page_only_star_count, page_full_average_rating,
+                page_source_type
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-                $16, $17
+                $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
             )
         "#;
 
@@ -148,8 +152,8 @@ impl Database {
             .bind(app_metric.version_code)
             .bind(app_metric.size_bytes)
             .bind(&app_metric.sha256)
-            .bind(&app_metric.hot_score)
-            .bind(app_metric.rate_num)
+            .bind(&app_metric.info_score)
+            .bind(app_metric.info_rate_count)
             .bind(app_metric.download_count)
             .bind(&app_metric.price)
             .bind(app_metric.release_date)
@@ -160,6 +164,17 @@ impl Database {
             .bind(app_metric.compile_sdk_version)
             .bind(app_metric.min_hmos_api_level)
             .bind(&app_metric.api_release_type)
+            .bind(&app_metric.page_average_rating)
+            .bind(app_metric.page_star_1_rating_count)
+            .bind(app_metric.page_star_2_rating_count)
+            .bind(app_metric.page_star_3_rating_count)
+            .bind(app_metric.page_star_4_rating_count)
+            .bind(app_metric.page_star_5_rating_count)
+            .bind(app_metric.page_my_star_rating)
+            .bind(app_metric.page_total_star_rating_count)
+            .bind(app_metric.page_only_star_count)
+            .bind(&app_metric.page_full_average_rating)
+            .bind(&app_metric.page_source_type)
             .execute(&self.pool)
             .await?;
 
@@ -169,12 +184,13 @@ impl Database {
     /// 插入原始 JSON 数据到 app_raw 表
     pub async fn insert_raw_data(&self, data: &AppRaw) -> Result<()> {
         let query = r#"
-            INSERT INTO app_raw (app_id, raw_json)
-            VALUES ($1, $2)
+            INSERT INTO app_raw (app_id, raw_json_data, raw_json_star)
+            VALUES ($1, $2, $3)
         "#;
 
         sqlx::query(query)
             .bind(data.app_id.clone())
+            .bind(&data.raw_json_data)
             .bind(&data.raw_json_star)
             .execute(&self.pool)
             .await?;
@@ -197,7 +213,7 @@ impl Database {
     /// 获取指定应用的最后一条原始JSON数据
     pub async fn get_last_raw_json(&self, app_id: &str) -> Result<Option<Value>> {
         const QUERY: &str = r#"
-            SELECT raw_json
+            SELECT raw_json_star
             FROM app_raw
             WHERE app_id = $1
             ORDER BY created_at DESC
@@ -211,7 +227,7 @@ impl Database {
 
         match result {
             Some(row) => {
-                let raw_json: Value = row.get("raw_json");
+                let raw_json: Value = row.get("raw_json_star");
                 Ok(Some(raw_json))
             }
             None => Ok(None),
@@ -272,7 +288,8 @@ impl Database {
         self.insert_app_info(&raw_data.into()).await?;
 
         // 保存指标信息
-        self.insert_app_metric(&raw_data.into()).await?;
+        let app_metric = AppMetric::from_raw_data_and_star(raw_data, raw_star);
+        self.insert_app_metric(&app_metric).await?;
 
         // 保存原始JSON数据
         self.insert_raw_data(&new_raw_json).await?;
