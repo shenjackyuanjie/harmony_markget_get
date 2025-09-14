@@ -8,6 +8,8 @@ use crate::{
     db::Database,
 };
 
+pub mod interface_code;
+
 pub async fn sync_all(
     client: &Client,
     db: &crate::db::Database,
@@ -129,7 +131,7 @@ pub async fn process_package(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, star_url, &data.app_id, locale)
+    let star = get_star_by_app_id(client, star_url, &data.app_id)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
 
@@ -159,12 +161,12 @@ pub async fn query_package(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<RawJsonData> {
+) -> anyhow::Result<(RawJsonData, RawStarData)> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, star_url, &data.app_id, locale)
+    let star = get_star_by_app_id(client, star_url, &data.app_id)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
 
@@ -182,21 +184,18 @@ pub async fn query_package(
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
-    Ok(data)
+    Ok((data, star))
 }
 
 pub async fn get_star_by_app_id(
     client: &reqwest::Client,
     api_url: &str,
     app_id: impl ToString,
-    locale: impl ToString,
 ) -> anyhow::Result<RawStarData> {
     let body = serde_json::json!({
         "pageId": format!("webAgAppDetail|{}", app_id.to_string()),
         "pageNum": 1,
         "pageSize": 100,
-        // "locale": locale.to_string(),
-        "locale": "zh",
         "zone": ""
     });
 
@@ -207,6 +206,7 @@ pub async fn get_star_by_app_id(
             "User-Agent",
             format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
         )
+        .header("Interface-Code", interface_code::GLOBAL_CODE.get_full_token().await)
         .json(&body)
         .send()
         .await?;

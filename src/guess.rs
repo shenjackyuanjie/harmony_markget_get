@@ -46,7 +46,7 @@ async fn async_main() -> anyhow::Result<()> {
                 if let Ok(data) =
                     crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
                     && let Ok(star) =
-                        crate::sync::get_star_by_app_id(&client, &api_url, &app_id, &locale).await
+                        crate::sync::get_star_by_app_id(&client, &api_url, &app_id).await
                 {
                     if let Ok(inserted) = db.save_app_data(&data, &star).await {
                         if inserted {

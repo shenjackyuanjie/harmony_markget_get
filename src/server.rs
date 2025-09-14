@@ -67,9 +67,9 @@ async fn query_pkg(
     )
     .await
     {
-        Ok(pkg) => {
-            let metric: AppMetric = (&pkg).into();
-            let info: AppInfo = (&pkg).into();
+        Ok((data, star)) => {
+            let metric = AppMetric::from_raw_data_and_star(&data, &star);
+            let info: AppInfo = (&data).into();
             Json(serde_json::json!({"info": info, "metric": metric}))
         }
         Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
