@@ -103,9 +103,9 @@ pub async fn sync_all(
         }
 
         // 添加短暂延迟，避免请求过于频繁
-        if index < packages.len() - 1 {
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
+        // if index < packages.len() - 1 {
+        //     tokio::time::sleep(Duration::from_millis(50)).await;
+        // }
     }
 
     println!("{}", "所有包处理完成！".green());
@@ -251,8 +251,11 @@ pub async fn get_star_by_app_id(
         let comment_card = layouts
             .iter()
             .filter(|v| v["type"].as_str().expect("type not str") == "fl.card.comment")
-            .collect::<Vec<_>>()[0];
-        let star_data = comment_card["data"].get(0).expect("data not found");
+            .collect::<Vec<_>>();
+        if comment_card.is_empty() {
+            return Err(anyhow::anyhow!("comment card not found"));
+        }
+        let star_data = comment_card[0]["data"].get(0).expect("data not found");
         if let Some(star_str) = star_data.get("starInfo") {
             serde_json::from_str(star_str.as_str().expect("starInfo not str"))?
         } else {
