@@ -1,5 +1,12 @@
 use serde::Deserialize;
-use std::fs;
+use std::{fs, sync::OnceLock};
+
+pub static GLOBAL_CONFIG: OnceLock<Config> = OnceLock::new();
+
+
+pub fn get_config() -> &'static Config {
+    GLOBAL_CONFIG.get().unwrap()
+}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseConfig {
@@ -40,10 +47,10 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> anyhow::Result<Self> {
+    pub fn load() -> anyhow::Result<&'static Self> {
         let config_content = fs::read_to_string("config.toml")?;
         let config: Config = toml::from_str(&config_content)?;
-        Ok(config)
+        Ok(GLOBAL_CONFIG.get_or_init(|| config))
     }
 
     pub fn database_url(&self) -> &str {

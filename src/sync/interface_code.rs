@@ -9,12 +9,14 @@ use reqwest::Client;
 
 pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     let now = std::time::Instant::now();
-    let client = reqwest::ClientBuilder::new().build().expect("faild to build client");
+    let client = reqwest::ClientBuilder::new()
+        .build()
+        .expect("faild to build client");
     CodeGenerater {
         last_update: now,
         token: None,
         update_interval: Duration::from_secs(60),
-        client
+        client,
     }
 });
 
@@ -22,7 +24,7 @@ pub struct CodeGenerater {
     last_update: Instant,
     token: Option<String>,
     update_interval: Duration,
-    client: Client
+    client: Client,
 }
 
 impl CodeGenerater {
@@ -55,7 +57,9 @@ impl CodeGenerater {
     pub async fn update_token(&self) -> String {
         const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
         let unix_time: u64 = UNIX_EPOCH.elapsed().expect("wtf").as_millis() as u64;
-        let response = self.client.post(URL)
+        let response = self
+            .client
+            .post(URL)
             .header("Content-Type", "application/json")
             .header(
                 "User-Agent",
@@ -63,11 +67,17 @@ impl CodeGenerater {
             )
             .header("Interface-Code", format!("null_{unix_time}"))
             .send()
-            .await.expect("faild to get token");
+            .await
+            .expect("faild to get token");
         if !response.status().is_success() {
             panic!("faild to get token");
         }
-        let token = response.text().await.expect("faild to get token").trim_matches('\"').to_string();
+        let token = response
+            .text()
+            .await
+            .expect("faild to get token")
+            .trim_matches('\"')
+            .to_string();
         unsafe {
             // WARN: unsafe here
             let this = (self as *const Self as *mut Self).as_mut().unwrap();
