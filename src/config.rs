@@ -3,7 +3,6 @@ use std::{fs, sync::OnceLock};
 
 pub static GLOBAL_CONFIG: OnceLock<Config> = OnceLock::new();
 
-
 pub fn get_config() -> &'static Config {
     GLOBAL_CONFIG.get().unwrap()
 }
