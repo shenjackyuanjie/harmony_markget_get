@@ -5,6 +5,7 @@ use std::{
     time::{Duration, Instant, UNIX_EPOCH},
 };
 
+use colored::Colorize;
 use reqwest::Client;
 
 pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
@@ -55,6 +56,7 @@ impl CodeGenerater {
     // }
 
     pub async fn update_token(&self) -> String {
+        println!("{}", "正在刷新 interface code".blue());
         const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
         let unix_time: u64 = UNIX_EPOCH.elapsed().expect("wtf").as_millis() as u64;
         let response = self
