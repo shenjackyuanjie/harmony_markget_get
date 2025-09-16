@@ -25,6 +25,7 @@ async fn async_main() -> anyhow::Result<()> {
     tokio::signal::ctrl_c().await?;
 
     worker_send.send(()).unwrap();
+    worker.abort();
     worker.await??;
 
     Ok(())
