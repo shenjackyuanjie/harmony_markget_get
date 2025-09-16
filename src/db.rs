@@ -315,7 +315,11 @@ impl Database {
         } else {
             println!(
                 "{}",
-                format!("评分数据缺失，跳过评分信息保存: {} ({})", raw_data.app_id, raw_data.name).yellow()
+                format!(
+                    "评分数据缺失，跳过评分信息保存: {} ({})",
+                    raw_data.app_id, raw_data.name
+                )
+                .yellow()
             );
         }
 

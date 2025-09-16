@@ -69,9 +69,13 @@ async fn query_pkg(
     {
         Ok((data, star, is_new)) => {
             let metric = AppMetric::from_raw_data(&data);
-            let rating = star.as_ref().map(|star_data| AppRating::from_raw_star(&data, star_data));
+            let rating = star
+                .as_ref()
+                .map(|star_data| AppRating::from_raw_star(&data, star_data));
             let info: AppInfo = (&data).into();
-            Json(serde_json::json!({"info": info, "metric": metric, "rating": rating, "is_new": is_new}))
+            Json(
+                serde_json::json!({"info": info, "metric": metric, "rating": rating, "is_new": is_new}),
+            )
         }
         Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
     }

@@ -83,8 +83,16 @@ impl CodeGenerater {
                 match response_result {
                     Ok(response) => {
                         if !response.status().is_success() {
-                            println!("{}", format!("请求失败，状态码: {}，正在重试 ({}/{})",
-                                response.status(), retry_count + 1, MAX_RETRIES).yellow());
+                            println!(
+                                "{}",
+                                format!(
+                                    "请求失败，状态码: {}，正在重试 ({}/{})",
+                                    response.status(),
+                                    retry_count + 1,
+                                    MAX_RETRIES
+                                )
+                                .yellow()
+                            );
                             retry_count += 1;
                             tokio::time::sleep(Duration::from_secs(1)).await;
                             continue;
@@ -96,8 +104,16 @@ impl CodeGenerater {
                                 break token;
                             }
                             Err(e) => {
-                                println!("{}", format!("解析响应失败: {}，正在重试 ({}/{})",
-                                    e, retry_count + 1, MAX_RETRIES).yellow());
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "解析响应失败: {}，正在重试 ({}/{})",
+                                        e,
+                                        retry_count + 1,
+                                        MAX_RETRIES
+                                    )
+                                    .yellow()
+                                );
                                 retry_count += 1;
                                 tokio::time::sleep(Duration::from_secs(1)).await;
                                 continue;
@@ -105,8 +121,16 @@ impl CodeGenerater {
                         }
                     }
                     Err(e) => {
-                        println!("{}", format!("发送请求失败: {}，正在重试 ({}/{})",
-                            e, retry_count + 1, MAX_RETRIES).yellow());
+                        println!(
+                            "{}",
+                            format!(
+                                "发送请求失败: {}，正在重试 ({}/{})",
+                                e,
+                                retry_count + 1,
+                                MAX_RETRIES
+                            )
+                            .yellow()
+                        );
                         retry_count += 1;
                         tokio::time::sleep(Duration::from_secs(1)).await;
                         continue;

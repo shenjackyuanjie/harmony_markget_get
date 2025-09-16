@@ -46,18 +46,16 @@ async fn async_main() -> anyhow::Result<()> {
                 if let Ok(data) =
                     crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
                 {
-                    let star_result = crate::sync::get_star_by_app_id(&client, &api_url, &app_id).await;
+                    let star_result =
+                        crate::sync::get_star_by_app_id(&client, &api_url, &app_id).await;
                     let star = match star_result {
                         Ok(star_data) => Some(star_data),
                         Err(e) => {
-                            eprintln!(
-                                "获取应用 {} 的评分数据失败: {:#}",
-                                app_id, e
-                            );
+                            eprintln!("获取应用 {} 的评分数据失败: {:#}", app_id, e);
                             None
                         }
                     };
-                    
+
                     if let Ok(inserted) = db.save_app_data(&data, star.as_ref()).await {
                         if inserted {
                             println!("已将 {app_id} 的数据插入数据库");
