@@ -170,7 +170,7 @@ pub async fn query_package(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, RawStarData)> {
+) -> anyhow::Result<(RawJsonData, RawStarData, bool)> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
@@ -189,11 +189,12 @@ pub async fn query_package(
     );
 
     // 保存数据到数据库（包含重复检查）
-    db.save_app_data(&data, &star)
+    let is_new = db
+        .save_app_data(&data, &star)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
-    Ok((data, star))
+    Ok((data, star, is_new))
 }
 
 pub async fn get_star_by_app_id(
