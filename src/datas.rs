@@ -336,12 +336,15 @@ pub struct AppRaw {
 }
 
 impl AppRaw {
-    pub fn from_raw_datas(data: &RawJsonData, star: &RawStarData) -> Self {
+    pub fn from_raw_datas(data: &RawJsonData, star: Option<&RawStarData>) -> Self {
         Self {
             id: 0,
             app_id: data.app_id.clone(),
             raw_json_data: serde_json::to_value(data).unwrap(),
-            raw_json_star: serde_json::to_value(star).unwrap(),
+            raw_json_star: match star {
+                Some(star_data) => serde_json::to_value(star_data).unwrap(),
+                None => serde_json::json!({}),
+            },
             created_at: Local::now(),
         }
     }

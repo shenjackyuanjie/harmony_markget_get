@@ -153,9 +153,17 @@ pub async fn process_package(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, star_url, &data.app_id)
-        .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
+    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+    let star = match star_result {
+        Ok(star_data) => Some(star_data),
+        Err(e) => {
+            eprintln!(
+                "{}",
+                format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
+            );
+            None
+        }
+    };
 
     println!(
         "{}",
@@ -168,7 +176,7 @@ pub async fn process_package(
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
-        .save_app_data(&data, &star)
+        .save_app_data(&data, star.as_ref())
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 
@@ -183,14 +191,22 @@ pub async fn query_package(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, RawStarData, bool)> {
+) -> anyhow::Result<(RawJsonData, Option<RawStarData>, bool)> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star = get_star_by_app_id(client, star_url, &data.app_id)
-        .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的星数失败: {:#}", package_name, e))?;
+    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+    let star = match star_result {
+        Ok(star_data) => Some(star_data),
+        Err(e) => {
+            eprintln!(
+                "{}",
+                format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
+            );
+            None
+        }
+    };
 
     println!(
         "{}",
@@ -203,7 +219,7 @@ pub async fn query_package(
 
     // 保存数据到数据库（包含重复检查）
     let is_new = db
-        .save_app_data(&data, &star)
+        .save_app_data(&data, star.as_ref())
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
 

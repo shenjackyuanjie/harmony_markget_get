@@ -279,7 +279,7 @@ impl Database {
     pub async fn save_app_data(
         &self,
         raw_data: &RawJsonData,
-        raw_star: &RawStarData,
+        raw_star: Option<&RawStarData>,
     ) -> anyhow::Result<bool> {
         // 转换原始JSON数据用于比较
         let new_raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
@@ -308,9 +308,16 @@ impl Database {
         let app_metric = AppMetric::from_raw_data(raw_data);
         self.insert_app_metric(&app_metric).await?;
 
-        // 保存评分信息
-        let app_rating = AppRating::from_raw_star(raw_data, raw_star);
-        self.insert_app_rating(&app_rating).await?;
+        // 保存评分信息（如果有）
+        if let Some(raw_star) = raw_star {
+            let app_rating = AppRating::from_raw_star(raw_data, raw_star);
+            self.insert_app_rating(&app_rating).await?;
+        } else {
+            println!(
+                "{}",
+                format!("评分数据缺失，跳过评分信息保存: {} ({})", raw_data.app_id, raw_data.name).yellow()
+            );
+        }
 
         // 保存原始JSON数据
         self.insert_raw_data(&new_raw_json).await?;
