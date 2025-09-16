@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 // "starInfo": "{\"averageRating\":\"2.9\",\"oneStarRatingCount\":348,\"twoStarRatingCount\":129,\"threeStarRatingCount\":129,\"fourStarRatingCount\":81,\"fiveStarRatingCount\":344,\"myStarRating\":0,\"totalStarRatingCount\":1031,\"onlyStarCount\":511,\"fullAverageRating\":\"5.0\",\"sourceType\":\"USER_RATING\"}",
 //
 #[derive(Debug, Deserialize, Serialize)]
-pub struct RawStarData {
+pub struct RawRatingData {
     #[serde(rename = "averageRating")]
     pub average_rating: String,
     #[serde(rename = "oneStarRatingCount")]
@@ -305,7 +305,7 @@ impl AppMetric {
 }
 
 impl AppRating {
-    pub fn from_raw_star(raw_data: &RawJsonData, raw_star: &RawStarData) -> Self {
+    pub fn from_raw_star(raw_data: &RawJsonData, raw_star: &RawRatingData) -> Self {
         Self {
             id: 0,
             app_id: raw_data.app_id.clone(),
@@ -336,7 +336,7 @@ pub struct AppRaw {
 }
 
 impl AppRaw {
-    pub fn from_raw_datas(data: &RawJsonData, star: Option<&RawStarData>) -> Self {
+    pub fn from_raw_datas(data: &RawJsonData, star: Option<&RawRatingData>) -> Self {
         Self {
             id: 0,
             app_id: data.app_id.clone(),

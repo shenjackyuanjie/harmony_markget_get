@@ -4,7 +4,7 @@ use colored::Colorize;
 use reqwest::Client;
 
 use crate::{
-    datas::{RawJsonData, RawStarData},
+    datas::{RawJsonData, RawRatingData},
     db::Database,
 };
 
@@ -191,7 +191,7 @@ pub async fn query_package(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, Option<RawStarData>, bool)> {
+) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, bool)> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
@@ -230,7 +230,7 @@ pub async fn get_star_by_app_id(
     client: &reqwest::Client,
     api_url: &str,
     app_id: impl ToString,
-) -> anyhow::Result<RawStarData> {
+) -> anyhow::Result<RawRatingData> {
     let body = serde_json::json!({
         "pageId": format!("webAgAppDetail|{}", app_id.to_string()),
         "pageNum": 1,

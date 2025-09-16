@@ -1,4 +1,4 @@
-use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawStarData};
+use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
 
 use anyhow::Result;
 use colored::Colorize;
@@ -279,7 +279,7 @@ impl Database {
     pub async fn save_app_data(
         &self,
         raw_data: &RawJsonData,
-        raw_star: Option<&RawStarData>,
+        raw_star: Option<&RawRatingData>,
     ) -> anyhow::Result<bool> {
         // 转换原始JSON数据用于比较
         let new_raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
