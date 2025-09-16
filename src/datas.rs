@@ -256,22 +256,30 @@ pub struct AppMetric {
     pub compile_sdk_version: i32,
     pub min_hmos_api_level: i32,
     pub api_release_type: String,
-    pub page_average_rating: f64,
-    pub page_star_1_rating_count: i32,
-    pub page_star_2_rating_count: i32,
-    pub page_star_3_rating_count: i32,
-    pub page_star_4_rating_count: i32,
-    pub page_star_5_rating_count: i32,
-    pub page_my_star_rating: i32,
-    pub page_total_star_rating_count: i32,
-    pub page_only_star_count: i32,
-    pub page_full_average_rating: f64,
-    pub page_source_type: String,
+    pub created_at: DateTime<Local>,
+}
+
+/// 5. app_rating 表
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AppRating {
+    pub id: i64,
+    pub app_id: String,
+    pub average_rating: f64,
+    pub star_1_rating_count: i32,
+    pub star_2_rating_count: i32,
+    pub star_3_rating_count: i32,
+    pub star_4_rating_count: i32,
+    pub star_5_rating_count: i32,
+    pub my_star_rating: i32,
+    pub total_star_rating_count: i32,
+    pub only_star_count: i32,
+    pub full_average_rating: f64,
+    pub source_type: String,
     pub created_at: DateTime<Local>,
 }
 
 impl AppMetric {
-    pub fn from_raw_data_and_star(raw_data: &RawJsonData, raw_star: &RawStarData) -> Self {
+    pub fn from_raw_data(raw_data: &RawJsonData) -> Self {
         Self {
             id: 0,
             app_id: raw_data.app_id.clone(),
@@ -291,23 +299,33 @@ impl AppMetric {
             compile_sdk_version: raw_data.compile_sdk_version,
             min_hmos_api_level: raw_data.min_hmos_api_level,
             api_release_type: raw_data.api_release_type.clone(),
-            page_average_rating: raw_star.average_rating.parse().unwrap_or(0.0),
-            page_star_1_rating_count: raw_star.star_1_rating_count,
-            page_star_2_rating_count: raw_star.star_2_rating_count,
-            page_star_3_rating_count: raw_star.star_3_rating_count,
-            page_star_4_rating_count: raw_star.star_4_rating_count,
-            page_star_5_rating_count: raw_star.star_5_rating_count,
-            page_my_star_rating: raw_star.my_star_rating,
-            page_total_star_rating_count: raw_star.total_star_rating_count,
-            page_only_star_count: raw_star.only_star_count,
-            page_full_average_rating: raw_star.full_average_rating.parse().unwrap_or(0.0),
-            page_source_type: raw_star.source_type.clone(),
             created_at: Local::now(),
         }
     }
 }
 
-/// 5. app_raw 表
+impl AppRating {
+    pub fn from_raw_star(raw_data: &RawJsonData, raw_star: &RawStarData) -> Self {
+        Self {
+            id: 0,
+            app_id: raw_data.app_id.clone(),
+            average_rating: raw_star.average_rating.parse().unwrap_or(0.0),
+            star_1_rating_count: raw_star.star_1_rating_count,
+            star_2_rating_count: raw_star.star_2_rating_count,
+            star_3_rating_count: raw_star.star_3_rating_count,
+            star_4_rating_count: raw_star.star_4_rating_count,
+            star_5_rating_count: raw_star.star_5_rating_count,
+            my_star_rating: raw_star.my_star_rating,
+            total_star_rating_count: raw_star.total_star_rating_count,
+            only_star_count: raw_star.only_star_count,
+            full_average_rating: raw_star.full_average_rating.parse().unwrap_or(0.0),
+            source_type: raw_star.source_type.clone(),
+            created_at: Local::now(),
+        }
+    }
+}
+
+/// 6. app_raw 表
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppRaw {
     pub id: i64,

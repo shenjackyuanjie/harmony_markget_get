@@ -1,4 +1,4 @@
-use crate::datas::{AppInfo, AppMetric, AppRaw, RawJsonData, RawStarData};
+use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawStarData};
 
 use anyhow::Result;
 use colored::Colorize;
@@ -135,14 +135,9 @@ impl Database {
                 app_id, version, version_code, size_bytes, sha256, info_score,
                 info_rate_count, download_count, price, release_date, new_features,
                 upgrade_msg, target_sdk, minsdk, compile_sdk_version,
-                min_hmos_api_level, api_release_type, page_average_rating,
-                page_star_1_rating_count, page_star_2_rating_count, page_star_3_rating_count,
-                page_star_4_rating_count, page_star_5_rating_count, page_my_star_rating,
-                page_total_star_rating_count, page_only_star_count, page_full_average_rating,
-                page_source_type
+                min_hmos_api_level, api_release_type
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-                $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
             )
         "#;
 
@@ -164,17 +159,39 @@ impl Database {
             .bind(app_metric.compile_sdk_version)
             .bind(app_metric.min_hmos_api_level)
             .bind(&app_metric.api_release_type)
-            .bind(app_metric.page_average_rating)
-            .bind(app_metric.page_star_1_rating_count)
-            .bind(app_metric.page_star_2_rating_count)
-            .bind(app_metric.page_star_3_rating_count)
-            .bind(app_metric.page_star_4_rating_count)
-            .bind(app_metric.page_star_5_rating_count)
-            .bind(app_metric.page_my_star_rating)
-            .bind(app_metric.page_total_star_rating_count)
-            .bind(app_metric.page_only_star_count)
-            .bind(app_metric.page_full_average_rating)
-            .bind(&app_metric.page_source_type)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 插入应用评分到 app_rating 表
+    pub async fn insert_app_rating(&self, app_rating: &AppRating) -> Result<()> {
+        const QUERY: &str = r#"
+            INSERT INTO app_rating (
+                app_id, average_rating,
+                star_1_rating_count, star_2_rating_count, star_3_rating_count,
+                star_4_rating_count, star_5_rating_count, my_star_rating,
+                total_star_rating_count, only_star_count, full_average_rating,
+                source_type
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+            )
+        "#;
+
+        sqlx::query(QUERY)
+            .bind(&app_rating.app_id)
+            .bind(app_rating.average_rating)
+            .bind(app_rating.star_1_rating_count)
+            .bind(app_rating.star_2_rating_count)
+            .bind(app_rating.star_3_rating_count)
+            .bind(app_rating.star_4_rating_count)
+            .bind(app_rating.star_5_rating_count)
+            .bind(app_rating.my_star_rating)
+            .bind(app_rating.total_star_rating_count)
+            .bind(app_rating.only_star_count)
+            .bind(app_rating.full_average_rating)
+            .bind(&app_rating.source_type)
             .execute(&self.pool)
             .await?;
 
@@ -288,8 +305,12 @@ impl Database {
         self.insert_app_info(&raw_data.into()).await?;
 
         // 保存指标信息
-        let app_metric = AppMetric::from_raw_data_and_star(raw_data, raw_star);
+        let app_metric = AppMetric::from_raw_data(raw_data);
         self.insert_app_metric(&app_metric).await?;
+
+        // 保存评分信息
+        let app_rating = AppRating::from_raw_star(raw_data, raw_star);
+        self.insert_app_rating(&app_rating).await?;
 
         // 保存原始JSON数据
         self.insert_raw_data(&new_raw_json).await?;

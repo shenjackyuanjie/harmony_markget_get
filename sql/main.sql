@@ -70,19 +70,24 @@ CREATE TABLE app_metrics (
     compile_sdk_version INTEGER,                           -- 编译SDK版本（如 50100）
     min_hmos_api_level  INTEGER,                           -- 最低鸿蒙API等级（如 50001）
     api_release_type    TEXT,                              -- API发布类型（如 Release）
-    -- 新增的页面评分相关字段
-    page_average_rating         NUMERIC(3,1),              -- 页面平均评分
-    page_star_1_rating_count    INTEGER,                   -- 页面1星评分数量
-    page_star_2_rating_count    INTEGER,                   -- 页面2星评分数量
-    page_star_3_rating_count    INTEGER,                   -- 页面3星评分数量
-    page_star_4_rating_count    INTEGER,                   -- 页面4星评分数量
-    page_star_5_rating_count    INTEGER,                   -- 页面5星评分数量
-    page_my_star_rating         INTEGER,                   -- 页面我的评分
-    page_total_star_rating_count INTEGER,                  -- 页面总评分数量
-    page_only_star_count        INTEGER,                   -- 页面仅评分数量
-    page_full_average_rating    NUMERIC(3,1),              -- 页面完整平均评分
-    page_source_type            TEXT,                      -- 页面评分来源类型
     created_at          TIMESTAMPTZ DEFAULT now()            -- 创建时间
+);
+
+CREATE TABLE app_rating (
+    id                          BIGSERIAL PRIMARY KEY,             -- 主键ID
+    app_id                      TEXT REFERENCES app_info(app_id),  -- 对应 app_info 的 app_id
+    average_rating              NUMERIC(3,1),                      -- 平均评分
+    star_1_rating_count         INTEGER,                           -- 1星评分数量
+    star_2_rating_count         INTEGER,                           -- 2星评分数量
+    star_3_rating_count         INTEGER,                           -- 3星评分数量
+    star_4_rating_count         INTEGER,                           -- 4星评分数量
+    star_5_rating_count         INTEGER,                           -- 5星评分数量
+    my_star_rating              INTEGER,                           -- 我的评分
+    total_star_rating_count     INTEGER,                           -- 总评分数量
+    only_star_count             INTEGER,                           -- 仅评分数量
+    full_average_rating         NUMERIC(3,1),                      -- 完整平均评分
+    source_type                 TEXT,                              -- 评分来源类型
+    created_at                  TIMESTAMPTZ DEFAULT now()            -- 创建时间
 );
 
 CREATE OR REPLACE VIEW app_latest_info AS
@@ -104,24 +109,30 @@ SELECT
     am.compile_sdk_version,
     am.min_hmos_api_level,
     am.api_release_type,
-    am.page_average_rating,
-    am.page_star_1_rating_count,
-    am.page_star_2_rating_count,
-    am.page_star_3_rating_count,
-    am.page_star_4_rating_count,
-    am.page_star_5_rating_count,
-    am.page_my_star_rating,
-    am.page_total_star_rating_count,
-    am.page_only_star_count,
-    am.page_full_average_rating,
-    am.page_source_type,
-    am.created_at as metrics_created_at
+    ar.average_rating,
+    ar.star_1_rating_count,
+    ar.star_2_rating_count,
+    ar.star_3_rating_count,
+    ar.star_4_rating_count,
+    ar.star_5_rating_count,
+    ar.my_star_rating,
+    ar.total_star_rating_count,
+    ar.only_star_count,
+    ar.full_average_rating,
+    ar.source_type,
+    am.created_at as metrics_created_at,
+    ar.created_at as rating_created_at
 FROM app_info ai
 LEFT JOIN (
     SELECT DISTINCT ON (app_id) *
     FROM app_metrics
     ORDER BY app_id, release_date DESC NULLS LAST
-) am ON ai.app_id = am.app_id;
+) am ON ai.app_id = am.app_id
+LEFT JOIN (
+    SELECT DISTINCT ON (app_id) *
+    FROM app_rating
+    ORDER BY app_id, created_at DESC NULLS LAST
+) ar ON ai.app_id = ar.app_id;
 
 -- 创建索引以提高查询性能
 CREATE INDEX idx_app_info_app_id ON app_info(app_id);
@@ -129,3 +140,5 @@ CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
 CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);
 CREATE INDEX idx_app_metrics_download_count ON app_metrics(download_count);
+CREATE INDEX idx_app_rating_app_id ON app_rating(app_id);
+CREATE INDEX idx_app_rating_version ON app_rating(version);
