@@ -3,6 +3,7 @@ pub mod datas;
 pub mod db;
 pub mod server;
 pub mod sync;
+pub mod utils;
 
 fn main() -> anyhow::Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
