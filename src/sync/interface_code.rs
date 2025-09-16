@@ -58,28 +58,63 @@ impl CodeGenerater {
     pub async fn update_token(&self) -> String {
         println!("{}", "正在刷新 interface code".blue());
         const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
-        let unix_time: u64 = UNIX_EPOCH.elapsed().expect("wtf").as_millis() as u64;
-        let response = self
-            .client
-            .post(URL)
-            .header("Content-Type", "application/json")
-            .header(
-                "User-Agent",
-                format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
-            )
-            .header("Interface-Code", format!("null_{unix_time}"))
-            .send()
-            .await
-            .expect("faild to get token");
-        if !response.status().is_success() {
-            panic!("faild to get token");
-        }
-        let token = response
-            .text()
-            .await
-            .expect("faild to get token")
-            .trim_matches('\"')
-            .to_string();
+        const MAX_RETRIES: usize = 3;
+
+        let token = {
+            let mut retry_count = 0;
+            loop {
+                if retry_count >= MAX_RETRIES {
+                    panic!("达到最大重试次数，无法获取token");
+                }
+
+                let unix_time: u64 = UNIX_EPOCH.elapsed().expect("wtf").as_millis() as u64;
+                let response_result = self
+                    .client
+                    .post(URL)
+                    .header("Content-Type", "application/json")
+                    .header(
+                        "User-Agent",
+                        format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
+                    )
+                    .header("Interface-Code", format!("null_{unix_time}"))
+                    .send()
+                    .await;
+
+                match response_result {
+                    Ok(response) => {
+                        if !response.status().is_success() {
+                            println!("{}", format!("请求失败，状态码: {}，正在重试 ({}/{})",
+                                response.status(), retry_count + 1, MAX_RETRIES).yellow());
+                            retry_count += 1;
+                            tokio::time::sleep(Duration::from_secs(1)).await;
+                            continue;
+                        }
+
+                        match response.text().await {
+                            Ok(text) => {
+                                let token = text.trim_matches('\"').to_string();
+                                break token;
+                            }
+                            Err(e) => {
+                                println!("{}", format!("解析响应失败: {}，正在重试 ({}/{})",
+                                    e, retry_count + 1, MAX_RETRIES).yellow());
+                                retry_count += 1;
+                                tokio::time::sleep(Duration::from_secs(1)).await;
+                                continue;
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("{}", format!("发送请求失败: {}，正在重试 ({}/{})",
+                            e, retry_count + 1, MAX_RETRIES).yellow());
+                        retry_count += 1;
+                        tokio::time::sleep(Duration::from_secs(1)).await;
+                        continue;
+                    }
+                }
+            }
+        };
+
         unsafe {
             // WARN: unsafe here
             let this = (self as *const Self as *mut Self).as_mut().unwrap();
