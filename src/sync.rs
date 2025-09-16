@@ -46,7 +46,20 @@ pub async fn sync_all(
         );
 
         total_processed += 1;
-
+        if package.starts_with("com.atomicservice") {
+            println!(
+                "{}",
+                format!(
+                    "[{}/{}] 包 {} 是元服务,跳过",
+                    index + 1,
+                    packages.len(),
+                    package
+                )
+                .bright_black()
+            );
+            total_skipped += 1;
+            continue;
+        }
         match process_package(
             client,
             db,
