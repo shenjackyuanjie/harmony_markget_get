@@ -65,7 +65,56 @@ WHERE
     page_full_average_rating IS NOT NULL AND
     page_source_type IS NOT NULL;
 
--- 3. 从 app_metrics 表中删除评分相关字段
+-- 3. 首先删除依赖这些字段的视图
+DROP VIEW IF EXISTS app_latest_info;
+
+-- 4. 检查是否有其他对象依赖这些字段（安全措施）
+DO $$
+DECLARE
+    dependent_objects TEXT;
+BEGIN
+    -- 检查是否有其他对象依赖这些字段
+    SELECT string_agg(dependent_obj::TEXT, ', ') INTO dependent_objects
+    FROM (
+        SELECT DISTINCT 
+            '函数: ' || p.proname AS dependent_obj
+        FROM pg_depend d
+        JOIN pg_class c ON d.refobjid = c.oid
+        JOIN pg_attribute a ON (a.attrelid = c.oid AND a.attnum = d.refobjsubid)
+        JOIN pg_proc p ON d.objid = p.oid
+        WHERE c.relname = 'app_metrics'
+        AND a.attname LIKE 'page_%'
+        
+        UNION ALL
+        
+        SELECT DISTINCT 
+            '触发器: ' || tgname AS dependent_obj
+        FROM pg_depend d
+        JOIN pg_class c ON d.refobjid = c.oid
+        JOIN pg_attribute a ON (a.attrelid = c.oid AND a.attnum = d.refobjsubid)
+        JOIN pg_trigger t ON d.objid = t.oid
+        WHERE c.relname = 'app_metrics'
+        AND a.attname LIKE 'page_%'
+        
+        UNION ALL
+        
+        SELECT DISTINCT 
+            '视图: ' || v.viewname AS dependent_obj
+        FROM pg_depend d
+        JOIN pg_class c ON d.refobjid = c.oid
+        JOIN pg_attribute a ON (a.attrelid = c.oid AND a.attnum = d.refobjsubid)
+        JOIN pg_views v ON d.objid = (SELECT oid FROM pg_class WHERE relname = v.viewname)
+        WHERE c.relname = 'app_metrics'
+        AND a.attname LIKE 'page_%'
+        AND v.viewname != 'app_latest_info'
+    ) deps;
+    
+    IF dependent_objects IS NOT NULL THEN
+        RAISE EXCEPTION '发现依赖对象，无法删除字段。依赖对象: %', dependent_objects;
+    END IF;
+END $$;
+
+-- 5. 从 app_metrics 表中删除评分相关字段
 ALTER TABLE app_metrics
 DROP COLUMN page_average_rating,
 DROP COLUMN page_star_1_rating_count,
@@ -79,8 +128,7 @@ DROP COLUMN page_only_star_count,
 DROP COLUMN page_full_average_rating,
 DROP COLUMN page_source_type;
 
--- 4. 更新 app_latest_info 视图以反映表结构变化
-DROP VIEW IF EXISTS app_latest_info;
+-- 6. 重新创建 app_latest_info 视图以反映表结构变化
 
 CREATE OR REPLACE VIEW app_latest_info AS
 SELECT
@@ -126,15 +174,15 @@ LEFT JOIN (
     ORDER BY app_id, created_at DESC NULLS LAST
 ) ar ON ai.app_id = ar.app_id;
 
--- 5. 为 app_rating 表创建索引
+-- 7. 为 app_rating 表创建索引
 CREATE INDEX idx_app_rating_app_id ON app_rating(app_id);
 CREATE INDEX idx_app_rating_created_at ON app_rating(created_at);
 
--- 6. 迁移完成提示
+-- 8. 迁移完成提示
 COMMENT ON TABLE app_rating IS '应用评分表，包含用户评分相关信息';
 COMMENT ON TABLE app_metrics IS '应用指标表，包含版本、下载量等信息（已移除评分相关字段）';
 
--- 7. 输出迁移统计信息
+-- 9. 输出迁移统计信息
 DO $$
 DECLARE
     total_metrics_records BIGINT;

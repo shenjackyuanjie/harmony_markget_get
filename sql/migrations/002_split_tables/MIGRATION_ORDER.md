@@ -81,3 +81,32 @@
 - 创建时间：$(date)
 - 目标环境：生产环境
 - 执行要求：停机维护
+
+## 结果
+
+```
+NOTICE:  迁移完成统计:
+NOTICE:  - app_metrics 表总记录数: 34577
+NOTICE:  - 迁移到 app_rating 表的记录数: 11858
+NOTICE:  - 跳过迁移的记录数（包含NULL数据）: 22719
+DO
+
+
+NOTICE:  ✅ app_rating 表所有 NOT NULL 约束验证通过
+NOTICE:  ✅ 外键约束验证通过
+NOTICE:  ✅ 数据一致性验证通过
+NOTICE:  ✅ 索引验证通过
+NOTICE:  ✅ 视图验证通过
+NOTICE:  ========================================
+NOTICE:  ✅ 数据完整性验证完成
+NOTICE:  ========================================
+NOTICE:  表记录统计:
+NOTICE:  - app_info 表记录数: 9667
+NOTICE:  - app_metrics 表记录数: 34577
+NOTICE:  - app_rating 表记录数: 11858
+NOTICE:  ========================================
+NOTICE:  所有验证项目均已通过 ✅
+NOTICE:  迁移成功完成！
+NOTICE:  ========================================
+DO
+```
