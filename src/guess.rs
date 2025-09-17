@@ -1,3 +1,5 @@
+use colored::Colorize;
+
 pub mod config;
 pub mod datas;
 pub mod db;
@@ -23,7 +25,7 @@ async fn async_main() -> anyhow::Result<()> {
 
     // let range = 2915863..=6366961;
     // let range = 0..=6366961;
-    let range = 6366961..=9999999;
+    let range = 2915863..=9999999;
     let start = "C576588020785";
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
@@ -58,8 +60,11 @@ async fn async_main() -> anyhow::Result<()> {
                     };
 
                     if let Ok(inserted) = db.save_app_data(&data, star.as_ref()).await {
-                        if inserted {
-                            println!("已将 {app_id} 的数据插入数据库");
+                        if inserted.0 {
+                            println!("{}", "已将 {app_id} 的数据插入数据库".green());
+                        }
+                        if inserted.1 {
+                            println!("{}", format!("已将 {app_id} 的评分数据插入数据库").green());
                         }
                     } else {
                         println!("插入数据库时出错");

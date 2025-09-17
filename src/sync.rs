@@ -57,7 +57,7 @@ pub async fn sync_all(
         .await
         {
             Ok(inserted) => {
-                if inserted {
+                if inserted.0 || inserted.1 {
                     total_inserted += 1;
                     println!(
                         "{}",
@@ -134,7 +134,7 @@ pub async fn process_package(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<bool> {
+) -> anyhow::Result<(bool, bool)> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
@@ -182,7 +182,7 @@ pub async fn query_package_by_pkg_name(
     star_url: &str,
     package_name: &str,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, bool)> {
+) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
     let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
@@ -225,7 +225,7 @@ pub async fn query_package_by_app_id(
     star_url: &str,
     app_id: &str,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, bool)> {
+) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
     let data = get_pkg_data_by_app_id(client, data_url, app_id, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_id, e))?;

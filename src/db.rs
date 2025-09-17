@@ -438,12 +438,12 @@ impl Database {
         &self,
         raw_data: &RawJsonData,
         raw_star: Option<&RawRatingData>,
-    ) -> anyhow::Result<bool> {
+    ) -> anyhow::Result<(bool, bool)> {
         // 转换原始JSON数据用于比较
         let new_raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
         let new_json_value = &new_raw_json.raw_json_star;
 
-        // 检查是否与最后一条数据相同
+        let insert_data =         // 检查是否与最后一条数据相同
         if self
             .is_same_as_last_data(&raw_data.app_id, new_json_value)
             .await?
@@ -456,20 +456,22 @@ impl Database {
                 )
                 .bright_black()
             );
-            return Ok(false);
+            false
         }
-
+        else {
         // 转换并保存应用信息
         self.insert_app_info(&raw_data.into()).await?;
 
         // 保存指标信息
         let app_metric = AppMetric::from_raw_data(raw_data);
         self.insert_app_metric(&app_metric).await?;
-
+        true
+    };
         // 保存评分信息（如果有）
-        if let Some(raw_star) = raw_star {
+        let insert_rate = if let Some(raw_star) = raw_star {
             let app_rating = AppRating::from_raw_star(raw_data, raw_star);
             self.insert_app_rating(&app_rating).await?;
+            true
         } else {
             println!(
                 "{}",
@@ -479,7 +481,8 @@ impl Database {
                 )
                 .yellow()
             );
-        }
+            false
+        };
 
         // 保存原始JSON数据
         self.insert_raw_data(&new_raw_json).await?;
@@ -488,6 +491,6 @@ impl Database {
             "{}",
             format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
         );
-        Ok(true)
+        Ok((insert_data, insert_rate))
     }
 }

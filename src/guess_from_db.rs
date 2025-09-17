@@ -7,6 +7,8 @@ pub mod utils;
 
 use std::collections::BTreeSet;
 
+use colored::Colorize;
+
 fn main() -> anyhow::Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
@@ -125,9 +127,9 @@ async fn async_main() -> anyhow::Result<()> {
                         .await
                     {
                         Ok(data) => {
-                            let star_result =
+                            let star =
                                 crate::sync::get_star_by_app_id(&client, &api_url, &app_id).await;
-                            let star = match star_result {
+                            let star = match star {
                                 Ok(star_data) => Some(star_data),
                                 Err(e) => {
                                     eprintln!("获取应用 {} 的评分数据失败: {:#}", app_id, e);
@@ -137,8 +139,8 @@ async fn async_main() -> anyhow::Result<()> {
 
                             match db.save_app_data(&data, star.as_ref()).await {
                                 Ok(inserted) => {
-                                    if inserted {
-                                        println!("已将 {app_id} 的数据插入数据库");
+                                    if inserted.0 || inserted.1 {
+                                        println!("{}", format!("已将 {app_id} {} {} 的数据插入数据库", data.name, data.pkg_name).purple());
                                     }
                                 }
                                 Err(e) => {
@@ -146,13 +148,13 @@ async fn async_main() -> anyhow::Result<()> {
                                 }
                             }
                         }
-                        Err(e) => {
+                        Err(_) => {
                             // 静默处理404等错误，只打印其他错误
-                            if !e.to_string().contains("404")
-                                && !e.to_string().contains("not found")
-                            {
-                                eprintln!("获取应用 {} 数据失败: {:#}", app_id, e);
-                            }
+                            // if !e.to_string().contains("404")
+                            //     && !e.to_string().contains("not found")
+                            // {
+                            //     eprintln!("获取应用 {} 数据失败: {:#}", app_id, e);
+                            // }
                         }
                     }
                 });
