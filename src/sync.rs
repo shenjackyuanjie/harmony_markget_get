@@ -34,6 +34,7 @@ pub async fn sync_all(
     );
 
     // 统计变量
+    let start_time = std::time::Instant::now();
     let mut total_processed = 0;
     let mut total_inserted = 0;
     let mut total_skipped = 0;
@@ -118,6 +119,7 @@ pub async fn sync_all(
 
     println!("{}", "所有包处理完成！".green());
 
+    let cost_time = start_time.elapsed();
     // 打印统计信息
     println!();
     println!("{}", "=".repeat(50).cyan());
@@ -130,6 +132,7 @@ pub async fn sync_all(
         total_skipped.to_string().bright_black()
     );
     println!("处理失败包数: {}", total_failed.to_string().red());
+    println!("处理耗时: {:?}", cost_time);
     println!("{}", "=".repeat(50).cyan());
 
     Ok(())
