@@ -140,7 +140,14 @@ async fn async_main() -> anyhow::Result<()> {
                             match db.save_app_data(&data, star.as_ref()).await {
                                 Ok(inserted) => {
                                     if inserted.0 || inserted.1 {
-                                        println!("{}", format!("已将 {app_id} {} {} 的数据插入数据库", data.name, data.pkg_name).purple());
+                                        println!(
+                                            "{}",
+                                            format!(
+                                                "已将 {app_id} {} {} 的数据插入数据库",
+                                                data.name, data.pkg_name
+                                            )
+                                            .purple()
+                                        );
                                     }
                                 }
                                 Err(e) => {
