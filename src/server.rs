@@ -85,7 +85,29 @@ async fn query_app_id(
     State(state): State<Arc<QueryState>>,
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
-
+    println!("正在尝试获取 appid {app_id} 的信息");
+    match crate::sync::query_package_by_pkg_name(
+        &state.client,
+        &state.db,
+        state.cfg.api_info_url(),
+        state.cfg.api_detail_url(),
+        &app_id,
+        state.cfg.locale(),
+    )
+    .await
+    {
+        Ok((data, star, is_new)) => {
+            let metric = AppMetric::from_raw_data(&data);
+            let rating = star
+                .as_ref()
+                .map(|star_data| AppRating::from_raw_star(&data, star_data));
+            let info: AppInfo = (&data).into();
+            Json(
+                serde_json::json!({"info": info, "metric": metric, "rating": rating, "is_new": is_new}),
+            )
+        }
+        Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
+    }
 }
 
 async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {

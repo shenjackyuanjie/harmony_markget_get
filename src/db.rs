@@ -21,7 +21,7 @@ pub struct PaginatedAppInfo {
 
 #[derive(Debug, Clone)]
 pub struct Database {
-    pool: PgPool,
+    pub pool: PgPool,
 }
 
 impl Database {
@@ -285,6 +285,20 @@ impl Database {
             .collect();
 
         Ok(pkg_names)
+    }
+
+    /// 获取数据库中所有的 app_id
+    pub async fn get_all_app_ids(&self) -> Result<Vec<String>> {
+        const QUERY: &str = "SELECT DISTINCT app_id FROM app_info WHERE app_id IS NOT NULL";
+
+        let rows = sqlx::query(QUERY).fetch_all(&self.pool).await?;
+
+        let app_ids = rows
+            .into_iter()
+            .map(|row| row.get::<String, _>("app_id"))
+            .collect();
+
+        Ok(app_ids)
     }
 
     /// 分页查询 app_info 数据，按照创建时间排序

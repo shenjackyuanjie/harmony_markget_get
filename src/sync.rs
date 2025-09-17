@@ -217,6 +217,50 @@ pub async fn query_package_by_pkg_name(
     Ok((data, star, is_new))
 }
 
+
+/// 查询单个应用包
+pub async fn query_package_by_app_id(
+    client: &reqwest::Client,
+    db: &Database,
+    data_url: &str,
+    star_url: &str,
+    app_id: &str,
+    locale: &str,
+) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, bool)> {
+    let data = get_pkg_data_by_app_id(client, data_url, app_id, locale)
+        .await
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_id, e))?;
+
+    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+    let star = match star_result {
+        Ok(star_data) => Some(star_data),
+        Err(e) => {
+            eprintln!(
+                "{}",
+                format!("获取包 {} 的评分数据失败: {:#}", data.name, e).yellow()
+            );
+            None
+        }
+    };
+
+    println!(
+        "{}",
+        format!(
+            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
+            data.name, data.app_id, data.name
+        )
+        .blue()
+    );
+
+    // 保存数据到数据库（包含重复检查）
+    let is_new = db
+        .save_app_data(&data, star.as_ref())
+        .await
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", data.name, e))?;
+
+    Ok((data, star, is_new))
+}
+
 pub async fn get_star_by_app_id(
     client: &reqwest::Client,
     api_url: &str,

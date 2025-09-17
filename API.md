@@ -17,7 +17,7 @@
 
 查询指定包名的应用详细信息，包括基本信息、指标数据和评分数据。
 
-**端点**: `GET /query/{pkg_name}` 或 `POST /query/{pkg_name}`
+**端点**: `GET /query/pkg_name/{pkg_name}` 或 `POST /query/pkg_name/{pkg_name}`
 
 **路径参数**:
 - `pkg_name` (string, required): 应用包名，如 `com.huawei.hmsapp.appgallery`

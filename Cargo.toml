@@ -8,6 +8,10 @@ default-run = "get_market"
 name = "guess_market"
 path = "src/guess.rs"
 
+[[bin]]
+name = "guess_from_db"
+path = "src/guess_from_db.rs"
+
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.8.4", features = [
