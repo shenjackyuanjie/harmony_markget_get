@@ -1,10 +1,23 @@
 use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
 
+use std::ops::Range;
+
 use anyhow::Result;
 use colored::Colorize;
 use serde_json::Value;
 use sqlx::Row;
 use sqlx::postgres::{PgPool, PgPoolOptions};
+use serde::{Serialize, Deserialize};
+
+/// 分页查询结果
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PaginatedAppInfo {
+    pub data: Vec<AppInfo>,
+    pub total_count: u32,
+    pub page: u32,
+    pub page_size: u32,
+    pub total_pages: u32,
+}
 
 #[derive(Debug, Clone)]
 pub struct Database {
@@ -272,6 +285,130 @@ impl Database {
             .collect();
 
         Ok(pkg_names)
+    }
+
+    /// 分页查询 app_info 数据，按照创建时间排序
+    ///
+    /// # 参数
+    /// - `range`: 范围参数，例如 0..10 表示获取前10条记录
+    ///
+    /// # 示例
+    /// ```rust
+    /// let db = Database::new("postgres://...", 5).await?;
+    /// let apps = db.get_app_info_paginated(0..10).await?;
+    /// println!("获取到 {} 条应用信息", apps.len());
+    /// ```
+    pub async fn get_app_info_paginated(&self, range: Range<u32>) -> Result<Vec<AppInfo>> {
+        const QUERY: &str = r#"
+            SELECT ai.*
+            FROM app_info ai
+            JOIN app_raw ar ON ai.app_id = ar.app_id
+            ORDER BY ar.created_at DESC
+            LIMIT $1 OFFSET $2
+        "#;
+
+        let rows = sqlx::query(QUERY)
+            .bind((range.end - range.start) as i64) // LIMIT
+            .bind(range.start as i64)             // OFFSET
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut app_infos = Vec::new();
+        for row in rows {
+            let app_info = AppInfo {
+                app_id: row.get("app_id"),
+                alliance_app_id: row.get("alliance_app_id"),
+                name: row.get("name"),
+                pkg_name: row.get("pkg_name"),
+                dev_id: row.get("dev_id"),
+                developer_name: row.get("developer_name"),
+                dev_en_name: row.get("dev_en_name"),
+                supplier: row.get("supplier"),
+                kind_id: row.get("kind_id"),
+                kind_name: row.get("kind_name"),
+                tag_name: row.get("tag_name"),
+                kind_type_id: row.get("kind_type_id"),
+                kind_type_name: row.get("kind_type_name"),
+                icon_url: row.get("icon_url"),
+                brief_desc: row.get("brief_desc"),
+                description: row.get("description"),
+                privacy_url: row.get("privacy_url"),
+                ctype: row.get("ctype"),
+                detail_id: row.get("detail_id"),
+                app_level: row.get("app_level"),
+                jocat_id: row.get("jocat_id"),
+                iap: row.get("iap"),
+                hms: row.get("hms"),
+                tariff_type: row.get("tariff_type"),
+                packing_type: row.get("packing_type"),
+                order_app: row.get("order_app"),
+                denpend_gms: row.get("denpend_gms"),
+                denpend_hms: row.get("denpend_hms"),
+                force_update: row.get("force_update"),
+                img_tag: row.get("img_tag"),
+                is_pay: row.get("is_pay"),
+                is_disciplined: row.get("is_disciplined"),
+                is_shelves: row.get("is_shelves"),
+                submit_type: row.get("submit_type"),
+                delete_archive: row.get("delete_archive"),
+                charging: row.get("charging"),
+                button_grey: row.get("button_grey"),
+                app_gift: row.get("app_gift"),
+                free_days: row.get("free_days"),
+                pay_install_type: row.get("pay_install_type"),
+            };
+            app_infos.push(app_info);
+        }
+
+        Ok(app_infos)
+    }
+
+    /// 分页查询 app_info 数据（增强版），返回分页信息和数据
+    ///
+    /// # 参数
+    /// - `page`: 页码（从1开始）
+    /// - `page_size`: 每页大小
+    ///
+    /// # 示例
+    /// ```rust
+    /// let db = Database::new("postgres://...", 5).await?;
+    /// let result = db.get_app_info_paginated_enhanced(1, 10).await?;
+    /// println!("第 {} 页，共 {} 页，总计 {} 条记录",
+    ///     result.page, result.total_pages, result.total_count);
+    /// ```
+    pub async fn get_app_info_paginated_enhanced(&self, page: u32, page_size: u32) -> Result<PaginatedAppInfo> {
+        let total_count = self.get_app_info_count().await?;
+        let total_pages = if page_size == 0 { 0 } else { (total_count as f32 / page_size as f32).ceil() as u32 };
+        let offset = (page - 1) * page_size;
+
+        let data = self.get_app_info_paginated(offset..(offset + page_size)).await?;
+
+        Ok(PaginatedAppInfo {
+            data,
+            total_count,
+            page,
+            page_size,
+            total_pages,
+        })
+    }
+
+    /// 获取 app_info 表中的总记录数
+    ///
+    /// # 示例
+    /// ```rust
+    /// let db = Database::new("postgres://...", 5).await?;
+    /// let count = db.get_app_info_count().await?;
+    /// println!("总共有 {} 条应用记录", count);
+    /// ```
+    pub async fn get_app_info_count(&self) -> Result<u32> {
+        const QUERY: &str = "SELECT COUNT(*) FROM app_info";
+
+        let count: i64 = sqlx::query(QUERY)
+            .fetch_one(&self.pool)
+            .await?
+            .get(0);
+
+        Ok(count as u32)
     }
 
     /// 保存应用数据到数据库

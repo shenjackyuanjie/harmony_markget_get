@@ -57,7 +57,7 @@ async fn query_pkg(
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
     println!("正在尝试获取 {pkg_name} 的信息");
-    match crate::sync::query_package(
+    match crate::sync::query_package_by_pkg_name(
         &state.client,
         &state.db,
         state.cfg.api_info_url(),
@@ -81,6 +81,13 @@ async fn query_pkg(
     }
 }
 
+async fn query_app_id(
+    State(state): State<Arc<QueryState>>,
+    Path(app_id): Path<String>,
+) -> impl IntoResponse {
+
+}
+
 async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
@@ -91,7 +98,8 @@ async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
         cfg: config.clone(),
     });
     let router = axum::Router::new()
-        .route("/query/{pkg_name}", get(query_pkg).post(query_pkg))
+        .route("/query/pkg_name/{pkg_name}", get(query_pkg).post(query_pkg))
+        .route("/query/app_id/{app_id}", get(query_app_id).post(query_app_id))
         .with_state(query_state);
 
     let listenr = tokio::net::TcpListener::bind((config.serve_url(), config.serve_port())).await?;

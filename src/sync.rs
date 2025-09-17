@@ -175,7 +175,7 @@ pub async fn process_package(
 }
 
 /// 查询单个应用包
-pub async fn query_package(
+pub async fn query_package_by_pkg_name(
     client: &reqwest::Client,
     db: &Database,
     data_url: &str,
