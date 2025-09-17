@@ -203,7 +203,10 @@ impl From<&RawJsonData> for AppInfo {
             supplier: sanitize_utf8_string(&value.supplier).into_owned(),
             kind_id: value.kind_id.parse().unwrap_or(0),
             kind_name: sanitize_utf8_string(&value.kind_name).into_owned(),
-            tag_name: value.tag_name.as_ref().map(|s| sanitize_utf8_string(s).into_owned()),
+            tag_name: value
+                .tag_name
+                .as_ref()
+                .map(|s| sanitize_utf8_string(s).into_owned()),
             kind_type_id: value.kind_type_id.parse().unwrap_or(0),
             kind_type_name: sanitize_utf8_string(&value.kind_type_name).into_owned(),
             icon_url: sanitize_utf8_string(&value.icon_url).into_owned(),

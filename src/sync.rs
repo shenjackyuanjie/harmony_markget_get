@@ -46,20 +46,6 @@ pub async fn sync_all(
         );
 
         total_processed += 1;
-        if package.starts_with("com.atomicservice") {
-            println!(
-                "{}",
-                format!(
-                    "[{}/{}] 包 {} 是元服务,跳过",
-                    index + 1,
-                    packages.len(),
-                    package
-                )
-                .bright_black()
-            );
-            total_skipped += 1;
-            continue;
-        }
         match process_package(
             client,
             db,
@@ -153,23 +139,28 @@ pub async fn process_package(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
 
-    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
-    let star = match star_result {
-        Ok(star_data) => Some(star_data),
-        Err(e) => {
-            eprintln!(
-                "{}",
-                format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
-            );
-            None
+    let star = if !package_name.starts_with("com.atomicservice") {
+        let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+        match star_result {
+            Ok(star_data) => Some(star_data),
+            Err(e) => {
+                eprintln!(
+                    "{}",
+                    format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
+                );
+                None
+            }
         }
+    } else {
+        println!("跳过元数据 {package_name} 的评分数据");
+        None
     };
 
     println!(
         "{}",
         format!(
-            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-            package_name, data.app_id, data.name
+            "获取到包 {package_name} 的数据,应用ID: {}，应用名称: {}",
+            , data.app_id, data.name
         )
         .blue()
     );

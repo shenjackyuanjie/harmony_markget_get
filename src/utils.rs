@@ -15,10 +15,12 @@ pub fn sanitize_utf8_string(s: &str) -> Cow<'_, str> {
         let cleaned: String = s
             .chars()
             .filter(|&c| c != '\0') // 移除空字节
-            .map(|c| if c.is_control() && c != '\n' && c != '\r' && c != '\t' {
-                ' ' // 替换控制字符为空格（除了常见的空白字符）
-            } else {
-                c
+            .map(|c| {
+                if c.is_control() && c != '\n' && c != '\r' && c != '\t' {
+                    ' ' // 替换控制字符为空格（除了常见的空白字符）
+                } else {
+                    c
+                }
             })
             .collect();
 
