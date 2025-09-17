@@ -160,7 +160,7 @@ pub async fn process_package(
         "{}",
         format!(
             "获取到包 {package_name} 的数据,应用ID: {}，应用名称: {}",
-            , data.app_id, data.name
+            data.app_id, data.name
         )
         .blue()
     );
