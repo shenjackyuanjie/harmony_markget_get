@@ -61,10 +61,13 @@ async fn async_main() -> anyhow::Result<()> {
 
                     if let Ok(inserted) = db.save_app_data(&data, star.as_ref()).await {
                         if inserted.0 {
-                            println!("{}", "已将 {app_id} 的数据插入数据库".green());
+                            println!("{}", format!("已将 {app_id} 的数据插入数据库").on_green());
                         }
                         if inserted.1 {
-                            println!("{}", format!("已将 {app_id} 的评分数据插入数据库").green());
+                            println!(
+                                "{}",
+                                format!("已将 {app_id} 的评分数据插入数据库").on_green()
+                            );
                         }
                     } else {
                         println!("插入数据库时出错");

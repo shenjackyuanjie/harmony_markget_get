@@ -58,6 +58,15 @@ pub async fn sync_all(
         {
             Ok(inserted) => {
                 if inserted.0 || inserted.1 {
+                    if inserted.0 {
+                        println!("{}", format!("已将 {package} 的数据插入数据库").on_green());
+                    }
+                    if inserted.1 {
+                        println!(
+                            "{}",
+                            format!("已将 {package} 的评分数据插入数据库").on_green()
+                        );
+                    }
                     total_inserted += 1;
                     println!(
                         "{}",
