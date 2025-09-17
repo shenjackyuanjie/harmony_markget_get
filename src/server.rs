@@ -121,7 +121,10 @@ async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
     });
     let router = axum::Router::new()
         .route("/query/pkg_name/{pkg_name}", get(query_pkg).post(query_pkg))
-        .route("/query/app_id/{app_id}", get(query_app_id).post(query_app_id))
+        .route(
+            "/query/app_id/{app_id}",
+            get(query_app_id).post(query_app_id),
+        )
         .with_state(query_state);
 
     let listenr = tokio::net::TcpListener::bind((config.serve_url(), config.serve_port())).await?;

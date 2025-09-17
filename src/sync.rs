@@ -217,7 +217,6 @@ pub async fn query_package_by_pkg_name(
     Ok((data, star, is_new))
 }
 
-
 /// 查询单个应用包
 pub async fn query_package_by_app_id(
     client: &reqwest::Client,

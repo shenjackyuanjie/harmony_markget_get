@@ -4,10 +4,10 @@ use std::ops::Range;
 
 use anyhow::Result;
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::Row;
 use sqlx::postgres::{PgPool, PgPoolOptions};
-use serde::{Serialize, Deserialize};
 
 /// 分页查询结果
 #[derive(Debug, Deserialize, Serialize)]
@@ -323,7 +323,7 @@ impl Database {
 
         let rows = sqlx::query(QUERY)
             .bind((range.end - range.start) as i64) // LIMIT
-            .bind(range.start as i64)             // OFFSET
+            .bind(range.start as i64) // OFFSET
             .fetch_all(&self.pool)
             .await?;
 
@@ -390,12 +390,22 @@ impl Database {
     /// println!("第 {} 页，共 {} 页，总计 {} 条记录",
     ///     result.page, result.total_pages, result.total_count);
     /// ```
-    pub async fn get_app_info_paginated_enhanced(&self, page: u32, page_size: u32) -> Result<PaginatedAppInfo> {
+    pub async fn get_app_info_paginated_enhanced(
+        &self,
+        page: u32,
+        page_size: u32,
+    ) -> Result<PaginatedAppInfo> {
         let total_count = self.get_app_info_count().await?;
-        let total_pages = if page_size == 0 { 0 } else { (total_count as f32 / page_size as f32).ceil() as u32 };
+        let total_pages = if page_size == 0 {
+            0
+        } else {
+            (total_count as f32 / page_size as f32).ceil() as u32
+        };
         let offset = (page - 1) * page_size;
 
-        let data = self.get_app_info_paginated(offset..(offset + page_size)).await?;
+        let data = self
+            .get_app_info_paginated(offset..(offset + page_size))
+            .await?;
 
         Ok(PaginatedAppInfo {
             data,
@@ -417,10 +427,7 @@ impl Database {
     pub async fn get_app_info_count(&self) -> Result<u32> {
         const QUERY: &str = "SELECT COUNT(*) FROM app_info";
 
-        let count: i64 = sqlx::query(QUERY)
-            .fetch_one(&self.pool)
-            .await?
-            .get(0);
+        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
 
         Ok(count as u32)
     }
