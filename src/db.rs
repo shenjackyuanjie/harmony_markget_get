@@ -531,8 +531,9 @@ impl Database {
         if insert_data || insert_rate {
             println!(
                 "{}",
-            format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
-        );
+                format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
+            );
+        }
         Ok((insert_data, insert_rate))
     }
 }
