@@ -129,7 +129,8 @@ async fn async_main() -> anyhow::Result<()> {
                     {
                         Ok(data) => {
                             let star =
-                                crate::sync::get_star_by_app_id(&client, &star_url, &data.app_id).await;
+                                crate::sync::get_star_by_app_id(&client, &star_url, &data.app_id)
+                                    .await;
                             let star = match star {
                                 Ok(star_data) => Some(star_data),
                                 Err(e) => {

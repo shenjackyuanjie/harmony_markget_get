@@ -525,10 +525,9 @@ impl Database {
             false
         };
 
-        // 保存原始JSON数据
-        self.insert_raw_data(&raw_json).await?;
-
         if insert_data || insert_rate {
+            // 保存原始JSON数据
+            self.insert_raw_data(&raw_json).await?;
             println!(
                 "{}",
                 format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
