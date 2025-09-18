@@ -124,16 +124,25 @@ async fn app_list_info(State(state): State<Arc<QueryState>>) -> impl IntoRespons
 
 async fn app_list_paged(
     State(state): State<Arc<QueryState>>,
-    Path(app_id): Path<String>,
+    Path(page): Path<String>,
 ) -> impl IntoResponse {
-    if let Ok(app_count) = state.db.count_apps().await
-        && let Ok(atomic_services_count) = state.db.count_atomic_services().await
-    {
-        Json(
-            serde_json::json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
-        )
-    } else {
-        Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
+    const PAGE_BATCH: u32 = 100;
+    match page.parse::<u32>() {
+        Ok(page) => {
+            match state
+                .db
+                .get_app_info_paginated_enhanced(page, PAGE_BATCH)
+                .await
+            {
+                Ok(apps) => Json(serde_json::to_value(apps).unwrap()),
+                Err(_) => {
+                    Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
+                }
+            }
+        }
+        Err(e) => {
+            Json(serde_json::json!({"data": "faild to parse page", "error": format!("{}", e)}))
+        }
     }
 }
 

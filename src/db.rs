@@ -485,7 +485,7 @@ impl Database {
     /// 获取数据库内应用数量
     pub async fn count_apps(&self) -> Result<u32> {
         const QUERY: &str = "SELECT COUNT(*) FROM app_info
-        WHERE pkg_name NOT LIKE 'com.atomicservices.%';";
+        WHERE pkg_name NOT LIKE 'com.atomicservice.%';";
 
         let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
 
@@ -495,7 +495,7 @@ impl Database {
     /// 获取数据库内元应用数量
     pub async fn count_atomic_services(&self) -> Result<u32> {
         const QUERY: &str = "SELECT count(*) FROM app_info
-        WHERE pkg_name LIKE 'com.atomicservices.%';";
+        WHERE pkg_name LIKE 'com.atomicservice.%';";
 
         let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
 
