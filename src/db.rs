@@ -1,4 +1,5 @@
 use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
+use chrono::{DateTime, Local};
 
 use std::ops::Range;
 
@@ -46,11 +47,11 @@ impl Database {
                 tariff_type, packing_type, order_app, denpend_gms, denpend_hms,
                 force_update, img_tag, is_pay, is_disciplined, is_shelves,
                 submit_type, delete_archive, charging, button_grey, app_gift,
-                free_days, pay_install_type
+                free_days, pay_install_type, created_at
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
                 $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
-                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
+                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
             )
             ON CONFLICT (app_id) DO UPDATE SET
                 alliance_app_id = EXCLUDED.alliance_app_id,
@@ -135,6 +136,7 @@ impl Database {
             .bind(app_info.app_gift)
             .bind(app_info.free_days)
             .bind(app_info.pay_install_type)
+            .bind(app_info.created_at)
             .execute(&self.pool)
             .await?;
 
@@ -259,6 +261,28 @@ impl Database {
             Some(row) => {
                 let raw_json: Value = row.get("raw_json_data");
                 Ok(Some(raw_json))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// 获取指定应用的 created_at 时间
+    pub async fn get_app_created_at(&self, app_id: &str) -> Result<Option<DateTime<Local>>> {
+        const QUERY: &str = r#"
+            SELECT created_at
+            FROM app_info
+            WHERE app_id = $1
+        "#;
+
+        let result = sqlx::query(QUERY)
+            .bind(app_id)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        match result {
+            Some(row) => {
+                let created_at: DateTime<Local> = row.get("created_at");
+                Ok(Some(created_at))
             }
             None => Ok(None),
         }
@@ -402,6 +426,7 @@ impl Database {
                 app_gift: row.get("app_gift"),
                 free_days: row.get("free_days"),
                 pay_install_type: row.get("pay_install_type"),
+                created_at: row.get("created_at"),
             };
             app_infos.push(app_info);
         }
@@ -487,8 +512,17 @@ impl Database {
             );
             false
         } else {
+            // 检查应用是否已存在，如果存在则保留原有的 created_at 时间
+            let existing_created_at = self.get_app_created_at(&raw_data.app_id).await?;
+            let mut app_info: AppInfo = raw_data.into();
+
+            // 如果应用已存在，使用原有的 created_at 时间
+            if let Some(created_at) = existing_created_at {
+                app_info.created_at = created_at;
+            }
+
             // 转换并保存应用信息
-            self.insert_app_info(&raw_data.into()).await?;
+            self.insert_app_info(&app_info).await?;
 
             // 保存指标信息
             let app_metric = AppMetric::from_raw_data(raw_data);
