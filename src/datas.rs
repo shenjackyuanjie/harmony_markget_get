@@ -188,6 +188,7 @@ pub struct AppInfo {
     pub app_gift: bool,
     pub free_days: i32,
     pub pay_install_type: i32,
+    pub created_at: DateTime<Local>,
 }
 
 impl From<&RawJsonData> for AppInfo {
@@ -236,6 +237,7 @@ impl From<&RawJsonData> for AppInfo {
             app_gift: value.app_gift != 0,
             free_days: value.free_days,
             pay_install_type: value.pay_install_type,
+            created_at: Local::now(),
         }
     }
 }
