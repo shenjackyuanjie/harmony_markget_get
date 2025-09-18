@@ -110,6 +110,33 @@ async fn query_app_id(
     }
 }
 
+async fn app_list_info(State(state): State<Arc<QueryState>>) -> impl IntoResponse {
+    if let Ok(app_count) = state.db.count_apps().await
+        && let Ok(atomic_services_count) = state.db.count_atomic_services().await
+    {
+        Json(
+            serde_json::json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
+        )
+    } else {
+        Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
+    }
+}
+
+async fn app_list_paged(
+    State(state): State<Arc<QueryState>>,
+    Path(app_id): Path<String>,
+) -> impl IntoResponse {
+    if let Ok(app_count) = state.db.count_apps().await
+        && let Ok(atomic_services_count) = state.db.count_atomic_services().await
+    {
+        Json(
+            serde_json::json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
+        )
+    } else {
+        Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
+    }
+}
+
 async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
@@ -124,6 +151,11 @@ async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
         .route(
             "/query/app_id/{app_id}",
             get(query_app_id).post(query_app_id),
+        )
+        .route("/app_list/info", get(app_list_info).post(app_list_info))
+        .route(
+            "/app_list/{page_count}",
+            get(app_list_paged).post(app_list_paged),
         )
         .with_state(query_state);
 

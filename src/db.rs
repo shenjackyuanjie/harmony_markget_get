@@ -473,6 +473,35 @@ impl Database {
         })
     }
 
+    /// 获取数据库内所有应用数量
+    pub async fn count_all_apps(&self) -> Result<u32> {
+        const QUERY: &str = "SELECT COUNT(*) FROM app_info";
+
+        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
+
+        Ok(count as u32)
+    }
+
+    /// 获取数据库内应用数量
+    pub async fn count_apps(&self) -> Result<u32> {
+        const QUERY: &str = "SELECT COUNT(*) FROM app_info
+        WHERE pkg_name NOT LIKE 'com.atomicservices.%';";
+
+        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
+
+        Ok(count as u32)
+    }
+
+    /// 获取数据库内元应用数量
+    pub async fn count_atomic_services(&self) -> Result<u32> {
+        const QUERY: &str = "SELECT count(*) FROM app_info
+        WHERE pkg_name LIKE 'com.atomicservices.%';";
+
+        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
+
+        Ok(count as u32)
+    }
+
     /// 获取 app_info 表中的总记录数
     ///
     /// # 示例
