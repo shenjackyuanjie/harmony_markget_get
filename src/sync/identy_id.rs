@@ -26,7 +26,7 @@ impl IdentityId {
         let use_count = self
             .use_count
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        if use_count > 100 {
+        if use_count > 1000 {
             // update
             let new_id = uuid::Uuid::new_v4();
             self.use_count
