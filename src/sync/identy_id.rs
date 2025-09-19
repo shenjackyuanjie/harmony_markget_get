@@ -4,6 +4,8 @@ use std::sync::{LazyLock, atomic::AtomicU32};
 
 use colored::Colorize;
 
+use crate::sync::interface_code;
+
 pub static GLOBAL_IDENTITY_ID: LazyLock<IdentityId> = LazyLock::new(|| {
     // 初始化全局 identity id
     IdentityId {
@@ -34,6 +36,12 @@ impl IdentityId {
                 this.id = new_id;
             }
             println!("{} {}", "刷新 identity_id".on_blue(), format!("{:016x}", self.id).to_lowercase().replace("-", ""));
+            tokio::task::block_in_place(|| {
+                let rt = tokio::runtime::Runtime::new().unwrap();
+                rt.block_on(async {
+                    interface_code::GLOBAL_CODE.update_token().await;
+                });
+            });
         }
         format!("{:016x}", self.id).to_lowercase().replace("-", "")
     }
