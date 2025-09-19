@@ -398,7 +398,9 @@ pub async fn get_pkg_data(
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
 
-    let data = response.json::<RawJsonData>().await?;
+    let data = response.json::<serde_json::Value>().await?;
 
-    Ok(data)
+    let parsed_data = serde_json::from_value(data.clone()).map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
+
+    Ok(parsed_data)
 }

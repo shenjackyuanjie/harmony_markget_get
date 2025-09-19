@@ -20,7 +20,9 @@ pub async fn worker(
     config: Config,
     mut waiter: tokio::sync::oneshot::Receiver<()>,
 ) -> anyhow::Result<()> {
+    println!("connecting to db");
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
+    println!("connected to db");
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
