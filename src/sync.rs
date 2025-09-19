@@ -289,7 +289,7 @@ pub async fn get_star_by_app_id(
         .header("Content-Type", "application/json")
         .header(
             "User-Agent",
-            format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
+            format!("get_market/{}", env!("CARGO_PKG_VERSION")),
         )
         .header(
             "Interface-Code",
@@ -378,7 +378,7 @@ pub async fn get_pkg_data(
         .header("Content-Type", "application/json")
         .header(
             "User-Agent",
-            format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
+            format!("get_market/{}", env!("CARGO_PKG_VERSION")),
         )
         .json(&body)
         .send()
