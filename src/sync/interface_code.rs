@@ -8,6 +8,8 @@ use std::{
 use colored::Colorize;
 use reqwest::Client;
 
+use crate::sync::identy_id;
+
 pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     let now = std::time::Instant::now();
     let client = reqwest::ClientBuilder::new()
@@ -77,6 +79,10 @@ impl CodeGenerater {
                         format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
                     )
                     .header("Interface-Code", format!("null_{unix_time}"))
+                    .header(
+                        "identity-id",
+                        identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
+                    )
                     .send()
                     .await;
 

@@ -8,6 +8,7 @@ use crate::{
     db::Database,
 };
 
+pub mod identy_id;
 pub mod interface_code;
 
 pub async fn sync_all(
@@ -295,6 +296,10 @@ pub async fn get_star_by_app_id(
             "Interface-Code",
             interface_code::GLOBAL_CODE.get_full_token().await,
         )
+        .header(
+            "identity-id",
+            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
+        )
         .json(&body)
         .send()
         .await?;
@@ -380,6 +385,14 @@ pub async fn get_pkg_data(
             "User-Agent",
             format!("get_market/{}", env!("CARGO_PKG_VERSION")),
         )
+        .header(
+            "identity-id",
+            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
+        )
+        .header(
+            "interface-code",
+            interface_code::GLOBAL_CODE.get_full_token().await,
+        )
         .json(&body)
         .send()
         .await?;
@@ -400,7 +413,8 @@ pub async fn get_pkg_data(
 
     let data = response.json::<serde_json::Value>().await?;
 
-    let parsed_data = serde_json::from_value(data.clone()).map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
+    let parsed_data = serde_json::from_value(data.clone())
+        .map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
 
     Ok(parsed_data)
 }

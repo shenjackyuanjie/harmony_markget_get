@@ -40,3 +40,4 @@ sqlx = { version = "0.8.6", features = [
 ] }
 tokio = { version = "1.47", features = ["full"] }
 toml = "0.9"
+uuid = { version = "1.18.1", features = ["v4", "rng-rand"] }
