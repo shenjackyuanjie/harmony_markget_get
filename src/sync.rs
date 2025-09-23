@@ -152,20 +152,12 @@ pub async fn sync_package(
         match star_result {
             Ok(star_data) => Some(star_data),
             Err(e) => {
-                event!(
-                    Level::WARN,
-                    "获取包 {} 的评分数据失败: {}",
-                    package_name,
-                    e,
-                );
+                event!(Level::WARN, "获取包 {} 的评分数据失败: {}", package_name, e,);
                 None
             }
         }
     } else {
-        event!(
-                    Level::INFO,
-                    "跳过元数据 {package_name} 的评分数据"
-                );
+        event!(Level::INFO, "跳过元数据 {package_name} 的评分数据");
         None
     };
 
@@ -176,7 +168,6 @@ pub async fn sync_package(
         data.app_id,
         data.name
     );
-
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
@@ -207,7 +198,8 @@ pub async fn query_package_by_pkg_name(
             event!(
                 Level::ERROR,
                 "获取包 {} 的评分数据失败: {:#}",
-                package_name, e
+                package_name,
+                e
             );
             None
         }
@@ -216,7 +208,9 @@ pub async fn query_package_by_pkg_name(
     event!(
         Level::INFO,
         "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-        package_name, data.app_id, data.name
+        package_name,
+        data.app_id,
+        data.name
     );
 
     // 保存数据到数据库（包含重复检查）
@@ -245,10 +239,7 @@ pub async fn query_package_by_app_id(
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
-            event!(
-                Level::ERROR,
-                "获取包 {} 的评分数据失败: {:#}", data.name, e
-            );
+            event!(Level::ERROR, "获取包 {} 的评分数据失败: {:#}", data.name, e);
             None
         }
     };
@@ -256,7 +247,9 @@ pub async fn query_package_by_app_id(
     event!(
         Level::INFO,
         "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-        data.name, data.app_id, data.name
+        data.name,
+        data.app_id,
+        data.name
     );
 
     // 保存数据到数据库（包含重复检查）
