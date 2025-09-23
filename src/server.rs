@@ -58,8 +58,6 @@ async fn query_pkg(
     State(state): State<Arc<QueryState>>,
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
-    let span = tracing::span!(Level::INFO, "http::query_pkg");
-    let _enter = span.enter();
     event!(Level::INFO, "http 服务正在尝试获取 {pkg_name} 的信息");
     match crate::sync::query_package_by_pkg_name(
         &state.client,
@@ -92,8 +90,6 @@ async fn query_app_id(
     State(state): State<Arc<QueryState>>,
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
-    let span = tracing::span!(Level::INFO, "http::query_app_id");
-    let _enter = span.enter();
     event!(Level::INFO, "http 服务正在尝试获取 {app_id} 的信息");
     match crate::sync::query_package_by_pkg_name(
         &state.client,
