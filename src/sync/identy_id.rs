@@ -29,20 +29,20 @@ impl IdentityId {
     /// 获取形似 xxxxxxxxxxxxxxxx 的 identity id
     pub fn get_identity_id(&self) -> String {
         if self.last_update.elapsed() > TOKEN_UPDATE_INTERVAL {
-            // update token
-            let new_id = uuid::Uuid::new_v4();
-            let now = Instant::now();
-            unsafe {
-                let this = (self as *const Self as *mut Self).as_mut().unwrap();
-                this.id = new_id;
-                this.last_update = now;
-            }
-            println!(
-                "{} {}",
-                "刷新 identity_id".on_blue(),
-                format!("{:016x}", self.id).to_lowercase().replace("-", "")
-            );
             if !self.updating.load(std::sync::atomic::Ordering::Relaxed) {
+                // update token
+                let new_id = uuid::Uuid::new_v4();
+                let now = Instant::now();
+                unsafe {
+                    let this = (self as *const Self as *mut Self).as_mut().unwrap();
+                    this.id = new_id;
+                    this.last_update = now;
+                }
+                println!(
+                    "{} {}",
+                    "刷新 identity_id".on_blue(),
+                    format!("{:016x}", self.id).to_lowercase().replace("-", "")
+                );
                 self.updating
                     .store(true, std::sync::atomic::Ordering::Relaxed);
                 println!("{} {}", "正在更新 interface code".on_blue(), "请稍候...");
