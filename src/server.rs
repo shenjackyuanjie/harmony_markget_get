@@ -117,7 +117,8 @@ async fn query_app_id(
         }
         Err(e) => {
             event!(Level::WARN, "http服务获取 {app_id} 的信息失败: {e}");
-            Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()}))},
+            Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()}))
+        }
     }
 }
 
@@ -182,7 +183,12 @@ async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
         .with_state(query_state);
 
     let listenr = tokio::net::TcpListener::bind((config.serve_url(), config.serve_port())).await?;
-    println!("开始监听 {}:{}", config.serve_url(), config.serve_port());
+    event!(
+        Level::INFO,
+        "开始监听 {}:{}",
+        config.serve_url(),
+        config.serve_port()
+    );
     axum::serve(listenr, router).await?;
     Ok(())
 }

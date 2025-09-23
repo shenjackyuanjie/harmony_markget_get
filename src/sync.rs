@@ -2,6 +2,7 @@ use std::{sync::LazyLock, time::Duration};
 
 use colored::Colorize;
 use reqwest::Client;
+use tracing::{Level, event};
 
 use crate::{
     datas::{RawJsonData, RawRatingData},
@@ -36,10 +37,7 @@ pub async fn sync_all(
     packages.sort();
     packages.dedup();
 
-    println!(
-        "{}",
-        format!("开始处理 {} 个应用包...", packages.len()).cyan()
-    );
+    event!(Level::INFO, "开始同步 {} 个 包", packages.len());
 
     // 统计变量
     let start_time = std::time::Instant::now();
@@ -49,13 +47,16 @@ pub async fn sync_all(
     let mut total_failed = 0;
 
     for (index, package) in packages.iter().enumerate() {
-        println!(
-            "{}",
-            format!("[{}/{}] 处理包: {}", index + 1, packages.len(), package).yellow()
+        event!(
+            Level::INFO,
+            "[{}/{}] 同步包: {}",
+            index + 1,
+            packages.len(),
+            package
         );
 
         total_processed += 1;
-        match process_package(
+        match sync_package(
             client,
             db,
             config.api_info_url(),
@@ -68,53 +69,40 @@ pub async fn sync_all(
             Ok(inserted) => {
                 if inserted.0 || inserted.1 {
                     if inserted.0 {
-                        println!("{}", format!("已将 {package} 的数据插入数据库").on_green());
+                        event!(Level::INFO, "已将 {package} 的数据插入数据库");
                     }
                     if inserted.1 {
-                        println!(
-                            "{}",
-                            format!("已将 {package} 的评分数据插入数据库").on_green()
-                        );
+                        event!(Level::INFO, "已将 {package} 的评分数据插入数据库");
                     }
                     total_inserted += 1;
-                    println!(
-                        "{}",
-                        format!(
-                            "[{}/{}] 包 {} 处理完成 (新数据已插入)",
-                            index + 1,
-                            packages.len(),
-                            package
-                        )
-                        .green()
+                    event!(
+                        Level::INFO,
+                        "[{}/{}] 包 {} 处理完成 (新数据已插入)",
+                        index + 1,
+                        packages.len(),
+                        package
                     );
                 } else {
                     total_skipped += 1;
-                    println!(
-                        "{}",
-                        format!(
-                            "[{}/{}] 包 {} 处理完成 (数据相同，已跳过)",
-                            index + 1,
-                            packages.len(),
-                            package
-                        )
-                        .bright_black()
+                    event!(
+                        Level::INFO,
+                        "[{}/{}] 包 {} 处理完成 (数据相同，已跳过)",
+                        index + 1,
+                        packages.len(),
+                        package
                     );
                 }
             }
             Err(e) => {
                 total_failed += 1;
-                eprintln!(
-                    "{}",
-                    format!(
-                        "[{}/{}] 包 {} 处理失败: {:#}",
-                        index + 1,
-                        packages.len(),
-                        package,
-                        e
-                    )
-                    .red()
+                event!(
+                    Level::WARN,
+                    "[{}/{}] 包 {} 同步失败: {:#}",
+                    index + 1,
+                    packages.len(),
+                    package,
+                    e
                 );
-                // 继续处理下一个包，不中断整个流程
                 continue;
             }
         }
@@ -147,7 +135,7 @@ pub async fn sync_all(
 }
 
 /// 处理单个应用包
-pub async fn process_package(
+pub async fn sync_package(
     client: &reqwest::Client,
     db: &Database,
     data_url: &str,
@@ -164,26 +152,31 @@ pub async fn process_package(
         match star_result {
             Ok(star_data) => Some(star_data),
             Err(e) => {
-                eprintln!(
-                    "{}",
-                    format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
+                event!(
+                    Level::WARN,
+                    "获取包 {} 的评分数据失败: {}",
+                    package_name,
+                    e,
                 );
                 None
             }
         }
     } else {
-        println!("跳过元数据 {package_name} 的评分数据");
+        event!(
+                    Level::INFO,
+                    "跳过元数据 {package_name} 的评分数据"
+                );
         None
     };
 
-    println!(
-        "{}",
-        format!(
-            "获取到包 {package_name} 的数据,应用ID: {}，应用名称: {}",
-            data.app_id, data.name
-        )
-        .blue()
+    event!(
+        Level::INFO,
+        app_id = data.app_id,
+        "获取到包 {package_name} 的数据,应用ID: {}，应用名称: {}",
+        data.app_id,
+        data.name
     );
+
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
@@ -211,21 +204,19 @@ pub async fn query_package_by_pkg_name(
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
-            eprintln!(
-                "{}",
-                format!("获取包 {} 的评分数据失败: {:#}", package_name, e).yellow()
+            event!(
+                Level::ERROR,
+                "获取包 {} 的评分数据失败: {:#}",
+                package_name, e
             );
             None
         }
     };
 
-    println!(
-        "{}",
-        format!(
-            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-            package_name, data.app_id, data.name
-        )
-        .blue()
+    event!(
+        Level::INFO,
+        "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
+        package_name, data.app_id, data.name
     );
 
     // 保存数据到数据库（包含重复检查）
@@ -254,21 +245,18 @@ pub async fn query_package_by_app_id(
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
-            eprintln!(
-                "{}",
-                format!("获取包 {} 的评分数据失败: {:#}", data.name, e).yellow()
+            event!(
+                Level::ERROR,
+                "获取包 {} 的评分数据失败: {:#}", data.name, e
             );
             None
         }
     };
 
-    println!(
-        "{}",
-        format!(
-            "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-            data.name, data.app_id, data.name
-        )
-        .blue()
+    event!(
+        Level::INFO,
+        "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
+        data.name, data.app_id, data.name
     );
 
     // 保存数据到数据库（包含重复检查）
