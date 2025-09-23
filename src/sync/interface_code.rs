@@ -51,10 +51,6 @@ impl CodeGenerater {
         format!("{}_{unix_time}", token)
     }
 
-    // fn clone_token(&self) -> String {
-    //     self.token.clone().expect("wtf, no token")
-    // }
-
     pub async fn update_token(&self) -> String {
         println!("{}", "正在刷新 interface code".blue());
         const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";

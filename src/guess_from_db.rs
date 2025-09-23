@@ -10,6 +10,7 @@ use std::collections::BTreeSet;
 use colored::Colorize;
 
 fn main() -> anyhow::Result<()> {
+    utils::init_log();
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
         .enable_all()

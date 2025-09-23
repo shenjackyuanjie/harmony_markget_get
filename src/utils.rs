@@ -2,6 +2,24 @@
 
 use std::borrow::Cow;
 
+use tracing::Level;
+
+pub fn init_log() {
+    // -v -> debug
+    // -vv -> trace
+    let args: Vec<String> = std::env::args().collect();
+    let level = {
+        if args.contains(&"-vv".to_string()) {
+            Level::TRACE
+        } else if args.contains(&"-v".to_string()) {
+            Level::DEBUG
+        } else {
+            Level::INFO
+        }
+    };
+    tracing_subscriber::fmt().with_max_level(level).init();
+}
+
 /// 清理字符串中的无效UTF8字符和空字节
 /// 返回一个安全的UTF8字符串
 pub fn sanitize_utf8_string(s: &str) -> Cow<'_, str> {

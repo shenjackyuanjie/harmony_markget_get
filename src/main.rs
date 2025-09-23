@@ -6,6 +6,7 @@ pub mod sync;
 pub mod utils;
 
 fn main() -> anyhow::Result<()> {
+    utils::init_log();
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
         .enable_all()

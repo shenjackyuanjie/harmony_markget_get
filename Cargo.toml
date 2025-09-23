@@ -30,6 +30,7 @@ reqwest = { version = "0.12.23", default-features = false, features = [
   "rustls-tls-native-roots",
 ] }
 serde = "1.0"
+toml = "0.9"
 serde_json = "1.0"
 sqlx = { version = "0.8.6", features = [
   "chrono",
@@ -39,5 +40,8 @@ sqlx = { version = "0.8.6", features = [
   "tls-rustls",
 ] }
 tokio = { version = "1.47", features = ["full"] }
-toml = "0.9"
+
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
+
 uuid = { version = "1.18.1", features = ["v4", "rng-rand"] }
