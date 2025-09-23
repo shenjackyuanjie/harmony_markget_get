@@ -17,7 +17,10 @@ pub fn init_log() {
             Level::INFO
         }
     };
-    tracing_subscriber::fmt().with_max_level(level).init();
+    tracing_subscriber::fmt()
+        .with_max_level(level)
+        .with_ansi(true)
+        .init();
 }
 
 /// 清理字符串中的无效UTF8字符和空字节

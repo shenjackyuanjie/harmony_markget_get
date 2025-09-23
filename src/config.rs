@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::{fs, sync::OnceLock};
+use tracing::{Level, event};
 
 pub static GLOBAL_CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -48,7 +49,9 @@ pub struct Config {
 impl Config {
     pub fn load() -> anyhow::Result<&'static Self> {
         let config_content = fs::read_to_string("config.toml")?;
+        event!(Level::INFO, "config.toml loaded");
         let config: Config = toml::from_str(&config_content)?;
+        event!(Level::INFO, "config.toml parsed");
         Ok(GLOBAL_CONFIG.get_or_init(|| config))
     }
 

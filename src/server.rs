@@ -6,23 +6,23 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
+use colored::Colorize;
 use reqwest::Client;
+use tracing::{Level, event};
 
 use crate::{
-    config::Config,
+    config::{Config, get_config},
     datas::{AppInfo, AppMetric, AppRating},
     db::Database,
 };
 
 // pub async fn server(config: &Config, )
 
-pub async fn worker(
-    config: Config,
-    mut waiter: tokio::sync::oneshot::Receiver<()>,
-) -> anyhow::Result<()> {
-    println!("connecting to db");
+pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::Result<()> {
+    let config = get_config();
+    event!(Level::INFO, "connecting to db");
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
-    println!("connected to db");
+    event!(Level::INFO, "connected to db");
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
@@ -34,7 +34,7 @@ pub async fn worker(
         crate::sync::sync_all(&client, &db, &config, &[]).await?;
         // 通过 select 同时等待/接受结束事件
         let wait_time = std::time::Duration::from_secs(interval);
-        println!("等待 {wait_time:?} 后再同步");
+        println!("{}", format!("等待 {:?} 后再同步", wait_time).green());
         tokio::select! {
             _ = tokio::time::sleep(wait_time) => {
             }
@@ -58,7 +58,9 @@ async fn query_pkg(
     State(state): State<Arc<QueryState>>,
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
-    println!("正在尝试获取 {pkg_name} 的信息");
+    let span = tracing::span!(Level::INFO, "http::query_pkg");
+    let _enter = span.enter();
+    event!(Level::INFO, "http 服务正在尝试获取 {pkg_name} 的信息");
     match crate::sync::query_package_by_pkg_name(
         &state.client,
         &state.db,
@@ -79,7 +81,10 @@ async fn query_pkg(
                 serde_json::json!({"info": info, "metric": metric, "rating": rating, "is_new": is_new}),
             )
         }
-        Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
+        Err(e) => {
+            event!(Level::WARN, "http服务获取 {pkg_name} 的信息失败: {e}");
+            Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()}))
+        }
     }
 }
 
@@ -87,7 +92,9 @@ async fn query_app_id(
     State(state): State<Arc<QueryState>>,
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
-    println!("正在尝试获取 appid {app_id} 的信息");
+    let span = tracing::span!(Level::INFO, "http::query_app_id");
+    let _enter = span.enter();
+    event!(Level::INFO, "http 服务正在尝试获取 {app_id} 的信息");
     match crate::sync::query_package_by_pkg_name(
         &state.client,
         &state.db,
@@ -108,11 +115,14 @@ async fn query_app_id(
                 serde_json::json!({"info": info, "metric": metric, "rating": rating, "is_new": is_new}),
             )
         }
-        Err(e) => Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()})),
+        Err(e) => {
+            event!(Level::WARN, "http服务获取 {app_id} 的信息失败: {e}");
+            Json(serde_json::json!({"data": "faild to fetch", "error": e.to_string()}))},
     }
 }
 
 async fn app_list_info(State(state): State<Arc<QueryState>>) -> impl IntoResponse {
+    event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
     if let Ok(app_count) = state.db.count_apps().await
         && let Ok(atomic_services_count) = state.db.count_atomic_services().await
     {
@@ -120,6 +130,7 @@ async fn app_list_info(State(state): State<Arc<QueryState>>) -> impl IntoRespons
             serde_json::json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
         )
     } else {
+        event!(Level::WARN, "http服务获取应用列表信息失败");
         Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
     }
 }

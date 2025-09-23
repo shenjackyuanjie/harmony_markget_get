@@ -1,9 +1,6 @@
 //! 用于全局共享 identity id
 
-use std::{
-    sync::LazyLock,
-    time::{Duration, Instant},
-};
+use std::{sync::LazyLock, time::Instant};
 
 use colored::Colorize;
 
