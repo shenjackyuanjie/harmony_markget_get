@@ -16,6 +16,10 @@ path = "src/guess_from_db.rs"
 name = "get_nextmax"
 path = "src/get_nextmax.rs"
 
+[[bin]]
+name = "read_appgallery"
+path = "src/read_appgallery.rs"
+
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.8.4", features = [
