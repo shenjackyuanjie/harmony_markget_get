@@ -84,7 +84,7 @@ async fn async_main() -> anyhow::Result<()> {
 
                 app_gallery_text
                     .replace(r#"<a href="https://appgallery.huawei.com/app/detail?id="#, "")
-                    .replace(app_gallery_match)
+                    .replace(app_gallery_match, "")
                     .split("&amp;")
                     .next()
                     .unwrap_or("")
