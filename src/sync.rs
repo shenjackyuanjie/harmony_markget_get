@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{sync::LazyLock, time::Duration};
 
 use colored::Colorize;
 use reqwest::Client;
@@ -13,6 +13,10 @@ pub const TOKEN_UPDATE_INTERVAL: Duration = Duration::from_secs(600);
 
 pub mod identy_id;
 pub mod interface_code;
+
+/// UA
+pub static USER_AGENT: LazyLock<String> =
+    LazyLock::new(|| format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")));
 
 pub async fn sync_all(
     client: &Client,
@@ -291,10 +295,7 @@ pub async fn get_star_by_app_id(
     let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
-        .header(
-            "User-Agent",
-            format!("get_market/{}", env!("CARGO_PKG_VERSION")),
-        )
+        .header("User-Agent", USER_AGENT.to_string())
         .header(
             "Interface-Code",
             interface_code::GLOBAL_CODE.get_full_token().await,
@@ -384,10 +385,7 @@ pub async fn get_pkg_data(
     let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
-        .header(
-            "User-Agent",
-            format!("get_market/{}", env!("CARGO_PKG_VERSION")),
-        )
+        .header("User-Agent", USER_AGENT.to_string())
         .header(
             "identity-id",
             identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),

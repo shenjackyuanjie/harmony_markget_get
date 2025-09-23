@@ -8,7 +8,7 @@ use std::{
 use colored::Colorize;
 use reqwest::Client;
 
-use crate::sync::identy_id;
+use crate::sync::{TOKEN_UPDATE_INTERVAL, USER_AGENT, identy_id};
 
 pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     let now = std::time::Instant::now();
@@ -18,7 +18,6 @@ pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     CodeGenerater {
         last_update: now,
         token: None,
-        update_interval: Duration::from_secs(600),
         client,
     }
 });
@@ -26,7 +25,6 @@ pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
 pub struct CodeGenerater {
     last_update: Instant,
     token: Option<String>,
-    update_interval: Duration,
     client: Client,
 }
 
@@ -35,7 +33,7 @@ impl CodeGenerater {
         // 检查更新时间
         match self.token.as_ref() {
             Some(token) => {
-                if self.last_update.elapsed() > self.update_interval {
+                if self.last_update.elapsed() > TOKEN_UPDATE_INTERVAL {
                     return self.update_token().await;
                 }
                 token.clone()
@@ -74,10 +72,7 @@ impl CodeGenerater {
                     .client
                     .post(URL)
                     .header("Content-Type", "application/json")
-                    .header(
-                        "User-Agent",
-                        format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")),
-                    )
+                    .header("User-Agent", USER_AGENT.to_string())
                     .header("Interface-Code", format!("null_{unix_time}"))
                     .header(
                         "identity-id",

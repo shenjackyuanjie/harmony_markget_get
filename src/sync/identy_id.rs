@@ -7,7 +7,7 @@ use std::{
 
 use colored::Colorize;
 
-use crate::sync::interface_code;
+use crate::sync::{TOKEN_UPDATE_INTERVAL, interface_code};
 
 pub static GLOBAL_IDENTITY_ID: LazyLock<IdentityId> = LazyLock::new(|| {
     let now = std::time::Instant::now();
@@ -15,20 +15,18 @@ pub static GLOBAL_IDENTITY_ID: LazyLock<IdentityId> = LazyLock::new(|| {
     IdentityId {
         id: uuid::Uuid::new_v4(),
         last_update: now,
-        update_interval: Duration::from_secs(600),
     }
 });
 
 pub struct IdentityId {
     id: uuid::Uuid,
     last_update: Instant,
-    update_interval: Duration,
 }
 
 impl IdentityId {
     /// 获取形似 xxxxxxxxxxxxxxxx 的 identity id
     pub fn get_identity_id(&self) -> String {
-        if self.last_update.elapsed() > self.update_interval {
+        if self.last_update.elapsed() > TOKEN_UPDATE_INTERVAL {
             // update token
             let new_id = uuid::Uuid::new_v4();
             let now = Instant::now();
