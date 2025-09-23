@@ -12,8 +12,8 @@ use sqlx::postgres::{PgPool, PgPoolOptions};
 
 /// 分页查询结果
 #[derive(Debug, Deserialize, Serialize)]
-pub struct PaginatedAppInfo {
-    pub data: Vec<AppInfo>,
+pub struct PaginatedAppInfo<D> {
+    pub data: Vec<D>,
     pub total_count: u32,
     pub page: u32,
     pub page_size: u32,
@@ -451,7 +451,7 @@ impl Database {
         &self,
         page: u32,
         page_size: u32,
-    ) -> Result<PaginatedAppInfo> {
+    ) -> Result<PaginatedAppInfo<AppInfo>> {
         let total_count = self.get_app_info_count().await?;
         let total_pages = if page_size == 0 {
             0
