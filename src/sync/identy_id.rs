@@ -1,6 +1,9 @@
 //! 用于全局共享 identity id
 
-use std::{sync::LazyLock, time::Instant};
+use std::{
+    sync::{LazyLock, atomic::AtomicBool},
+    time::Instant,
+};
 
 use colored::Colorize;
 
@@ -12,12 +15,14 @@ pub static GLOBAL_IDENTITY_ID: LazyLock<IdentityId> = LazyLock::new(|| {
     IdentityId {
         id: uuid::Uuid::new_v4(),
         last_update: now,
+        updating: AtomicBool::new(false),
     }
 });
 
 pub struct IdentityId {
     id: uuid::Uuid,
     last_update: Instant,
+    updating: AtomicBool,
 }
 
 impl IdentityId {
@@ -37,12 +42,20 @@ impl IdentityId {
                 "刷新 identity_id".on_blue(),
                 format!("{:016x}", self.id).to_lowercase().replace("-", "")
             );
-            tokio::task::block_in_place(|| {
-                let rt = tokio::runtime::Runtime::new().unwrap();
-                rt.block_on(async {
-                    interface_code::GLOBAL_CODE.update_token().await;
+            if !self.updating.load(std::sync::atomic::Ordering::Relaxed) {
+                self.updating
+                    .store(true, std::sync::atomic::Ordering::Relaxed);
+                println!("{} {}", "正在更新 interface code".on_blue(), "请稍候...");
+                // update token
+                tokio::task::block_in_place(|| {
+                    let rt = tokio::runtime::Runtime::new().unwrap();
+                    rt.block_on(async {
+                        interface_code::GLOBAL_CODE.update_token().await;
+                        self.updating
+                            .store(false, std::sync::atomic::Ordering::Relaxed);
+                    });
                 });
-            });
+            }
         }
         format!("{:016x}", self.id).to_lowercase().replace("-", "")
     }
