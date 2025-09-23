@@ -8,6 +8,9 @@ use crate::{
     db::Database,
 };
 
+/// token 更新间隔
+pub const TOKEN_UPDATE_INTERVAL: Duration = Duration::from_secs(600);
+
 pub mod identy_id;
 pub mod interface_code;
 

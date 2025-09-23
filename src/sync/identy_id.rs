@@ -1,41 +1,47 @@
 //! 用于全局共享 identity id
 
-use std::sync::{LazyLock, atomic::AtomicU32};
+use std::{
+    sync::LazyLock,
+    time::{Duration, Instant},
+};
 
 use colored::Colorize;
 
 use crate::sync::interface_code;
 
 pub static GLOBAL_IDENTITY_ID: LazyLock<IdentityId> = LazyLock::new(|| {
+    let now = std::time::Instant::now();
     // 初始化全局 identity id
     IdentityId {
         id: uuid::Uuid::new_v4(),
-        use_count: AtomicU32::new(0),
+        last_update: now,
+        update_interval: Duration::from_secs(600),
     }
 });
 
 pub struct IdentityId {
     id: uuid::Uuid,
-    use_count: AtomicU32,
+    last_update: Instant,
+    update_interval: Duration,
 }
 
 impl IdentityId {
-
     /// 获取形似 xxxxxxxxxxxxxxxx 的 identity id
     pub fn get_identity_id(&self) -> String {
-        let use_count = self
-            .use_count
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        if use_count > 1000 {
-            // update
+        if self.last_update.elapsed() > self.update_interval {
+            // update token
             let new_id = uuid::Uuid::new_v4();
-            self.use_count
-                .store(0, std::sync::atomic::Ordering::Relaxed);
+            let now = Instant::now();
             unsafe {
                 let this = (self as *const Self as *mut Self).as_mut().unwrap();
                 this.id = new_id;
+                this.last_update = now;
             }
-            println!("{} {}", "刷新 identity_id".on_blue(), format!("{:016x}", self.id).to_lowercase().replace("-", ""));
+            println!(
+                "{} {}",
+                "刷新 identity_id".on_blue(),
+                format!("{:016x}", self.id).to_lowercase().replace("-", "")
+            );
             tokio::task::block_in_place(|| {
                 let rt = tokio::runtime::Runtime::new().unwrap();
                 rt.block_on(async {

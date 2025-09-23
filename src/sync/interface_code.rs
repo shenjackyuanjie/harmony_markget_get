@@ -18,7 +18,7 @@ pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     CodeGenerater {
         last_update: now,
         token: None,
-        update_interval: Duration::from_secs(60),
+        update_interval: Duration::from_secs(600),
         client,
     }
 });
