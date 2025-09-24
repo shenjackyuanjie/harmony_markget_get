@@ -156,6 +156,30 @@ async fn app_list_paged(
     }
 }
 
+async fn app_list_paged_short(
+    State(state): State<Arc<QueryState>>,
+    Path(page): Path<String>,
+) -> impl IntoResponse {
+    const PAGE_BATCH: u32 = 100;
+    match page.parse::<u32>() {
+        Ok(page) => {
+            match state
+                .db
+                .get_app_info_paginated_short(page, PAGE_BATCH)
+                .await
+            {
+                Ok(apps) => Json(serde_json::to_value(apps).unwrap()),
+                Err(_) => {
+                    Json(serde_json::json!({"data": "faild to fetch", "error": "Database error"}))
+                }
+            }
+        }
+        Err(e) => {
+            Json(serde_json::json!({"data": "faild to parse page", "error": format!("{}", e)}))
+        }
+    }
+}
+
 async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
@@ -176,6 +200,10 @@ async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
         .route(
             "/app_list/{page_count}/detail",
             get(app_list_paged).post(app_list_paged),
+        )
+        .route(
+            "/app_list/{page_count}",
+            get(app_list_paged_short).post(app_list_paged_short),
         )
         .with_state(query_state);
 

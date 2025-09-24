@@ -242,6 +242,40 @@ impl From<&RawJsonData> for AppInfo {
     }
 }
 
+/// 简化过的 AppInfo
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ShortAppInfo {
+    pub app_id: String,
+    pub name: String,
+    pub pkg_name: String,
+    pub icon_url: String,
+    pub create_at: DateTime<Local>,
+}
+
+impl From<&AppInfo> for ShortAppInfo {
+    fn from(app_info: &AppInfo) -> Self {
+        ShortAppInfo {
+            app_id: app_info.app_id.clone(),
+            name: app_info.name.clone(),
+            pkg_name: app_info.pkg_name.clone(),
+            icon_url: app_info.icon_url.clone(),
+            create_at: app_info.created_at,
+        }
+    }
+}
+
+impl From<&RawJsonData> for ShortAppInfo {
+    fn from(raw_data: &RawJsonData) -> Self {
+        ShortAppInfo {
+            app_id: raw_data.app_id.clone(),
+            name: raw_data.name.clone(),
+            pkg_name: raw_data.pkg_name.clone(),
+            icon_url: raw_data.icon_url.clone(),
+            create_at: Local::now(),
+        }
+    }
+}
+
 /// 4. app_metrics 表
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppMetric {

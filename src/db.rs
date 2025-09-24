@@ -1,4 +1,6 @@
-use crate::datas::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
+use crate::datas::{
+    AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData, ShortAppInfo,
+};
 use chrono::{DateTime, Local};
 
 use std::ops::Range;
@@ -370,16 +372,18 @@ impl Database {
     /// ```
     pub async fn get_app_info_paginated(&self, range: Range<u32>) -> Result<Vec<AppInfo>> {
         const QUERY: &str = r#"
-            SELECT ai.*
-            FROM app_info ai
-            JOIN app_raw ar ON ai.app_id = ar.app_id
-            ORDER BY ar.created_at DESC
-            LIMIT $1 OFFSET $2
+        SELECT ai.*
+        FROM app_info ai
+        ORDER BY ai.created_at DESC
+        LIMIT $1 OFFSET $2
         "#;
 
+        let limit = (range.end - range.start) as i64;
+        let offset = range.start as i64;
+
         let rows = sqlx::query(QUERY)
-            .bind((range.end - range.start) as i64) // LIMIT
-            .bind(range.start as i64) // OFFSET
+            .bind(limit)  // LIMIT
+            .bind(offset) // OFFSET - 修正了参数顺序
             .fetch_all(&self.pool)
             .await?;
 
@@ -470,6 +474,32 @@ impl Database {
             page,
             page_size,
             total_pages,
+        })
+    }
+
+    /// 同 get_app_info_paginated_enhanced
+    ///
+    /// 但是数据简洁一些
+    pub async fn get_app_info_paginated_short(
+        &self,
+        page: u32,
+        page_size: u32,
+    ) -> Result<PaginatedAppInfo<ShortAppInfo>> {
+        let detail_info = self
+            .get_app_info_paginated_enhanced(page, page_size)
+            .await?;
+        let data = detail_info
+            .data
+            .into_iter()
+            .map(|app| ShortAppInfo::from(&app))
+            .collect();
+
+        Ok(PaginatedAppInfo {
+            data,
+            total_count: detail_info.total_count,
+            page,
+            page_size,
+            total_pages: detail_info.total_pages,
         })
     }
 

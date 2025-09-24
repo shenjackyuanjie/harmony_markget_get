@@ -71,7 +71,10 @@ async fn async_main() -> anyhow::Result<()> {
 
     let mut apps = Vec::new();
     for app in app_lst {
-        let request = client.get(format!("{}/app/{}", src_url, app)).send().await?;
+        let request = client
+            .get(format!("{}/app/{}", src_url, app))
+            .send()
+            .await?;
         let response = request.text().await?;
         if response.contains(app_gallery_match) {
             // 有信息
@@ -83,7 +86,10 @@ async fn async_main() -> anyhow::Result<()> {
                     .unwrap_or("");
 
                 app_gallery_text
-                    .replace(r#"<a href="https://appgallery.huawei.com/app/detail?id="#, "")
+                    .replace(
+                        r#"<a href="https://appgallery.huawei.com/app/detail?id="#,
+                        "",
+                    )
                     .replace(app_gallery_match, "")
                     .split("&amp;")
                     .next()
@@ -92,7 +98,6 @@ async fn async_main() -> anyhow::Result<()> {
             };
             event!(Level::INFO, "页面 {} 找到了 appid {}", app, app_id);
             apps.push(app_id);
-
         } else {
             continue;
         }
