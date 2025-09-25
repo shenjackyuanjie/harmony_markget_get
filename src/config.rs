@@ -2,8 +2,6 @@ use serde::Deserialize;
 use std::{fs, sync::OnceLock};
 use tracing::{Level, event};
 
-use crate::sync::identy_id::GLOBAL_IDENTITY_ID;
-
 pub static GLOBAL_CONFIG: OnceLock<Config> = OnceLock::new();
 
 pub fn get_config() -> &'static Config {
@@ -54,8 +52,6 @@ impl Config {
         event!(Level::INFO, "config.toml loaded");
         let config: Config = toml::from_str(&config_content)?;
         event!(Level::INFO, "config.toml parsed");
-        GLOBAL_IDENTITY_ID.get_identity_id();
-        std::thread::sleep(std::time::Duration::from_secs(1));
         Ok(GLOBAL_CONFIG.get_or_init(|| config))
     }
 

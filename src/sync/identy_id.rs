@@ -56,7 +56,7 @@ impl IdentityId {
             tokio::task::block_in_place(|| {
                 let rt = tokio::runtime::Runtime::new().unwrap();
                 rt.block_on(async {
-                    interface_code::GLOBAL_CODE.update_token().await;
+                    interface_code::GLOBAL_INTERFACE_CODE.update_token().await;
                 });
             });
 

@@ -28,6 +28,9 @@ async fn async_main() -> anyhow::Result<()> {
     // 连接数据库
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
+    GLOBAL_IDENTITY_ID.get_identity_id();
+    GLOBAL_INTERFACE_CODE.update_token().await;
+
     // 获取数据库中所有的 app_id
     println!("正在从数据库获取所有 app_id...");
     let existing_app_ids = db.get_all_app_ids().await?;

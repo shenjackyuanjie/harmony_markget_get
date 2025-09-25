@@ -273,7 +273,7 @@ pub async fn get_star_by_app_id(
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "Interface-Code",
-            interface_code::GLOBAL_CODE.get_full_token().await,
+            interface_code::GLOBAL_INTERFACE_CODE.get_full_token().await,
         )
         .header(
             "identity-id",
@@ -343,7 +343,7 @@ pub async fn get_app_info(
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "interface-code",
-            interface_code::GLOBAL_CODE.get_full_token().await,
+            interface_code::GLOBAL_INTERFACE_CODE.get_full_token().await,
         )
         .header(
             "identity-id",

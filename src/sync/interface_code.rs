@@ -10,7 +10,7 @@ use reqwest::Client;
 
 use crate::sync::{TOKEN_UPDATE_INTERVAL, USER_AGENT, identy_id};
 
-pub static GLOBAL_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
+pub static GLOBAL_INTERFACE_CODE: LazyLock<CodeGenerater> = LazyLock::new(|| {
     let now = std::time::Instant::now();
     let client = reqwest::ClientBuilder::new()
         .build()
