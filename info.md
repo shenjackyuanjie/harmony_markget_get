@@ -8,15 +8,23 @@
 - `README.md` - 详细项目文档 (安装、运行和数据库表结构说明)
 - `API.md` - API接口文档 (REST端点如/query/pkg_name/{pkg}用于应用信息查询)
 - `info.md` - 项目结构文档 (当前文件，描述目录和文件功能)
-- `runit.py` - Python辅助脚本 (运行项目辅助工具，未详细实现)
+- `runit.py` - Python定时运行脚本 (每小时执行 cargo run --release 以自动化数据采集和更新)
 - `.gitignore` - Git忽略文件配置 (忽略target/、.env等)
 
 ## 📁 src/ - 主项目Rust源代码
 - `main.rs` - 程序主入口 (`get_market`)
 - `config.rs` - 配置管理模块
-- `db.rs` - 数据库操作模块
-- `utils.rs` - 工具函数模块
-- `server.rs` - Web服务器模块
+### 📁 src/db/ - 数据库操作模块
+- `mod.rs` - 模块定义 (数据库连接池管理和操作入口)
+- `insert.rs` - 数据插入实现 (应用信息、指标和原始数据的存储)
+- `query.rs` - 数据查询实现 (应用信息检索和视图查询)
+- `utils.rs` - 工具函数模块 (日志初始化、UTF-8字符串清理和无效字符处理)
+### 📁 src/server/ - Web服务器模块
+- `mod.rs` - 模块定义 (服务器启动和任务管理)
+- `handlers.rs` - 请求处理函数 (API端点逻辑实现)
+- `routes.rs` - API路由配置 (定义查询路径和参数处理)
+- `state.rs` - 应用状态管理 (共享配置和数据库连接状态)
+
 - `guess.rs` - 应用ID猜测（独立二进制 `guess_market`）
 - `guess_from_db.rs` - 从数据库猜测应用ID（独立二进制 `guess_from_db`）
 - `get_nextmax.rs` - 从nextmax.cn爬取华为应用市场应用ID并保存为apps.json（独立二进制 `get_nextmax`）
@@ -54,3 +62,5 @@
 - **配置化管理**：通过TOML文件进行灵活配置
 - **数据同步**：支持API token管理和身份验证
 - **应用ID猜测**：提供多种方式猜测和验证应用ID
+- **工具支持**：集成tracing日志系统和字符串清理工具，确保数据完整性
+- **自动化运行**：通过runit.py脚本实现定时任务，支持持续数据同步

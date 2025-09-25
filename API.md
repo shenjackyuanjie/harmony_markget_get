@@ -2,128 +2,176 @@
 
 ## 概述
 
-这是一个基于Rust和Axum框架构建的华为应用市场数据采集服务API。该服务提供应用信息查询功能，支持通过包名获取应用的详细信息、指标数据和评分数据。
+这是一个基于Rust和Axum框架构建的华为应用市场数据采集服务API。该服务提供应用信息查询、列表浏览和排行榜功能，支持通过包名或应用ID获取应用的详细信息、指标数据和评分数据。
 
 ## 基础信息
 
 - **服务地址**: `http://{host}:{port}`
 - **默认端口**: 3000
-- **协议**: HTTP/HTTPS
+- **协议**: HTTP
 - **数据格式**: JSON
 
 ## API端点
 
-### 1. 查询应用信息
+所有端点返回 JSON 格式响应。成功响应结构：
+```json
+{
+  "data": {实际数据},
+  "total_count": 数字 (可选，分页或排行时),
+  "page_size": 数字 (可选，分页或排行时)
+}
+```
+
+错误响应：
+```json
+{
+  "error": "错误描述"
+}
+```
+
+### 1. 查询应用信息（按包名）
 
 查询指定包名的应用详细信息，包括基本信息、指标数据和评分数据。
 
-**端点**: `GET /query/pkg_name/{pkg_name}` 或 `POST /query/pkg_name/{pkg_name}`
+**端点**: `GET /api/apps/by-pkg-name/{pkg_name}`
 
 **路径参数**:
 - `pkg_name` (string, required): 应用包名，如 `com.huawei.hmsapp.appgallery`
 
-**请求示例**:
-```bash
-GET http://localhost:3000/query/com.huawei.hmsapp.appgallery
-```
-
-或
-```bash
-POST http://localhost:3000/query/com.huawei.hmsapp.appgallery
-Content-Type: application/json
-```
-
-**响应格式**:
+**响应示例**:
 ```json
 {
-  "info": {
-    "app_id": "C1164531384803416384",
-    "alliance_app_id": "1164531384803416384",
-    "name": "应用市场",
-    "pkg_name": "com.huawei.hmsapp.appgallery",
-    "dev_id": "260086000000068459",
-    "developer_name": "华为软件技术有限公司",
-    "dev_en_name": "Huawei Software Technologies Co., Ltd.",
-    "supplier": "华为软件技术有限公司",
-    "kind_id": 10000000,
-    "kind_name": "工具",
-    "tag_name": "工具",
-    "kind_type_id": 13,
-    "kind_type_name": "应用",
-    "icon_url": "https://example.com/icon.png",
-    "brief_desc": "应用市场，点亮精彩生活",
-    "description": "详细的应用描述信息...",
-    "privacy_url": "https://example.com/privacy",
-    "ctype": 17,
-    "detail_id": "app|C1164531384803416384",
-    "app_level": 2,
-    "jocat_id": 10000000,
-    "iap": false,
-    "hms": false,
-    "tariff_type": "免费",
-    "packing_type": 4,
-    "order_app": false,
-    "denpend_gms": false,
-    "denpend_hms": false,
-    "force_update": false,
-    "img_tag": "1",
-    "is_pay": false,
-    "is_disciplined": false,
-    "is_shelves": true,
-    "submit_type": 0,
-    "delete_archive": false,
-    "charging": false,
-    "button_grey": false,
-    "app_gift": false,
-    "free_days": 0,
-    "pay_install_type": 0
-  },
-  "metric": {
-    "id": 123,
-    "app_id": "C1164531384803416384",
-    "version": "6.3.2.302",
-    "version_code": 1460302302,
-    "size_bytes": 76591487,
-    "sha256": "abc123def456...",
-    "info_score": 4.5,
-    "info_rate_count": 1031,
-    "download_count": 14443706,
-    "price": "0.00",
-    "release_date": 1704067200000,
-    "new_features": "新增功能描述...",
-    "upgrade_msg": "建议升级提示...",
-    "target_sdk": 18,
-    "minsdk": 13,
-    "compile_sdk_version": 50100,
-    "min_hmos_api_level": 50001,
-    "api_release_type": "Release",
-    "created_at": "2024-01-15T10:30:00+08:00"
-  },
-  "rating": {
-    "id": 456,
-    "app_id": "C1164531384803416384",
-    "average_rating": 2.9,
-    "star_1_rating_count": 348,
-    "star_2_rating_count": 129,
-    "star_3_rating_count": 129,
-    "star_4_rating_count": 81,
-    "star_5_rating_count": 344,
-    "my_star_rating": 0,
-    "total_star_rating_count": 1031,
-    "only_star_count": 511,
-    "full_average_rating": 5.0,
-    "source_type": "USER_RATING",
-    "created_at": "2024-01-15T10:30:00+08:00"
-  },
-  "is_new": true
+  "data": {
+    "info": {AppInfo对象},
+    "metric": {AppMetric对象},
+    "rating": {AppRating对象},
+    "is_new": true
+  }
 }
 ```
 
-**错误响应**:
+### 2. 查询应用信息（按应用ID）
+
+查询指定应用ID的详细信息。
+
+**端点**: `GET /api/apps/by-app-id/{app_id}` 或 `GET /api/apps/{app_id}`
+
+**路径参数**:
+- `app_id` (string, required): 应用ID，如 `C1164531384803416384`
+
+**响应示例**: 同上，按包名查询。
+
+### 3. 获取应用列表统计信息
+
+获取应用总数和原子服务总数。
+
+**端点**: `GET /api/apps/list/info`
+
+**响应示例**:
 ```json
 {
-  "data": "faild to fetch",
-  "error": "错误信息描述"
+  "data": {
+    "app_count": 12345,
+    "atomic_services_count": 6789
+  }
+}
+```
+
+### 4. 分页获取应用列表（简略信息）
+
+分页获取应用的基本信息。
+
+**端点**: `GET /api/apps/list/{page_count}`
+
+**路径参数**:
+- `page_count` (string, required): 页码，如 `1`
+
+**响应示例**:
+```json
+{
+  "data": {
+    "apps": [{简略AppInfo数组}],
+    "total_count": 12345,
+    "page_size": 100
+  }
+}
+```
+
+### 5. 分页获取应用列表（详细信息）
+
+分页获取应用的完整信息，包括指标和评分。
+
+**端点**: `GET /api/apps/list/{page_count}/detail`
+
+**路径参数**:
+- `page_count` (string, required): 页码，如 `1`
+
+**响应示例**:
+```json
+{
+  "data": {
+    "apps": [{完整AppInfo, Metric, Rating数组}],
+    "total_count": 12345,
+    "page_size": 100
+  }
+}
+```
+
+### 6. 排行榜API
+
+所有排行榜支持查询参数 `?limit=N` (默认10) 和部分支持 `?time_range=7d` (如增长排行)。
+
+#### 6.1 下载量排行
+**端点**: `GET /api/rankings/downloads`
+
+**响应**: Top apps by download_count。
+
+#### 6.2 评分排行
+**端点**: `GET /api/rankings/ratings`
+
+**响应**: Top apps by average_rating。
+
+#### 6.3 最近更新排行
+**端点**: `GET /api/rankings/recent`
+
+**响应**: Recently updated apps。
+
+#### 6.4 价格排行
+**端点**: `GET /api/rankings/prices`
+
+**响应**: Top priced apps。
+
+#### 6.5 评分人数排行
+**端点**: `GET /api/rankings/rating-counts`
+
+**响应**: Top apps by rating count。
+
+#### 6.6 下载量增长排行
+**端点**: `GET /api/rankings/download-growth?time_range=7d`
+
+**响应**: Apps with download growth in time range。
+
+#### 6.7 评分增长排行
+**端点**: `GET /api/rankings/rating-growth?time_range=7d`
+
+**响应**: Apps with rating growth。
+
+#### 6.8 开发者排行
+**端点**: `GET /api/rankings/developers`
+
+**响应**: Top developers by app count or metrics。
+
+#### 6.9 应用大小排行
+**端点**: `GET /api/rankings/sizes`
+
+**响应**: Largest apps by size。
+
+**排行响应示例** (通用):
+```json
+{
+  "data": [{AppInfo with metrics数组}],
+  "total_count": 10,
+  "page_size": 10
 }
 ```
 
@@ -217,19 +265,6 @@ Content-Type: application/json
 | source_type | string | 评分来源类型 |
 | created_at | string | 创建时间(ISO 8601) |
 
-## 响应字段说明
-
-- `is_new`: boolean - 表示本次查询是否插入了新数据到数据库
-
-## 错误处理
-
-服务可能返回以下类型的错误：
-
-1. **包名不存在**: 当指定的包名在华为应用市场不存在时
-2. **网络超时**: API请求超时（默认30秒）
-3. **数据库错误**: 数据库连接或操作失败
-4. **解析错误**: API响应数据解析失败
-
 ## 配置说明
 
 服务配置通过 `config.toml` 文件管理，主要配置项：
@@ -256,31 +291,28 @@ port = 3000
 
 ## 使用示例
 
-### cURL 示例
+### cURL 示例（查询包名）
 ```bash
-curl -X GET "http://localhost:3000/query/com.huawei.hmsapp.appgallery"
+curl -X GET "http://localhost:3000/api/apps/by-pkg-name/com.huawei.hmsapp.appgallery"
 ```
 
 ### Python 示例
 ```python
 import requests
 
-response = requests.get("http://localhost:3000/query/com.huawei.hmsapp.appgallery")
+response = requests.get("http://localhost:3000/api/apps/by-pkg-name/com.huawei.hmsapp.appgallery")
 data = response.json()
-
-print(f"应用名称: {data['info']['name']}")
-print(f"版本: {data['metric']['version']}")
-print(f"评分: {data['rating']['average_rating']}")
+print(f"应用名称: {data['data']['info']['name']}")
 ```
 
 ### JavaScript 示例
 ```javascript
-fetch('http://localhost:3000/query/com.huawei.hmsapp.appgallery')
+fetch('http://localhost:3000/api/apps/by-pkg-name/com.huawei.hmsapp.appgallery')
   .then(response => response.json())
   .then(data => {
-    console.log('应用信息:', data.info);
-    console.log('指标数据:', data.metric);
-    console.log('评分数据:', data.rating);
+    console.log('应用信息:', data.data.info);
+    console.log('指标数据:', data.data.metric);
+    console.log('评分数据:', data.data.rating);
   });
 ```
 
@@ -294,6 +326,7 @@ fetch('http://localhost:3000/query/com.huawei.hmsapp.appgallery')
 
 ## 版本历史
 
+- v1.0.0: 更新端点到 /api/apps/... 结构，新增排行榜API。
 - v0.1.0: 初始版本，支持应用信息查询和数据存储
 - v0.2.0: 增加评分数据支持，优化数据结构
 

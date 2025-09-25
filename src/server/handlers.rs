@@ -1,8 +1,9 @@
 use axum::{
     Json,
     extract::{Path, Query, State},
-    response::IntoResponse,
+    response::{IntoResponse, Html, Redirect},
 };
+use axum::http::StatusCode;
 use serde_json::json;
 use tracing::{Level, event};
 
@@ -359,5 +360,18 @@ pub async fn get_size_ranking(
             event!(Level::WARN, "获取应用大小排行失败: {e}");
             Json(ApiResponse::error("Database error".to_string()))
         }
+    }
+}
+
+/// Root path redirect to dashboard
+pub async fn redirect_to_dashboard() -> impl IntoResponse {
+    Redirect::permanent("/dashboard")
+}
+
+/// Serve dashboard HTML
+pub async fn serve_dashboard() -> impl IntoResponse {
+    match tokio::fs::read_to_string("assets/html/main.html").await {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to load dashboard").into_response(),
     }
 }
