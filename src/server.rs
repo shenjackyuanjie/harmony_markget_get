@@ -11,9 +11,10 @@ use reqwest::Client;
 use tracing::{Level, event};
 
 use crate::{
-    config::{get_config, Config},
+    config::{Config, get_config},
     db::Database,
-    model::{AppInfo, AppMetric, AppQuery, AppRating}, sync::code::GLOBAL_CODE_MANAGER,
+    model::{AppInfo, AppMetric, AppQuery, AppRating},
+    sync::code::GLOBAL_CODE_MANAGER,
 };
 
 pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::Result<()> {

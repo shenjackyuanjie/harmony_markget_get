@@ -1,8 +1,5 @@
-use crate::model::{
-    AppInfo, AppMetric, AppRating, AppRaw,
-};
+use crate::model::{AppInfo, AppMetric, AppRating, AppRaw};
 use anyhow::Result;
-
 
 use crate::db::Database;
 

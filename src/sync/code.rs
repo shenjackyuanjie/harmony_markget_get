@@ -53,7 +53,8 @@ impl CodeManager {
             let identity_id_guard = self.identity_id.read().await;
             let identity_id = format_uuid(&identity_id_guard);
             let token_guard = self.token.read().await;
-            let interface_code = token_guard.as_ref()
+            let interface_code = token_guard
+                .as_ref()
                 .map(|t| t.clone())
                 .unwrap_or_else(|| "".to_string());
 

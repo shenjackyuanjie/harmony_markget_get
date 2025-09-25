@@ -1,9 +1,6 @@
 use colored::Colorize;
 
-use crate::{
-    model::AppQuery,
-    sync::code::GLOBAL_CODE_MANAGER,
-};
+use crate::{model::AppQuery, sync::code::GLOBAL_CODE_MANAGER};
 
 pub mod config;
 pub mod db;

@@ -270,14 +270,8 @@ pub async fn get_star_by_app_id(
         .post(api_url)
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
-        .header(
-            "Interface-Code",
-            token.interface_code,
-        )
-        .header(
-            "identity-id",
-            token.identity_id,
-        )
+        .header("Interface-Code", token.interface_code)
+        .header("identity-id", token.identity_id)
         .json(&body)
         .send()
         .await?;
@@ -341,14 +335,8 @@ pub async fn get_app_info(
         .post(api_url)
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
-        .header(
-            "interface-code",
-            token.interface_code,
-        )
-        .header(
-            "identity-id",
-            token.identity_id,
-        )
+        .header("interface-code", token.interface_code)
+        .header("identity-id", token.identity_id)
         .json(&body)
         .send()
         .await?;

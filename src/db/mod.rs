@@ -1,12 +1,9 @@
-use crate::model::{
-    AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData,
-};
+use crate::model::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
 
 use anyhow::Result;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use serde_json::to_value;
-
 
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
