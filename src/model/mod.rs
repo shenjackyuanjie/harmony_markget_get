@@ -9,6 +9,18 @@ use crate::utils::sanitize_utf8_string;
 pub use query::AppQuery;
 pub use raw::{RawJsonData, RawRatingData};
 
+/// 简化版评分排行结构体
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ShortAppRating {
+    pub app_id: String,
+    pub name: String,
+    pub pkg_name: String,
+    pub developer_name: String,
+    pub icon_url: String,
+    pub average_rating: f64,
+    pub total_star_rating_count: i32,
+}
+
 /// 2. app_info 表
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppInfo {
