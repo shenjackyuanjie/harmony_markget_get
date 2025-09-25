@@ -11,6 +11,8 @@ use colored::Colorize;
 
 use model::query::AppQuery;
 
+use crate::sync::{identy_id::GLOBAL_IDENTITY_ID, interface_code::GLOBAL_INTERFACE_CODE};
+
 fn main() -> anyhow::Result<()> {
     utils::init_log();
     let rt = tokio::runtime::Builder::new_multi_thread()

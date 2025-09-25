@@ -1,6 +1,9 @@
 use colored::Colorize;
 
-use crate::{model::AppQuery, sync::{identy_id::GLOBAL_IDENTITY_ID, interface_code::GLOBAL_INTERFACE_CODE}};
+use crate::{
+    model::AppQuery,
+    sync::{identy_id::GLOBAL_IDENTITY_ID, interface_code::GLOBAL_INTERFACE_CODE},
+};
 
 pub mod config;
 pub mod db;
@@ -30,7 +33,8 @@ async fn async_main() -> anyhow::Result<()> {
 
     // let range = 2915863..=6366961;
     // let range = 0..=6366961;
-    let range = 2860000..=6390000;
+    // let range = 2860000..=6390000;
+    let range = 0000000..=9999999;
     let start = "C576588020785";
 
     GLOBAL_IDENTITY_ID.get_identity_id();
