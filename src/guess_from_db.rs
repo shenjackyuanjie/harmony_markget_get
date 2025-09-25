@@ -11,7 +11,7 @@ use colored::Colorize;
 
 use model::query::AppQuery;
 
-use crate::sync::{identy_id::GLOBAL_IDENTITY_ID, interface_code::GLOBAL_INTERFACE_CODE};
+use crate::sync::code::GLOBAL_CODE_MANAGER;
 
 fn main() -> anyhow::Result<()> {
     utils::init_log();
@@ -30,8 +30,7 @@ async fn async_main() -> anyhow::Result<()> {
     // 连接数据库
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
-    GLOBAL_IDENTITY_ID.get_identity_id();
-    GLOBAL_INTERFACE_CODE.update_token().await;
+    let _token = GLOBAL_CODE_MANAGER.get_token().await;
 
     // 获取数据库中所有的 app_id
     println!("正在从数据库获取所有 app_id...");

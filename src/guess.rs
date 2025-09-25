@@ -2,7 +2,7 @@ use colored::Colorize;
 
 use crate::{
     model::AppQuery,
-    sync::{identy_id::GLOBAL_IDENTITY_ID, interface_code::GLOBAL_INTERFACE_CODE},
+    sync::code::GLOBAL_CODE_MANAGER,
 };
 
 pub mod config;
@@ -37,8 +37,7 @@ async fn async_main() -> anyhow::Result<()> {
     let range = 0000000..=9999999;
     let start = "C576588020785";
 
-    GLOBAL_IDENTITY_ID.get_identity_id();
-    GLOBAL_INTERFACE_CODE.update_token().await;
+    let _token = GLOBAL_CODE_MANAGER.get_token().await;
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 

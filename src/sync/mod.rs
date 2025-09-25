@@ -12,8 +12,7 @@ use crate::{
 /// token 更新间隔
 pub const TOKEN_UPDATE_INTERVAL: Duration = Duration::from_secs(600);
 
-pub mod identy_id;
-pub mod interface_code;
+pub mod code;
 
 /// UA
 pub static USER_AGENT: LazyLock<String> =
@@ -272,11 +271,11 @@ pub async fn get_star_by_app_id(
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "Interface-Code",
-            interface_code::GLOBAL_INTERFACE_CODE.get_full_token().await,
+            code::GLOBAL_CODE_MANAGER.get_full_token().await.interface_code,
         )
         .header(
             "identity-id",
-            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
+            code::GLOBAL_CODE_MANAGER.get_token().await.identity_id,
         )
         .json(&body)
         .send()
@@ -342,11 +341,11 @@ pub async fn get_app_info(
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "interface-code",
-            interface_code::GLOBAL_INTERFACE_CODE.get_full_token().await,
+            code::GLOBAL_CODE_MANAGER.get_full_token().await.interface_code,
         )
         .header(
             "identity-id",
-            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
+            code::GLOBAL_CODE_MANAGER.get_token().await.identity_id,
         )
         .json(&body)
         .send()
