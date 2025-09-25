@@ -1,9 +1,6 @@
 use reqwest::Client;
 
-use crate::{
-    config::Config,
-    db::Database,
-};
+use crate::{config::Config, db::Database};
 
 /// 应用状态，包含数据库连接、HTTP客户端和配置
 #[derive(Clone)]

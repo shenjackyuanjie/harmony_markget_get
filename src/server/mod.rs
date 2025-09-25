@@ -1,5 +1,5 @@
-pub mod routes;
 pub mod handlers;
+pub mod routes;
 pub mod state;
 
 use std::sync::Arc;
@@ -15,8 +15,8 @@ use crate::{
 
 use self::state::AppState;
 
-pub use routes::create_router;
 pub use handlers::*;
+pub use routes::create_router;
 
 /// Web服务器工作线程
 pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::Result<()> {

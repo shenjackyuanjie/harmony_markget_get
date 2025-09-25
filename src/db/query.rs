@@ -7,7 +7,6 @@ use std::ops::Range;
 
 use crate::db::{Database, PaginatedAppInfo};
 
-
 impl Database {
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_id: &str) -> Result<bool> {
@@ -355,15 +354,10 @@ impl Database {
             ORDER BY am.created_at DESC
         "#;
 
-
         let rows = sqlx::query(QUERY)
-
             .bind(pkg_id)
-
             .fetch_all(&self.pool)
-
             .await?;
-
 
         let mut app_metrics = Vec::new();
         for row in rows {
@@ -635,7 +629,11 @@ impl Database {
     /// let growth_apps = db.get_download_growth_apps(10, "7d").await?;
     /// println!("下载量增长最快的应用: {:?}", growth_apps);
     /// ```
-    pub async fn get_download_growth_apps(&self, limit: u32, _time_range: &str) -> Result<Vec<AppMetric>> {
+    pub async fn get_download_growth_apps(
+        &self,
+        limit: u32,
+        _time_range: &str,
+    ) -> Result<Vec<AppMetric>> {
         // 简化实现：获取最近有更新的应用，按下载量排序
         const QUERY: &str = r#"
             SELECT DISTINCT ON (am.app_id)
@@ -695,7 +693,11 @@ impl Database {
     /// let rating_growth_apps = db.get_rating_growth_apps(10, "7d").await?;
     /// println!("评分增长最快的应用: {:?}", rating_growth_apps);
     /// ```
-    pub async fn get_rating_growth_apps(&self, limit: u32, _time_range: &str) -> Result<Vec<ShortAppRating>> {
+    pub async fn get_rating_growth_apps(
+        &self,
+        limit: u32,
+        _time_range: &str,
+    ) -> Result<Vec<ShortAppRating>> {
         // 简化实现：获取评分最高的应用
         const QUERY: &str = r#"
             SELECT

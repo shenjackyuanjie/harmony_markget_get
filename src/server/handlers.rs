@@ -1,14 +1,12 @@
 use axum::{
-    extract::{Path, Query, State},
     Json,
+    extract::{Path, Query, State},
     response::IntoResponse,
 };
-use tracing::{Level, event};
 use serde_json::json;
+use tracing::{Level, event};
 
-use crate::{
-    model::{AppInfo, AppMetric, AppQuery, AppRating},
-};
+use crate::model::{AppInfo, AppMetric, AppQuery, AppRating};
 
 use super::state::{ApiResponse, RankingQuery};
 
@@ -88,21 +86,17 @@ pub async fn app_list_info(
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
     match state.db.count_apps().await {
-        Ok(app_count) => {
-            match state.db.count_atomic_services().await {
-                Ok(atomic_services_count) => {
-                    Json(ApiResponse::success(
-                        json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
-                        None,
-                        None,
-                    ))
-                }
-                Err(e) => {
-                    event!(Level::WARN, "http服务获取原子服务数量失败: {e}");
-                    Json(ApiResponse::error(json!({"error": "Database error"})))
-                }
+        Ok(app_count) => match state.db.count_atomic_services().await {
+            Ok(atomic_services_count) => Json(ApiResponse::success(
+                json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
+                None,
+                None,
+            )),
+            Err(e) => {
+                event!(Level::WARN, "http服务获取原子服务数量失败: {e}");
+                Json(ApiResponse::error(json!({"error": "Database error"})))
             }
-        }
+        },
         Err(e) => {
             event!(Level::WARN, "http服务获取应用数量失败: {e}");
             Json(ApiResponse::error(json!({"error": "Database error"})))
@@ -125,7 +119,11 @@ pub async fn app_list_paged(
             {
                 Ok(apps) => {
                     let total_count = apps.total_count;
-                    Json(ApiResponse::success(apps, Some(total_count), Some(PAGE_BATCH)))
+                    Json(ApiResponse::success(
+                        apps,
+                        Some(total_count),
+                        Some(PAGE_BATCH),
+                    ))
                 }
                 Err(e) => {
                     event!(Level::WARN, "http服务获取分页应用信息失败: {e}");
@@ -133,9 +131,7 @@ pub async fn app_list_paged(
                 }
             }
         }
-        Err(e) => {
-            Json(ApiResponse::error(format!("Failed to parse page: {}", e)))
-        }
+        Err(e) => Json(ApiResponse::error(format!("Failed to parse page: {}", e))),
     }
 }
 
@@ -154,7 +150,11 @@ pub async fn app_list_paged_short(
             {
                 Ok(apps) => {
                     let total_count = apps.total_count;
-                    Json(ApiResponse::success(apps, Some(total_count), Some(PAGE_BATCH)))
+                    Json(ApiResponse::success(
+                        apps,
+                        Some(total_count),
+                        Some(PAGE_BATCH),
+                    ))
                 }
                 Err(e) => {
                     event!(Level::WARN, "http服务获取分页应用简略信息失败: {e}");
@@ -162,9 +162,7 @@ pub async fn app_list_paged_short(
                 }
             }
         }
-        Err(e) => {
-            Json(ApiResponse::error(format!("Failed to parse page: {}", e)))
-        }
+        Err(e) => Json(ApiResponse::error(format!("Failed to parse page: {}", e))),
     }
 }
 
@@ -275,7 +273,12 @@ pub async fn get_download_growth_ranking(
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
     let time_range = query.time_range.unwrap_or_else(|| "7d".to_string());
-    event!(Level::INFO, "获取下载量增长排行，限制: {}, 时间范围: {}", limit, time_range);
+    event!(
+        Level::INFO,
+        "获取下载量增长排行，限制: {}, 时间范围: {}",
+        limit,
+        time_range
+    );
 
     match state.db.get_download_growth_apps(limit, &time_range).await {
         Ok(apps) => {
@@ -296,7 +299,12 @@ pub async fn get_rating_growth_ranking(
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
     let time_range = query.time_range.unwrap_or_else(|| "7d".to_string());
-    event!(Level::INFO, "获取评分增长排行，限制: {}, 时间范围: {}", limit, time_range);
+    event!(
+        Level::INFO,
+        "获取评分增长排行，限制: {}, 时间范围: {}",
+        limit,
+        time_range
+    );
 
     match state.db.get_rating_growth_apps(limit, &time_range).await {
         Ok(apps) => {
@@ -321,7 +329,11 @@ pub async fn get_developer_ranking(
     match state.db.get_top_developers(limit).await {
         Ok(developers) => {
             let total_count = developers.len() as u32;
-            Json(ApiResponse::success(developers, Some(total_count), Some(limit)))
+            Json(ApiResponse::success(
+                developers,
+                Some(total_count),
+                Some(limit),
+            ))
         }
         Err(e) => {
             event!(Level::WARN, "获取开发者排行失败: {e}");
