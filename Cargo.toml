@@ -5,22 +5,26 @@ edition = "2024"
 default-run = "get_market"
 
 [[bin]]
+version = "1.0.0"
 name = "guess_market"
 path = "src/guess.rs"
 
 [[bin]]
+version = "1.0.0"
 name = "guess_from_db"
 path = "src/guess_from_db.rs"
 
 [[bin]]
+version = "1.0.0"
 name = "get_nextmax"
 path = "src/get_nextmax.rs"
 
 [[bin]]
+version = "0.1.0"
 name = "read_appgallery"
 path = "src/read_appgallery.rs"
 
-[workspace.dependencies]
+[dependencies]
 anyhow = "1.0"
 axum = { version = "0.8.4", features = [
   # "macros"

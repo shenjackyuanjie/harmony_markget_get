@@ -6,6 +6,7 @@ pub mod sync;
 pub mod utils;
 
 
+use chrono::{DateTime, FixedOffset};
 use tracing::{Level, event};
 
 fn main() -> anyhow::Result<()> {
@@ -25,4 +26,14 @@ async fn async_main() -> anyhow::Result<()> {
     let _db = db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
     Ok(())
+}
+
+fn get_log_time() -> DateTime<FixedOffset> {
+    let out = std::process::Command::new("git")
+        .args(["log", "-1", "--format=%cd", "--date=iso"])
+        .output()
+        .expect("Failed to execute git command");
+    let time_str = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    DateTime::parse_from_str(&time_str, "%Y-%m-%d %H:%M:%S %z")
+        .expect("Failed to parse datetime")
 }
