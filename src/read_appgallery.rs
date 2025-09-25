@@ -1,6 +1,12 @@
-use tracing::{Level, event};
+pub mod config;
+pub mod db;
+pub mod model;
+pub mod server;
+pub mod sync;
+pub mod utils;
 
-use get_market::{config, db, utils};
+
+use tracing::{Level, event};
 
 fn main() -> anyhow::Result<()> {
     utils::init_log();

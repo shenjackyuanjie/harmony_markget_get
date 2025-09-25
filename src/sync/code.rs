@@ -110,7 +110,7 @@ impl CodeManager {
     /// 从服务器获取 interface_code
     async fn fetch_interface_code(&self, identity_id: &str) -> String {
         const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
-        const MAX_RETRIES: usize = 3;
+        const MAX_RETRIES: usize = 5;
 
         let mut retry_count = 0;
 

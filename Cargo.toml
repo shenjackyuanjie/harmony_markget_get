@@ -16,27 +16,9 @@ path = "src/guess_from_db.rs"
 name = "get_nextmax"
 path = "src/get_nextmax.rs"
 
-[lib]
-name = "get_market"
-path = "src/lib.rs"
-
-[dependencies]
-anyhow = { workspace = true }
-axum = { workspace = true }
-chrono = { workspace = true }
-colored = { workspace = true }
-reqwest = { workspace = true }
-serde = { workspace = true }
-toml = { workspace = true }
-serde_json = { workspace = true }
-sqlx = { workspace = true }
-tokio = { workspace = true }
-
-tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
-
-uuid = { workspace = true }
-
+[[bin]]
+name = "read_appgallery"
+path = "src/read_appgallery.rs"
 
 [workspace.dependencies]
 anyhow = "1.0"
@@ -71,8 +53,3 @@ tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
 
 uuid = { version = "1.18.1", features = ["v4", "rng-rand"] }
-
-[workspace]
-members = [
-    "read_appgallery",
-]
