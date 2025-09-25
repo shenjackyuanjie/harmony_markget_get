@@ -58,11 +58,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         // 获取应用大小排行榜
         .route("/api/rankings/sizes", get(handlers::get_size_ranking))
-// 应用基本信息API
-// 通过应用ID获取应用基本信息
-.route("/api/apps/{app_id}", get(handlers::query_app_id))
-// Dashboard routes
-.route("/", get(handlers::redirect_to_dashboard))
-.route("/dashboard", get(handlers::serve_dashboard))
-.with_state(app_state)
+        // 应用基本信息API
+        // 通过应用ID获取应用基本信息
+        .route("/api/apps/{app_id}", get(handlers::query_app_id))
+        // Dashboard routes
+        .route("/", get(handlers::redirect_to_dashboard))
+        .route("/dashboard", get(handlers::serve_dashboard))
+        .with_state(app_state)
 }

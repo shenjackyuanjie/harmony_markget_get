@@ -1,9 +1,9 @@
+use axum::http::StatusCode;
 use axum::{
     Json,
     extract::{Path, Query, State},
-    response::{IntoResponse, Html, Redirect},
+    response::{Html, IntoResponse, Redirect},
 };
-use axum::http::StatusCode;
 use serde_json::json;
 use tracing::{Level, event};
 
@@ -372,6 +372,10 @@ pub async fn redirect_to_dashboard() -> impl IntoResponse {
 pub async fn serve_dashboard() -> impl IntoResponse {
     match tokio::fs::read_to_string("assets/html/main.html").await {
         Ok(html) => Html(html).into_response(),
-        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to load dashboard").into_response(),
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Failed to load dashboard",
+        )
+            .into_response(),
     }
 }
