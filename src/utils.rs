@@ -76,7 +76,7 @@ pub fn has_invalid_utf8_chars(s: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::utils::{sanitize_utf8_string, remove_null_bytes, ensure_valid_utf8, has_invalid_utf8_chars};
 
     #[test]
     fn test_sanitize_utf8_string() {

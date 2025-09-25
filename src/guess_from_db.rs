@@ -43,7 +43,7 @@ async fn async_main() -> anyhow::Result<()> {
     }
 
     // 解析 app_id 格式并生成需要猜测的范围
-    let mut all_ranges = BTreeSet::new();
+    let mut all_ranges: BTreeSet<(String, u64, u64)> = BTreeSet::new();
 
     for app_id in existing_app_ids {
         if let Some((prefix, numeric_part)) = parse_app_id(&app_id) {
