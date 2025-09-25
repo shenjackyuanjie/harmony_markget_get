@@ -11,9 +11,9 @@ use reqwest::Client;
 use tracing::{Level, event};
 
 use crate::{
-    config::{Config, get_config},
+    config::{get_config, Config},
     db::Database,
-    model::{AppInfo, AppMetric, AppQuery, AppRating},
+    model::{AppInfo, AppMetric, AppQuery, AppRating}, sync::code::GLOBAL_CODE_MANAGER,
 };
 
 pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::Result<()> {
@@ -24,6 +24,7 @@ pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::R
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
+    let _ = GLOBAL_CODE_MANAGER.update_token().await;
 
     let interval = config.api_interval();
     let web_part = tokio::spawn(web_main(config.clone(), db.clone()));

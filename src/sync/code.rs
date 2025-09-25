@@ -73,7 +73,7 @@ impl CodeManager {
     }
 
     /// 更新 token（内部方法）
-    async fn update_token(&self) -> TokenInfo {
+    pub async fn update_token(&self) -> TokenInfo {
         println!("{}", "正在刷新 token".on_blue());
 
         let mut last_update_guard = self.last_update.write().await;
@@ -95,10 +95,10 @@ impl CodeManager {
         *last_update_guard = Instant::now();
 
         println!(
-            "{} identity_id: {}, interface_code: {}",
+            "{}\nidentity_id: {}\ninterface_code: {}",
             "token 刷新完成".on_green(),
-            identity_id_str,
-            interface_code
+            identity_id_str.bright_yellow(),
+            interface_code.bright_yellow()
         );
 
         TokenInfo {
