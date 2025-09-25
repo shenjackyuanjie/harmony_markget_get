@@ -12,7 +12,7 @@ use tracing::{Level, event};
 
 use crate::{
     config::{Config, get_config},
-    datas::{AppInfo, AppMetric, AppRating},
+    model::{AppInfo, AppMetric, AppRating},
     db::Database,
 };
 

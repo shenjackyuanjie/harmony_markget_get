@@ -5,7 +5,7 @@ use reqwest::Client;
 use tracing::{Level, event};
 
 use crate::{
-    datas::{RawJsonData, RawRatingData},
+    model::{RawJsonData, RawRatingData},
     db::Database,
 };
 

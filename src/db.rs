@@ -1,4 +1,4 @@
-use crate::datas::{
+use crate::model::{
     AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData, ShortAppInfo,
 };
 use chrono::{DateTime, Local};
@@ -382,7 +382,7 @@ impl Database {
         let offset = range.start as i64;
 
         let rows = sqlx::query(QUERY)
-            .bind(limit)  // LIMIT
+            .bind(limit) // LIMIT
             .bind(offset) // OFFSET - 修正了参数顺序
             .fetch_all(&self.pool)
             .await?;
@@ -627,5 +627,68 @@ impl Database {
             );
         }
         Ok((insert_data, insert_rate))
+    }
+
+    /// 获取指定 pkg_id 的所有 app_metric 信息
+    pub async fn get_app_metrics_by_pkg_id(&self, pkg_id: &str) -> Result<Vec<AppMetric>> {
+        const QUERY: &str = r#"
+            SELECT
+                am.id,
+                am.app_id,
+                am.version,
+                am.version_code,
+                am.size_bytes,
+                am.sha256,
+                am.info_score,
+                am.info_rate_count,
+                am.download_count,
+                am.price,
+                am.release_date,
+                am.new_features,
+                am.upgrade_msg,
+                am.target_sdk,
+                am.minsdk,
+                am.compile_sdk_version,
+                am.min_hmos_api_level,
+                am.api_release_type,
+                am.created_at
+            FROM app_metrics am
+            JOIN app_info ai ON am.app_id = ai.app_id
+            WHERE ai.pkg_name = $1
+            ORDER BY am.created_at DESC
+        "#;
+
+        let rows = sqlx::query(QUERY)
+            .bind(pkg_id)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut app_metrics = Vec::new();
+        for row in rows {
+            let app_metric = AppMetric {
+                id: row.get("id"),
+                app_id: row.get("app_id"),
+                version: row.get("version"),
+                version_code: row.get("version_code"),
+                size_bytes: row.get("size_bytes"),
+                sha256: row.get("sha256"),
+                info_score: row.get("info_score"),
+                info_rate_count: row.get("info_rate_count"),
+                download_count: row.get("download_count"),
+                price: row.get("price"),
+                release_date: row.get("release_date"),
+                new_features: row.get("new_features"),
+                upgrade_msg: row.get("upgrade_msg"),
+                target_sdk: row.get("target_sdk"),
+                minsdk: row.get("minsdk"),
+                compile_sdk_version: row.get("compile_sdk_version"),
+                min_hmos_api_level: row.get("min_hmos_api_level"),
+                api_release_type: row.get("api_release_type"),
+                created_at: row.get("created_at"),
+            };
+            app_metrics.push(app_metric);
+        }
+
+        Ok(app_metrics)
     }
 }

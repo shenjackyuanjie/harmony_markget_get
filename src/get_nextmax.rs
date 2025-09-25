@@ -1,7 +1,7 @@
 use tracing::{Level, event};
 
 pub mod config;
-pub mod datas;
+pub mod model;
 pub mod db;
 pub mod server;
 pub mod sync;
