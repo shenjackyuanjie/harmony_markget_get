@@ -1,8 +1,6 @@
 pub mod query;
 pub mod raw;
 
-use std::fmt::Display;
-
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 

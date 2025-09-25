@@ -9,6 +9,8 @@ use std::collections::BTreeSet;
 
 use colored::Colorize;
 
+use model::query::AppQuery;
+
 fn main() -> anyhow::Result<()> {
     utils::init_log();
     let rt = tokio::runtime::Builder::new_multi_thread()
@@ -125,8 +127,13 @@ async fn async_main() -> anyhow::Result<()> {
                 let app_id = format!("{}{}", prefix, id);
 
                 join_set.spawn(async move {
-                    match crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale)
-                        .await
+                    match crate::sync::get_app_info(
+                        &client,
+                        &api_url,
+                        &AppQuery::app_id(&app_id),
+                        &locale,
+                    )
+                    .await
                     {
                         Ok(data) => {
                             let star =

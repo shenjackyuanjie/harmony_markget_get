@@ -1,5 +1,7 @@
 use colored::Colorize;
 
+use crate::model::AppQuery;
+
 pub mod config;
 pub mod db;
 pub mod model;
@@ -48,8 +50,13 @@ async fn async_main() -> anyhow::Result<()> {
             let locale = config.locale().to_string();
             let app_id = format!("{start}{id}");
             join_set.spawn(async move {
-                if let Ok(data) =
-                    crate::sync::get_pkg_data_by_app_id(&client, &api_url, &app_id, &locale).await
+                if let Ok(data) = crate::sync::get_app_info(
+                    &client,
+                    &api_url,
+                    &AppQuery::app_id(&app_id),
+                    &locale,
+                )
+                .await
                 {
                     let star_result =
                         crate::sync::get_star_by_app_id(&client, &star_url, &app_id).await;
