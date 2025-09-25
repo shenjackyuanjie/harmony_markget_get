@@ -462,7 +462,7 @@ impl Database {
         } else {
             (total_count as f32 / page_size as f32).ceil() as u32
         };
-        let offset = (page - 1) * page_size;
+        let offset = (page.saturating_sub(1)) * page_size;
 
         let data = self
             .get_app_info_paginated(offset..(offset + page_size))
