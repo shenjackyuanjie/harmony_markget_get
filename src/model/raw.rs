@@ -80,13 +80,13 @@ pub struct RawJsonData {
     pub tariff_type: String,
     #[serde(rename = "packingType")]
     pub packing_type: i32,
-    #[serde(rename = "orderApp")]
+    #[serde(rename = "orderApp", default)]
     pub order_app: bool,
-    #[serde(rename = "denpendGms")]
+    #[serde(rename = "denpendGms", default)]
     pub denpend_gms: i32,
-    #[serde(rename = "denpendHms")]
+    #[serde(rename = "denpendHms", default)]
     pub denpend_hms: i32,
-    #[serde(rename = "forceUpdate")]
+    #[serde(rename = "forceUpdate", default)]
     pub force_update: i32,
     #[serde(rename = "imgTag")]
     pub img_tag: String,
