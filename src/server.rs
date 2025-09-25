@@ -29,7 +29,7 @@ pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::R
     let web_part = tokio::spawn(web_main(config.clone(), db.clone()));
 
     loop {
-        crate::sync::sync_all(&client, &db, config, &[]).await?;
+        crate::sync::sync_all(&client, &db, config).await?;
         // 通过 select 同时等待/接受结束事件
         let wait_time = std::time::Duration::from_secs(interval);
         println!("{}", format!("等待 {:?} 后再同步", wait_time).green());

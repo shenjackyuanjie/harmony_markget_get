@@ -23,9 +23,8 @@ pub async fn sync_all(
     client: &Client,
     db: &crate::db::Database,
     config: &crate::config::Config,
-    pack: &[String],
 ) -> anyhow::Result<()> {
-    let mut packages = pack.to_vec();
+    let mut packages = config.packages().to_vec();
     let locale = config.locale();
 
     for pkg in db.get_all_pkg_names().await?.iter() {
