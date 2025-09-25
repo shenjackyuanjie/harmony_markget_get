@@ -12,11 +12,9 @@ use tracing::{Level, event};
 
 use crate::{
     config::{Config, get_config},
-    model::{AppInfo, AppMetric, AppRating},
     db::Database,
+    model::{AppInfo, AppMetric, AppQuery, AppRating},
 };
-
-// pub async fn server(config: &Config, )
 
 pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::Result<()> {
     let config = get_config();
@@ -59,12 +57,12 @@ async fn query_pkg(
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取 {pkg_name} 的信息");
-    match crate::sync::query_package_by_pkg_name(
+    match crate::sync::query_package(
         &state.client,
         &state.db,
         state.cfg.api_info_url(),
         state.cfg.api_detail_url(),
-        &pkg_name,
+        &AppQuery::pkg_name(&pkg_name),
         state.cfg.locale(),
     )
     .await
@@ -91,12 +89,12 @@ async fn query_app_id(
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取 {app_id} 的信息");
-    match crate::sync::query_package_by_pkg_name(
+    match crate::sync::query_package(
         &state.client,
         &state.db,
         state.cfg.api_info_url(),
         state.cfg.api_detail_url(),
-        &app_id,
+        &AppQuery::app_id(&app_id),
         state.cfg.locale(),
     )
     .await

@@ -5,8 +5,8 @@ use reqwest::Client;
 use tracing::{Level, event};
 
 use crate::{
-    model::{RawJsonData, RawRatingData},
     db::Database,
+    model::{AppQuery, RawJsonData, RawRatingData},
 };
 
 /// token 更新间隔
@@ -56,12 +56,12 @@ pub async fn sync_all(
         );
 
         total_processed += 1;
-        match sync_package(
+        match sync_app_data(
             client,
             db,
             config.api_info_url(),
             config.api_detail_url(),
-            package,
+            &AppQuery::pkg_name(package),
             locale,
         )
         .await
@@ -135,36 +135,36 @@ pub async fn sync_all(
 }
 
 /// 处理单个应用包
-pub async fn sync_package(
+pub async fn sync_app_data(
     client: &reqwest::Client,
     db: &Database,
     data_url: &str,
     star_url: &str,
-    package_name: &str,
+    app_query: &AppQuery,
     locale: &str,
 ) -> anyhow::Result<(bool, bool)> {
-    let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
+    let data = get_app_info(client, data_url, app_query, locale)
         .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
-    let star = if !package_name.starts_with("com.atomicservice") {
+    let star = if !app_query.name().starts_with("com.atomicservice") {
         let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
         match star_result {
             Ok(star_data) => Some(star_data),
             Err(e) => {
-                event!(Level::WARN, "获取包 {} 的评分数据失败: {}", package_name, e,);
+                event!(Level::WARN, "获取包 {} 的评分数据失败: {}", app_query, e,);
                 None
             }
         }
     } else {
-        event!(Level::INFO, "跳过元数据 {package_name} 的评分数据");
+        event!(Level::INFO, "跳过元数据 {app_query} 的评分数据");
         None
     };
 
     event!(
         Level::INFO,
         app_id = data.app_id,
-        "获取到包 {package_name} 的数据,应用ID: {}，应用名称: {}",
+        "获取到包 {app_query} 的数据,应用ID: {}，应用名称: {}",
         data.app_id,
         data.name
     );
@@ -173,42 +173,36 @@ pub async fn sync_package(
     let inserted = db
         .save_app_data(&data, star.as_ref())
         .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
 
     Ok(inserted)
 }
 
 /// 查询单个应用包
-pub async fn query_package_by_pkg_name(
+pub async fn query_package(
     client: &reqwest::Client,
     db: &Database,
     data_url: &str,
     star_url: &str,
-    package_name: &str,
+    app_query: &AppQuery,
     locale: &str,
 ) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_pkg_data_by_pkg_name(client, data_url, package_name, locale)
+    let data = get_app_info(client, data_url, app_query, locale)
         .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", package_name, e))?;
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
     let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
-            event!(
-                Level::ERROR,
-                "获取包 {} 的评分数据失败: {:#}",
-                package_name,
-                e
-            );
+            event!(Level::ERROR, "获取包 {app_query} 的评分数据失败: {e:#}",);
             None
         }
     };
 
     event!(
         Level::INFO,
-        "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-        package_name,
+        "获取到包 {app_query} 的数据,应用ID: {}，应用名称: {}",
         data.app_id,
         data.name
     );
@@ -217,23 +211,23 @@ pub async fn query_package_by_pkg_name(
     let is_new = db
         .save_app_data(&data, star.as_ref())
         .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", package_name, e))?;
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
 
     Ok((data, star, is_new))
 }
 
 /// 查询单个应用包
-pub async fn query_package_by_app_id(
+pub async fn get_app_data(
     client: &reqwest::Client,
     db: &Database,
     data_url: &str,
     star_url: &str,
-    app_id: &str,
+    app_query: &AppQuery,
     locale: &str,
 ) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_pkg_data_by_app_id(client, data_url, app_id, locale)
+    let data = get_app_info(client, data_url, app_query, locale)
         .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_id, e))?;
+        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
     let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
     let star = match star_result {
@@ -307,7 +301,6 @@ pub async fn get_star_by_app_id(
         ));
     }
 
-    // let data = response.json::<RawStarData>().await?;
     // 华为我谢谢你
     let data = {
         let raw = response.json::<serde_json::Value>().await?;
@@ -332,34 +325,15 @@ pub async fn get_star_by_app_id(
     Ok(data)
 }
 
-pub async fn get_pkg_data_by_app_id(
-    client: &reqwest::Client,
-    api_url: &str,
-    app_id: impl ToString,
-    locale: impl ToString,
-) -> anyhow::Result<RawJsonData> {
-    get_pkg_data(client, api_url, app_id, locale, "appId").await
-}
-
-pub async fn get_pkg_data_by_pkg_name(
-    client: &reqwest::Client,
-    api_url: &str,
-    pkg_name: impl ToString,
-    locale: impl ToString,
-) -> anyhow::Result<RawJsonData> {
-    get_pkg_data(client, api_url, pkg_name, locale, "pkgName").await
-}
-
 #[inline]
-pub async fn get_pkg_data(
+pub async fn get_app_info(
     client: &reqwest::Client,
     api_url: &str,
-    name: impl ToString,
+    app_query: &AppQuery,
     locale: impl ToString,
-    name_type: impl ToString,
 ) -> anyhow::Result<RawJsonData> {
     let body = serde_json::json!({
-        name_type.to_string(): name.to_string(),
+        app_query.app_info_type(): app_query.name(),
         "locale": locale.to_string(),
     });
 
@@ -368,12 +342,12 @@ pub async fn get_pkg_data(
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
         .header(
-            "identity-id",
-            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
-        )
-        .header(
             "interface-code",
             interface_code::GLOBAL_CODE.get_full_token().await,
+        )
+        .header(
+            "identity-id",
+            identy_id::GLOBAL_IDENTITY_ID.get_identity_id(),
         )
         .json(&body)
         .send()
