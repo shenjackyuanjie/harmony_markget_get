@@ -26,6 +26,10 @@ pub struct RawRatingData {
     pub source_type: String,
 }
 
+fn hot_default() -> String {
+    "0.0".to_string()
+}
+
 /// 1. 原始 JSON 数据直接映射
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RawJsonData {
@@ -114,7 +118,7 @@ pub struct RawJsonData {
     pub size_bytes: i64,
     #[serde(rename = "sha256")]
     pub sha256: String,
-    #[serde(rename = "hot")]
+    #[serde(rename = "hot", default = "hot_default")]
     pub hot_score: String,
     #[serde(rename = "rateNum")]
     pub rate_num: String,
