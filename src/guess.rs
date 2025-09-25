@@ -57,7 +57,7 @@ async fn async_main() -> anyhow::Result<()> {
             let api_url = config.api_info_url().to_string();
             let star_url = config.api_detail_url().to_string();
             let locale = config.locale().to_string();
-            let app_id = format!("{start}{id}");
+            let app_id = format!("{start}{format!("{:07}", id)id}");
             join_set.spawn(async move {
                 if let Ok(data) = crate::sync::get_app_info(
                     &client,
