@@ -23,12 +23,14 @@ async fn async_main() -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
 
-    // C5765880207856366961
-    // C5765880207852915863
+    // C576588020785 6374145
+    // C576588020785 6366961
+    // C576588020785 2915863
+    // C576588020785 2866435
 
     // let range = 2915863..=6366961;
     // let range = 0..=6366961;
-    let range = 2915863..=9999999;
+    let range = 2860000..=6390000;
     let start = "C576588020785";
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
