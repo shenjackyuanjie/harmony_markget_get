@@ -265,17 +265,18 @@ pub async fn get_star_by_app_id(
         "zone": ""
     });
 
+    let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
     let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "Interface-Code",
-            code::GLOBAL_CODE_MANAGER.get_full_token().await.interface_code,
+            token.interface_code,
         )
         .header(
             "identity-id",
-            code::GLOBAL_CODE_MANAGER.get_token().await.identity_id,
+            token.identity_id,
         )
         .json(&body)
         .send()
@@ -335,17 +336,18 @@ pub async fn get_app_info(
         "locale": locale.to_string(),
     });
 
+    let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
     let response = client
         .post(api_url)
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
         .header(
             "interface-code",
-            code::GLOBAL_CODE_MANAGER.get_full_token().await.interface_code,
+            token.interface_code,
         )
         .header(
             "identity-id",
-            code::GLOBAL_CODE_MANAGER.get_token().await.identity_id,
+            token.identity_id,
         )
         .json(&body)
         .send()
