@@ -233,11 +233,11 @@ impl Database {
         sqlx::query_as::<_, (i64, i64, i64, i64, i64)>(
             r#"
             SELECT
-                COALESCE(SUM(star_1_count), 0) as star_1,
-                COALESCE(SUM(star_2_count), 0) as star_2,
-                COALESCE(SUM(star_3_count), 0) as star_3,
-                COALESCE(SUM(star_4_count), 0) as star_4,
-                COALESCE(SUM(star_5_count), 0) as star_5
+                COALESCE(SUM(star_1_rating_count), 0) as star_1,
+                COALESCE(SUM(star_2_rating_count), 0) as star_2,
+                COALESCE(SUM(star_3_rating_count), 0) as star_3,
+                COALESCE(SUM(star_4_rating_count), 0) as star_4,
+                COALESCE(SUM(star_5_rating_count), 0) as star_5
             FROM app_rating
             "#,
         )

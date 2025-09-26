@@ -42,7 +42,7 @@ async function loadOverview() {
         const loadingOverview = document.getElementById('loadingOverview');
         const loadingDeveloperCount = document.getElementById('loadingDeveloperCount');
         const loadingAtomicServiceCount = document.getElementById('loadingAtomicServiceCount');
-        
+
         if (loadingOverview) loadingOverview.style.display = 'block';
         if (loadingDeveloperCount) loadingDeveloperCount.style.display = 'block';
         if (loadingAtomicServiceCount) loadingAtomicServiceCount.style.display = 'block';
@@ -70,7 +70,7 @@ async function loadOverview() {
         const loadingOverview = document.getElementById('loadingOverview');
         const loadingDeveloperCount = document.getElementById('loadingDeveloperCount');
         const loadingAtomicServiceCount = document.getElementById('loadingAtomicServiceCount');
-        
+
         if (loadingOverview) loadingOverview.style.display = 'none';
         if (loadingDeveloperCount) loadingDeveloperCount.style.display = 'none';
         if (loadingAtomicServiceCount) loadingAtomicServiceCount.style.display = 'none';
@@ -271,35 +271,69 @@ async function loadCharts() {
         const response = await fetch(`${API_BASE}/charts/star-distribution`);
         const data = await response.json();
 
-        // Extract data properly
         const starData = data.data || data;
 
         const ctx2 = document.getElementById('starChart').getContext('2d');
         if (starChart) starChart.destroy();
+
+        const starValues = [
+            starData.star_1 || 0,
+            starData.star_2 || 0,
+            starData.star_3 || 0,
+            starData.star_4 || 0,
+            starData.star_5 || 0
+        ];
 
         starChart = new Chart(ctx2, {
             type: 'pie',
             data: {
                 labels: ['1星', '2星', '3星', '4星', '5星'],
                 datasets: [{
-                    data: [
-                        starData.star_1 || 0,
-                        starData.star_2 || 0,
-                        starData.star_3 || 0,
-                        starData.star_4 || 0,
-                        starData.star_5 || 0
-                    ],
+                    data: starValues,
                     backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#17a2b8']
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                return `${label}: ${value} 个`;
+                            }
+                        }
+                    },
+                    legend: {
+                        labels: {
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        return {
+                                            text: `${label} (${value} 个)`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].backgroundColor[i],
+                                            lineWidth: 1,
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    }
+                }
             }
         });
     } catch (error) {
         console.error('Failed to load star distribution chart:', error);
     }
+
 }
 
 // Show app details in modal
