@@ -34,6 +34,22 @@ pub async fn sync_all(
 
     packages.sort();
     packages.dedup();
+    // 随机打乱 powered by grok 4 fast (free)
+    {
+        let seed = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos() as u64;
+        let mut state = seed;
+        let n = packages.len();
+        for i in 0..n {
+            state = state
+                .wrapping_mul(6364136223846793005u64)
+                .wrapping_add(1442695040888963407u64);
+            let j = i + ((state % (n - i) as u64) as usize);
+            packages.swap(i, j);
+        }
+    }
 
     event!(Level::INFO, "开始同步 {} 个 包", packages.len());
 
@@ -105,10 +121,10 @@ pub async fn sync_all(
             }
         }
 
-        // 添加短暂延迟，避免请求过于频繁
-        if index < packages.len() - 1 {
-            tokio::time::sleep(Duration::from_millis(50)).await;
-        }
+        // // 添加短暂延迟，避免请求过于频繁
+        // if index < packages.len() - 1 {
+        //     tokio::time::sleep(Duration::from_millis(50)).await;
+        // }
     }
 
     println!("{}", "所有包处理完成！".green());

@@ -40,58 +40,70 @@ function renderStars(rating) {
 async function loadOverview() {
   try {
     // 显示所有加载指示器
-    const loadingOverview = document.getElementById("loadingOverview");
-    const loadingDeveloperCount = document.getElementById(
+    const loading_overview = document.getElementById("loadingOverview");
+    const loading_developer_count = document.getElementById(
       "loadingDeveloperCount",
     );
-    const loadingAtomicServiceCount = document.getElementById(
+    const loading_atomic_service_count = document.getElementById(
       "loadingAtomicServiceCount",
     );
+    const loading_total_count = document.getElementById("loadingTotalCount");
 
-    if (loadingOverview) loadingOverview.style.display = "block";
-    if (loadingDeveloperCount) loadingDeveloperCount.style.display = "block";
-    if (loadingAtomicServiceCount)
-      loadingAtomicServiceCount.style.display = "block";
+    if (loading_overview) loading_overview.style.display = "block";
+    if (loading_developer_count)
+      loading_developer_count.style.display = "block";
+    if (loading_atomic_service_count)
+      loading_atomic_service_count.style.display = "block";
+    if (loading_total_count) loading_total_count.style.display = "block";
 
     // Get app count
-    const appResponse = await fetch(`${API_BASE}/apps/list/info`);
-    const appData = await appResponse.json();
+    const app_response = await fetch(`${API_BASE}/apps/list/info`);
+    const app_data = await app_response.json();
 
+    document.getElementById("totalCount").textContent = formatNumber(
+      (app_data.data.app_count || 0) +
+        (app_data.data.atomic_services_count || 0),
+    );
     document.getElementById("appCount").textContent = formatNumber(
-      appData.data.app_count || 0,
+      app_data.data.app_count || 0,
     );
     document.getElementById("atomicServiceCount").textContent = formatNumber(
-      appData.data.atomic_services_count || 0,
+      app_data.data.atomic_services_count || 0,
     );
 
     // Get developer count
-    const developerResponse = await fetch(`${API_BASE}/stats/developers/count`);
-    const developerData = await developerResponse.json();
+    const developer_response = await fetch(
+      `${API_BASE}/stats/developers/count`,
+    );
+    const developer_data = await developer_response.json();
 
     document.getElementById("developerCount").textContent = formatNumber(
-      developerData.data.developer_count || 0,
+      developer_data.data.developer_count || 0,
     );
 
     // 隐藏所有加载指示器
-    if (loadingOverview) loadingOverview.style.display = "none";
-    if (loadingDeveloperCount) loadingDeveloperCount.style.display = "none";
-    if (loadingAtomicServiceCount)
-      loadingAtomicServiceCount.style.display = "none";
+    if (loading_overview) loading_overview.style.display = "none";
+    if (loading_developer_count) loading_developer_count.style.display = "none";
+    if (loading_atomic_service_count)
+      loading_atomic_service_count.style.display = "none";
+    if (loading_total_count) loading_total_count.style.display = "none";
   } catch (error) {
     console.error("Failed to load overview:", error);
     // 错误时隐藏所有加载指示器
-    const loadingOverview = document.getElementById("loadingOverview");
-    const loadingDeveloperCount = document.getElementById(
+    const loading_overview = document.getElementById("loadingOverview");
+    const loading_developer_count = document.getElementById(
       "loadingDeveloperCount",
     );
-    const loadingAtomicServiceCount = document.getElementById(
+    const loading_atomic_service_count = document.getElementById(
       "loadingAtomicServiceCount",
     );
+    const loading_total_count = document.getElementById("loadingTotalCount");
 
-    if (loadingOverview) loadingOverview.style.display = "none";
-    if (loadingDeveloperCount) loadingDeveloperCount.style.display = "none";
-    if (loadingAtomicServiceCount)
-      loadingAtomicServiceCount.style.display = "none";
+    if (loading_overview) loading_overview.style.display = "none";
+    if (loading_developer_count) loading_developer_count.style.display = "none";
+    if (loading_atomic_service_count)
+      loading_atomic_service_count.style.display = "none";
+    if (loading_total_count) loading_total_count.style.display = "none";
   }
 }
 
@@ -358,19 +370,17 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
   }
 }
 
-
 async function loadCharts() {
   renderTopDownloadChart(
     `${API_BASE}/rankings/top-downloads?limit=20`,
     "top_download_chart",
-    0.999
+    0.999,
   );
   renderTopDownloadChart(
     `${API_BASE}/rankings/top-downloads?limit=30&exclude_pattern=huawei`,
     "top_download_chart_not_huawei",
-    0.9
+    0.9,
   );
-
 
   // Star Distribution Chart
   try {
