@@ -233,12 +233,13 @@ impl Database {
         sqlx::query_as::<_, (i64, i64, i64, i64, i64)>(
             r#"
             SELECT
-                COALESCE(SUM(star_1_rating_count), 0) as star_1,
-                COALESCE(SUM(star_2_rating_count), 0) as star_2,
-                COALESCE(SUM(star_3_rating_count), 0) as star_3,
-                COALESCE(SUM(star_4_rating_count), 0) as star_4,
-                COALESCE(SUM(star_5_rating_count), 0) as star_5
-            FROM app_rating
+                COUNT(*) FILTER (WHERE average_rating >= 0 AND average_rating < 1) AS range_0_1,
+                COUNT(*) FILTER (WHERE average_rating >= 1 AND average_rating < 2) AS range_1_2,
+                COUNT(*) FILTER (WHERE average_rating >= 2 AND average_rating < 3) AS range_2_3,
+                COUNT(*) FILTER (WHERE average_rating >= 3 AND average_rating < 4) AS range_3_4,
+                COUNT(*) FILTER (WHERE average_rating >= 4 AND average_rating <= 5) AS range_4_5
+            FROM app_latest_info
+            WHERE average_rating IS NOT NULL
             "#,
         )
         .fetch_one(&self.pool)
@@ -883,28 +884,29 @@ impl Database {
     pub async fn get_top_downloads(&self, limit: u32) -> Result<Vec<(AppInfo, AppMetric)>> {
         const QUERY: &str = r#"
             SELECT
-                ai.app_id, ai.alliance_app_id, ai.name, ai.pkg_name,
-                ai.dev_id, ai.developer_name, ai.dev_en_name,
-                ai.supplier, ai.kind_id, ai.kind_name,
-                ai.tag_name, ai.kind_type_id, ai.kind_type_name, ai.icon_url,
-                ai.brief_desc, ai.description, ai.privacy_url, ai.ctype,
-                ai.detail_id, ai.app_level, ai.jocat_id, ai.iap, ai.hms,
-                ai.tariff_type, ai.packing_type, ai.order_app, ai.denpend_gms,
-                ai.denpend_hms, ai.force_update, ai.img_tag, ai.is_pay,
-                ai.is_disciplined, ai.is_shelves, ai.submit_type, ai.delete_archive,
-                ai.charging, ai.button_grey, ai.app_gift, ai.free_days,
-                ai.pay_install_type, ai.created_at,
-                am.id, am.version, am.version_code, am.size_bytes,
-                am.sha256, am.info_score::text, am.info_rate_count,
-                am.download_count, am.price, am.release_date,
-                am.new_features, am.upgrade_msg, am.target_sdk,
-                am.minsdk, am.compile_sdk_version, am.min_hmos_api_level,
-                am.api_release_type, am.created_at as metric_created_at
-            FROM app_info ai
-            JOIN app_metrics am ON ai.app_id = am.app_id
-            ORDER BY am.download_count DESC
+                app_id, alliance_app_id, name, pkg_name,
+                dev_id, developer_name, dev_en_name,
+                supplier, kind_id, kind_name,
+                tag_name, kind_type_id, kind_type_name, icon_url,
+                brief_desc, description, privacy_url, ctype,
+                detail_id, app_level, jocat_id, iap, hms,
+                tariff_type, packing_type, order_app, denpend_gms,
+                denpend_hms, force_update, img_tag, is_pay,
+                is_disciplined, is_shelves, submit_type, delete_archive,
+                charging, button_grey, app_gift, free_days,
+                pay_install_type, created_at,
+                version, version_code, size_bytes,
+                sha256, info_score::text, info_rate_count,
+                download_count, price, release_date,
+                new_features, upgrade_msg, target_sdk,
+                minsdk, compile_sdk_version, min_hmos_api_level,
+                api_release_type, metrics_created_at
+            FROM app_latest_info
+            WHERE download_count IS NOT NULL
+            ORDER BY download_count DESC
             LIMIT $1
         "#;
+
 
         let rows = sqlx::query(QUERY)
             .bind(limit as i64)
@@ -958,7 +960,7 @@ impl Database {
             };
 
             let app_metric = AppMetric {
-                id: row.get("id"),
+                id: 0,
                 app_id: row.get("app_id"),
                 version: row.get("version"),
                 version_code: row.get("version_code"),
@@ -979,7 +981,7 @@ impl Database {
                 compile_sdk_version: row.get("compile_sdk_version"),
                 min_hmos_api_level: row.get("min_hmos_api_level"),
                 api_release_type: row.get("api_release_type"),
-                created_at: row.get("metric_created_at"),
+                created_at: row.get("metrics_created_at"),
             };
 
             apps.push((app_info, app_metric));

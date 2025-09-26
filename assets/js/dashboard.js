@@ -247,7 +247,7 @@ async function loadCharts() {
 
         // 计算动态 Y 轴起点（略低于最小值）
         const minValue = Math.min(...apps.map(item => item.download_count || 0));
-        const yAxisMin = Math.floor(minValue * 0.9); // 可调整比例
+        const yAxisMin = Math.floor(minValue * 0.99); // 可调整比例
 
         const ctx1 = document.getElementById('top10Chart').getContext('2d');
         if (top10Chart) top10Chart.destroy();
