@@ -58,25 +58,20 @@ async function loadOverview() {
     });
 
     // Get app count
-    const appResponse = await fetch(`${API_BASE}/apps/list/info`);
-    const appData = await appResponse.json();
+    const appResponse = await fetch(`${API_BASE}/market_info`);
+    const market_info = await appResponse.json();
 
     document.getElementById("totalCount").textContent = formatNumber(
-      (appData.data.app_count || 0) + (appData.data.atomic_services_count || 0),
+      (market_info.data.app_count || 0) + (market_info.data.atomic_services_count || 0),
     );
     document.getElementById("appCount").textContent = formatNumber(
-      appData.data.app_count || 0,
+      market_info.data.app_count || 0,
     );
     document.getElementById("atomicServiceCount").textContent = formatNumber(
-      appData.data.atomic_services_count || 0,
+      market_info.data.atomic_services_count || 0,
     );
-
-    // Get developer count
-    const developerResponse = await fetch(`${API_BASE}/stats/developers/count`);
-    const developerData = await developerResponse.json();
-
     document.getElementById("developerCount").textContent = formatNumber(
-      developerData.data.developer_count || 0,
+      market_info.data.developer_count || 0,
     );
 
     // Hide loading spinners

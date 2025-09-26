@@ -94,13 +94,31 @@ pub async fn app_list_info(
     State(state): State<std::sync::Arc<super::state::AppState>>,
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
+    #[derive(serde::Deserialize, serde::Serialize)]
+    struct MarketInfo {
+        app_count: u32,
+        atomic_services_count: u32,
+        full_count: u32,
+        developer_count: i64,
+    }
     match state.db.count_apps().await {
         Ok(app_count) => match state.db.count_atomic_services().await {
-            Ok(atomic_services_count) => Json(ApiResponse::success(
-                json!({"app_count": app_count, "atomic_services_count": atomic_services_count}),
-                None,
-                None,
-            )),
+            Ok(atomic_services_count) => match state.db.count_developers().await {
+                Ok(developer_count) => {
+                    let data = MarketInfo {
+                        app_count,
+                        atomic_services_count,
+                        full_count: app_count + atomic_services_count,
+                        developer_count,
+                    };
+                    Json(ApiResponse::success(data, None, None))
+                }
+                Err(e) => {
+                    event!(Level::WARN, "http服务获取开发者数量失败: {e}");
+                    Json(ApiResponse::error(json!({"error": "Database error"})))
+                }
+            },
+
             Err(e) => {
                 event!(Level::WARN, "http服务获取原子服务数量失败: {e}");
                 Json(ApiResponse::error(json!({"error": "Database error"})))
@@ -379,23 +397,6 @@ pub async fn get_size_ranking(
     }
 }
 
-/// Get developer count
-pub async fn get_developer_count(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
-) -> impl IntoResponse {
-    event!(Level::INFO, "http 服务正在尝试获取开发者数量");
-    match state.db.count_developers().await {
-        Ok(count) => Json(ApiResponse::success(
-            json!({"developer_count": count}),
-            None,
-            None,
-        )),
-        Err(e) => {
-            event!(Level::WARN, "http服务获取开发者数量失败: {e}");
-            Json(ApiResponse::error(json!({"error": "Database error"})))
-        }
-    }
-}
 /// Get star distribution
 pub async fn get_star_distribution(
     State(state): State<std::sync::Arc<super::state::AppState>>,

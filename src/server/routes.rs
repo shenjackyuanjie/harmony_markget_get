@@ -12,8 +12,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/api/apps/pkg_name/{pkg_name}", get(handlers::query_pkg))
         // 根据应用ID查询应用信息
         .route("/api/apps/app_id/{app_id}", get(handlers::query_app_id))
-        // 获取应用列表基本信息
-        .route("/api/apps/list/info", get(handlers::app_list_info))
+        // 获取市场信息
+        .route("/api/market_info", get(handlers::app_list_info))
         // 获取分页的应用详细信息
         .route(
             "/api/apps/list/{page_count}/detail",
@@ -62,11 +62,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route(
             "/api/charts/star-distribution",
             get(handlers::get_star_distribution),
-        )
-        // 获取开发者总数
-        .route(
-            "/api/stats/developers/count",
-            get(handlers::get_developer_count),
         )
         // Dashboard routes
         .route("/", get(handlers::redirect_to_dashboard))
