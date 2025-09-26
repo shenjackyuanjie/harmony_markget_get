@@ -27,7 +27,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         // 新增排行API路由
         // 获取下载量排行榜
         .route(
-            "/api/rankings/downloads",
+            "/api/rankings/top-downloads",
             get(handlers::get_download_ranking),
         )
         // 获取评分排行榜

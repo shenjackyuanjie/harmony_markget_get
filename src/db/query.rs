@@ -868,4 +868,123 @@ impl Database {
 
         Ok(app_metrics)
     }
+
+    /// 获取下载量最高的应用
+    ///
+    /// # 参数
+    /// - `limit`: 返回的应用数量
+    ///
+    /// # 示例
+    /// ```rust
+    /// let db = Database::new("postgres://...", 5).await?;
+    /// let top_downloads = db.get_top_downloads(10).await?;
+    /// println!("下载量最高的应用: {:?}", top_downloads);
+    /// ```
+    pub async fn get_top_downloads(&self, limit: u32) -> Result<Vec<(AppInfo, AppMetric)>> {
+        const QUERY: &str = r#"
+            SELECT
+                ai.app_id, ai.alliance_app_id, ai.name, ai.pkg_name,
+                ai.dev_id, ai.developer_name, ai.dev_en_name,
+                ai.supplier, ai.kind_id, ai.kind_name,
+                ai.tag_name, ai.kind_type_id, ai.kind_type_name, ai.icon_url,
+                ai.brief_desc, ai.description, ai.privacy_url, ai.ctype,
+                ai.detail_id, ai.app_level, ai.jocat_id, ai.iap, ai.hms,
+                ai.tariff_type, ai.packing_type, ai.order_app, ai.denpend_gms,
+                ai.denpend_hms, ai.force_update, ai.img_tag, ai.is_pay,
+                ai.is_disciplined, ai.is_shelves, ai.submit_type, ai.delete_archive,
+                ai.charging, ai.button_grey, ai.app_gift, ai.free_days,
+                ai.pay_install_type, ai.created_at,
+                am.id, am.version, am.version_code, am.size_bytes,
+                am.sha256, am.info_score::text, am.info_rate_count,
+                am.download_count, am.price, am.release_date,
+                am.new_features, am.upgrade_msg, am.target_sdk,
+                am.minsdk, am.compile_sdk_version, am.min_hmos_api_level,
+                am.api_release_type, am.created_at as metric_created_at
+            FROM app_info ai
+            JOIN app_metrics am ON ai.app_id = am.app_id
+            ORDER BY am.download_count DESC
+            LIMIT $1
+        "#;
+
+        let rows = sqlx::query(QUERY)
+            .bind(limit as i64)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut apps = Vec::new();
+        for row in rows {
+            let app_info = AppInfo {
+                app_id: row.get("app_id"),
+                alliance_app_id: row.get("alliance_app_id"),
+                name: row.get("name"),
+                pkg_name: row.get("pkg_name"),
+                dev_id: row.get("dev_id"),
+                developer_name: row.get("developer_name"),
+                dev_en_name: row.get("dev_en_name"),
+                supplier: row.get("supplier"),
+                kind_id: row.get("kind_id"),
+                kind_name: row.get("kind_name"),
+                tag_name: row.get("tag_name"),
+                kind_type_id: row.get("kind_type_id"),
+                kind_type_name: row.get("kind_type_name"),
+                icon_url: row.get("icon_url"),
+                brief_desc: row.get("brief_desc"),
+                description: row.get("description"),
+                privacy_url: row.get("privacy_url"),
+                ctype: row.get("ctype"),
+                detail_id: row.get("detail_id"),
+                app_level: row.get("app_level"),
+                jocat_id: row.get("jocat_id"),
+                iap: row.get("iap"),
+                hms: row.get("hms"),
+                tariff_type: row.get("tariff_type"),
+                packing_type: row.get("packing_type"),
+                order_app: row.get("order_app"),
+                denpend_gms: row.get("denpend_gms"),
+                denpend_hms: row.get("denpend_hms"),
+                force_update: row.get("force_update"),
+                img_tag: row.get("img_tag"),
+                is_pay: row.get("is_pay"),
+                is_disciplined: row.get("is_disciplined"),
+                is_shelves: row.get("is_shelves"),
+                submit_type: row.get("submit_type"),
+                delete_archive: row.get("delete_archive"),
+                charging: row.get("charging"),
+                button_grey: row.get("button_grey"),
+                app_gift: row.get("app_gift"),
+                free_days: row.get("free_days"),
+                pay_install_type: row.get("pay_install_type"),
+                created_at: row.get("created_at"),
+            };
+
+            let app_metric = AppMetric {
+                id: row.get("id"),
+                app_id: row.get("app_id"),
+                version: row.get("version"),
+                version_code: row.get("version_code"),
+                size_bytes: row.get("size_bytes"),
+                sha256: row.get("sha256"),
+                info_score: {
+                    let raw: String = row.get("info_score");
+                    raw.parse().unwrap_or(0.0)
+                },
+                info_rate_count: row.get("info_rate_count"),
+                download_count: row.get("download_count"),
+                price: row.get("price"),
+                release_date: row.get("release_date"),
+                new_features: row.get("new_features"),
+                upgrade_msg: row.get("upgrade_msg"),
+                target_sdk: row.get("target_sdk"),
+                minsdk: row.get("minsdk"),
+                compile_sdk_version: row.get("compile_sdk_version"),
+                min_hmos_api_level: row.get("min_hmos_api_level"),
+                api_release_type: row.get("api_release_type"),
+                created_at: row.get("metric_created_at"),
+            };
+
+            apps.push((app_info, app_metric));
+        }
+
+        Ok(apps)
+    }
 }

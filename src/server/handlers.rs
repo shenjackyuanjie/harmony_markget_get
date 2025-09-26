@@ -183,7 +183,7 @@ pub async fn get_download_ranking(
     let limit = query.limit.unwrap_or(10);
     event!(Level::INFO, "获取下载量排行，限制: {}", limit);
 
-    match state.db.get_top_rated_apps(limit).await {
+    match state.db.get_top_downloads(limit).await {
         Ok(apps) => {
             let total_count = apps.len() as u32;
             Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
@@ -388,7 +388,6 @@ pub async fn get_developer_count(
         }
     }
 }
-
 /// Get star distribution
 pub async fn get_star_distribution(
     State(state): State<std::sync::Arc<super::state::AppState>>,

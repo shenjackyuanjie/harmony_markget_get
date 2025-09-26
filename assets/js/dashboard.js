@@ -224,22 +224,30 @@ async function loadCategories() {
     }
 }
 
-// Load charts (Top 10 downloads and Star distribution)
 async function loadCharts() {
     // Top 10 Chart (下载量条形图)
     try {
-        const response = await fetch(`${API_BASE}/rankings/downloads?limit=10`);
+        const response = await fetch(`${API_BASE}/rankings/top-downloads?limit=10`);
         const data = await response.json();
 
-        // Check if data.apps exists and is an array
-        const apps = Array.isArray(data.apps) ? data.apps :
-                    (data.data && Array.isArray(data.data.apps)) ? data.data.apps :
-                    (data.data && Array.isArray(data.data)) ? data.data : [];
+        // 处理从新API返回的数据格式
+        let apps = [];
+        if (data.success && data.data && Array.isArray(data.data)) {
+            apps = data.data.map(item => ({
+                name: item[0].name,
+                download_count: item[1].download_count,
+                icon_url: item[0].icon_url
+            }));
+        }
 
-        if (!Array.isArray(apps) || apps.length === 0) {
+        if (apps.length === 0) {
             console.error('Invalid or empty apps data for chart:', data);
             return;
         }
+
+        // 计算动态 Y 轴起点（略低于最小值）
+        const minValue = Math.min(...apps.map(item => item.download_count || 0));
+        const yAxisMin = Math.floor(minValue * 0.9); // 可调整比例
 
         const ctx1 = document.getElementById('top10Chart').getContext('2d');
         if (top10Chart) top10Chart.destroy();
@@ -247,7 +255,7 @@ async function loadCharts() {
         top10Chart = new Chart(ctx1, {
             type: 'bar',
             data: {
-                labels: apps.map(item => item.name ? (item.name.slice(0, 10) + '...') : 'Unknown'),
+                labels: apps.map(item => item.name ? (item.name.length > 10 ? item.name.slice(0, 10) + '...' : item.name) : 'Unknown'),
                 datasets: [{
                     label: '下载量',
                     data: apps.map(item => item.download_count || 0),
@@ -259,7 +267,25 @@ async function loadCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+                scales: {
+                    y: {
+                        min: yAxisMin, // 👈 设置 Y 轴起点
+                        ticks: {
+                            callback: function(value) {
+                                return formatNumber(value);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `下载量: ${formatNumber(context.raw)}`;
+                            }
+                        }
+                    }
+                }
             }
         });
     } catch (error) {
