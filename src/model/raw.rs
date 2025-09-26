@@ -30,6 +30,10 @@ fn hot_default() -> String {
     "0.0".to_string()
 }
 
+fn rate_num_default() -> String {
+    "0".to_string()
+}
+
 /// 1. 原始 JSON 数据直接映射
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RawJsonData {
@@ -120,7 +124,7 @@ pub struct RawJsonData {
     pub sha256: String,
     #[serde(rename = "hot", default = "hot_default")]
     pub hot_score: String,
-    #[serde(rename = "rateNum")]
+    #[serde(rename = "rateNum", default = "rate_num_default")]
     pub rate_num: String,
     #[serde(rename = "downCount")]
     pub download_count: String,

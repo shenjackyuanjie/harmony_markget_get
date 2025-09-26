@@ -5,7 +5,7 @@ let currentSort = { field: "download_count", direction: "desc" };
 let searchTerm = "";
 let starChart = null;
 let categoryFilter = "";
-let top10Chart = null;
+let top_download_chart = null;
 const PAGE_SIZE = 20;
 const API_BASE = "/api"; // Adjust if needed
 
@@ -251,9 +251,9 @@ async function loadCategories() {
   }
 }
 
-async function loadCharts() {
+async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
   try {
-    const response = await fetch(`${API_BASE}/rankings/top-downloads?limit=20`);
+    const response = await fetch(apiUrl);
     const data = await response.json();
 
     let apps = [];
@@ -271,10 +271,12 @@ async function loadCharts() {
     }
 
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
-    const yAxisMin = Math.floor(minValue * 0.999);
+    const yAxisMin = Math.floor(minValue * yAxisRatio);
 
-    const ctx1 = document.getElementById("top_download_chart").getContext("2d");
-    if (top10Chart) top10Chart.destroy();
+    const ctx = document.getElementById(ctxId).getContext("2d");
+    if (window[ctxId + "_chart"]) {
+      window[ctxId + "_chart"].destroy();
+    }
 
     // 自定义插件：在柱子上方绘制图标
     const iconPlugin = {
@@ -286,19 +288,18 @@ async function loadCharts() {
           if (!app || !app.icon_url) return;
 
           const x = bar.x;
-          const y = bar.y - 30; // 图标位置（柱子上方）
+          const y = bar.y - 30;
 
           const img = new Image();
           img.src = app.icon_url;
           img.onload = () => {
             ctx.drawImage(img, x - 10, y - 20, 20, 20);
-            // (x-10,y-20) 是位置，20x20 是图标大小，可调整
           };
         });
       },
     };
 
-    top10Chart = new Chart(ctx1, {
+    window[ctxId + "_chart"] = new Chart(ctx, {
       type: "bar",
       data: {
         labels: apps.map((item) =>
@@ -350,11 +351,26 @@ async function loadCharts() {
           },
         },
       },
-      plugins: [ChartDataLabels, iconPlugin], // 注册插件
+      plugins: [ChartDataLabels, iconPlugin],
     });
   } catch (error) {
     console.error("Failed to load top download chart:", error);
   }
+}
+
+
+async function loadCharts() {
+  renderTopDownloadChart(
+    `${API_BASE}/rankings/top-downloads?limit=20`,
+    "top_download_chart",
+    0.999
+  );
+  renderTopDownloadChart(
+    `${API_BASE}/rankings/top-downloads?limit=30&exclude_pattern=huawei`,
+    "top_download_chart_not_huawei",
+    0.9
+  );
+
 
   // Star Distribution Chart
   try {

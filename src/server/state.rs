@@ -65,6 +65,7 @@ impl ApiResponse {
 #[derive(serde::Deserialize)]
 pub struct RankingQuery {
     pub limit: Option<u32>,
+    pub exclude_pattern: Option<String>,
     pub time_range: Option<String>,
 }
 
@@ -72,6 +73,7 @@ impl Default for RankingQuery {
     fn default() -> Self {
         Self {
             limit: Some(10),
+            exclude_pattern: None,
             time_range: None,
         }
     }
