@@ -4,14 +4,18 @@
 
 ## 🚀 功能特性
 
-- ✅ 从华为应用市场 API 获取应用详细信息
-- ✅ 支持批量处理多个应用包
-- ✅ 数据存储到 PostgreSQL 数据库
-- ✅ 支持应用信息、指标数据和原始 JSON 数据的存储
+- ✅ 从华为应用市场 API 获取应用详细信息和评分数据
+- ✅ 支持批量处理多个应用包和应用ID猜测
+- ✅ 数据存储到 PostgreSQL 数据库，支持多表结构和视图查询
+- ✅ 支持应用信息、指标数据、评分数据和原始 JSON 数据的存储
 - ✅ 智能重复数据检测，避免重复插入相同数据
-- ✅ 配置化管理数据库连接和 API 参数
-- ✅ 彩色控制台输出，便于监控运行状态
+- ✅ 配置化管理数据库连接、API 参数和服务器设置
+- ✅ 集成 tracing 日志系统和字符串清理工具
 - ✅ 错误处理机制，单个包失败不影响整体流程
+- ✅ Web 服务器提供 REST API 接口查询数据
+- ✅ 多二进制工具支持数据同步、爬取和猜测应用ID
+- ✅ API token 自动管理和刷新机制
+- ✅ 数据库迁移脚本支持表结构演进
 
 ## 📋 数据库表结构
 
@@ -21,15 +25,26 @@
 - 应用ID、名称、包名、开发者信息
 - 分类信息、描述、图标URL
 - 应用属性（是否付费、是否上架等）
+- created_at 时间戳跟踪记录创建
 
 ### app_metrics - 应用指标数据表
 - 版本信息、应用大小、SHA256校验值
-- 评分数据、下载次数、价格
+- 下载次数、价格、热度评分
 - SDK版本信息、发布时间
+
+### app_rating - 应用评分数据表
+- average_rating 平均评分
+- 星级计数（1-5星）
+- 与 app_id 关联
 
 ### app_raw - 原始 JSON 数据表
 - 完整的原始API响应数据（JSONB格式）
 - 时间戳记录，便于数据追溯
+- 去重机制避免重复存储
+
+### app_latest_info - 视图
+- 最新应用信息视图，聚合 app_info、app_metrics 和 app_rating
+- 支持 Top 100 查询脚本
 
 ## 🛠️ 安装步骤
 
@@ -67,7 +82,13 @@ GRANT ALL PRIVILEGES ON DATABASE market_db TO market_user;
 
 #### 执行数据库迁移
 ```bash
-psql -d market_db -f sql/main.sql
+# 执行主表结构脚本
+psql -d market_db -f assets/sql/main.sql
+
+# 应用迁移脚本（按顺序执行）
+for dir in assets/sql/migrations/*; do
+    psql -d market_db -f "$dir/up.sql"  # 假设每个迁移有 up.sql
+done
 ```
 
 ### 5. 配置文件设置
@@ -106,6 +127,11 @@ timeout_seconds = 30
 [logging]
 # 日志级别: debug, info, warn, error
 level = "info"
+
+[server]
+# Web 服务器配置
+host = "0.0.0.0"
+port = 8080
 ```
 
 ## 🎯 使用方法
@@ -137,9 +163,37 @@ cargo build --release
 ```
 
 ### 使用特定配置文件
-
 ```bash
 cargo run -- --config custom_config.toml
+```
+
+### 启动 Web 服务器
+```bash
+# 启动服务器，提供 API 接口
+cargo run --bin get_market server
+
+# 或直接运行发布版本
+./target/release/get_market server
+```
+
+服务器默认监听 http://localhost:8080，支持端点如：
+- GET /query/pkg_name/{pkg} - 查询指定包名应用信息
+- GET /query/app_id/{id} - 查询指定应用ID信息
+- GET /top100 - 获取 Top 100 热门应用
+
+### 其他二进制工具
+```bash
+# 猜测应用ID
+cargo run --bin guess_market
+
+# 从数据库猜测应用ID
+cargo run --bin guess_from_db
+
+# 从 nextmax.cn 爬取应用ID并保存为 apps.json
+cargo run --bin get_nextmax
+
+# 读取华为应用市场数据
+cargo run --bin read_appgallery
 ```
 
 ## 📊 数据采集流程
@@ -158,6 +212,13 @@ cargo run -- --config custom_config.toml
 ```toml
 [database]
 url = "postgresql://username:password@localhost:5432/market_db"
+```
+
+### 服务器配置
+```toml
+[server]
+host = "0.0.0.0"
+port = 8080
 ```
 
 ### 应用配置
