@@ -50,9 +50,9 @@ async function loadOverview() {
       "loadingOverview",
       "loadingDeveloperCount",
       "loadingAtomicServiceCount",
-      "loadingTotalCount"
+      "loadingTotalCount",
     ];
-    loadingElements.forEach(id => {
+    loadingElements.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.style.display = "inline-block";
     });
@@ -62,19 +62,25 @@ async function loadOverview() {
     const appData = await appResponse.json();
 
     document.getElementById("totalCount").textContent = formatNumber(
-      (appData.data.app_count || 0) + (appData.data.atomic_services_count || 0)
+      (appData.data.app_count || 0) + (appData.data.atomic_services_count || 0),
     );
-    document.getElementById("appCount").textContent = formatNumber(appData.data.app_count || 0);
-    document.getElementById("atomicServiceCount").textContent = formatNumber(appData.data.atomic_services_count || 0);
+    document.getElementById("appCount").textContent = formatNumber(
+      appData.data.app_count || 0,
+    );
+    document.getElementById("atomicServiceCount").textContent = formatNumber(
+      appData.data.atomic_services_count || 0,
+    );
 
     // Get developer count
     const developerResponse = await fetch(`${API_BASE}/stats/developers/count`);
     const developerData = await developerResponse.json();
 
-    document.getElementById("developerCount").textContent = formatNumber(developerData.data.developer_count || 0);
+    document.getElementById("developerCount").textContent = formatNumber(
+      developerData.data.developer_count || 0,
+    );
 
     // Hide loading spinners
-    loadingElements.forEach(id => {
+    loadingElements.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.style.display = "none";
     });
@@ -85,9 +91,9 @@ async function loadOverview() {
       "loadingOverview",
       "loadingDeveloperCount",
       "loadingAtomicServiceCount",
-      "loadingTotalCount"
+      "loadingTotalCount",
     ];
-    loadingElements.forEach(id => {
+    loadingElements.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.style.display = "none";
     });
@@ -95,14 +101,22 @@ async function loadOverview() {
 }
 
 // Load apps with pagination, sorting, search, and category filter
-async function loadApps(page = 1, sortField = currentSort.field, sortDirection = currentSort.direction, search = searchTerm, category = categoryFilter) {
+async function loadApps(
+  page = 1,
+  sortField = currentSort.field,
+  sortDirection = currentSort.direction,
+  search = searchTerm,
+  category = categoryFilter,
+) {
   try {
     const tableBody = document.getElementById("appTableBody");
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
+    tableBody.innerHTML =
+      '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
     let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&direction=${sortDirection}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
-    if (category && category !== "all") url += `&category=${encodeURIComponent(category)}`;
+    if (category && category !== "all")
+      url += `&category=${encodeURIComponent(category)}`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -115,10 +129,14 @@ async function loadApps(page = 1, sortField = currentSort.field, sortDirection =
     let apps = data.data.apps || [];
     // Additional client-side filtering if needed
     if (search) {
-      apps = apps.filter(app => app.name.toLowerCase().includes(search.toLowerCase()));
+      apps = apps.filter((app) =>
+        app.name.toLowerCase().includes(search.toLowerCase()),
+      );
     }
     if (category && category !== "all") {
-      apps = apps.filter(app => app.category.toLowerCase() === category.toLowerCase());
+      apps = apps.filter(
+        (app) => app.category.toLowerCase() === category.toLowerCase(),
+      );
     }
 
     // Client-side sort if server doesn't handle it
@@ -140,7 +158,8 @@ async function loadApps(page = 1, sortField = currentSort.field, sortDirection =
     renderPagination();
   } catch (error) {
     console.error("Failed to load apps:", error);
-    document.getElementById("appTableBody").innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Error loading data</td></tr>';
+    document.getElementById("appTableBody").innerHTML =
+      '<tr><td colspan="8" class="text-center py-4 text-gray-500">Error loading data</td></tr>';
   }
 }
 
@@ -150,7 +169,8 @@ function renderApps(apps) {
   tableBody.innerHTML = "";
 
   if (!apps || apps.length === 0) {
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No apps found</td></tr>';
+    tableBody.innerHTML =
+      '<tr><td colspan="8" class="text-center py-4 text-gray-500">No apps found</td></tr>';
     return;
   }
 
@@ -173,12 +193,12 @@ function renderApps(apps) {
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app.rating)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app.download_count || 0)}</td>
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app.price ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app.price ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}">
           ${app.price ? `¥${app.price.toFixed(2)}` : "免费"}
         </span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app.size || 0)}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.last_update ? new Date(app.last_update).toLocaleDateString('zh-CN') : "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.last_update ? new Date(app.last_update).toLocaleDateString("zh-CN") : "Unknown"}</td>
     `;
 
     tableBody.appendChild(tr);
@@ -215,12 +235,16 @@ function renderPagination() {
 
   // Previous button
   const prevLi = document.createElement("li");
-  prevLi.className = `flex ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+  prevLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const prevA = document.createElement("a");
-  prevA.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  prevA.className =
+    "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
   prevA.textContent = "上一页";
   if (currentPage > 1) {
-    prevA.onclick = (e) => { e.preventDefault(); loadApps(currentPage - 1); };
+    prevA.onclick = (e) => {
+      e.preventDefault();
+      loadApps(currentPage - 1);
+    };
   }
   prevLi.appendChild(prevA);
   ul.appendChild(prevLi);
@@ -230,25 +254,34 @@ function renderPagination() {
   const endPage = Math.min(totalPages, currentPage + 2);
   for (let i = startPage; i <= endPage; i++) {
     const li = document.createElement("li");
-    li.className = `flex ${i === currentPage ? 'z-10' : ''}`;
+    li.className = `flex ${i === currentPage ? "z-10" : ""}`;
     const a = document.createElement("a");
-    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
-      ? 'border-blue-500 bg-blue-50 text-blue-600'
-      : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'}`;
+    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${
+      i === currentPage
+        ? "border-blue-500 bg-blue-50 text-blue-600"
+        : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+    }`;
     a.textContent = i;
-    a.onclick = (e) => { e.preventDefault(); loadApps(i); };
+    a.onclick = (e) => {
+      e.preventDefault();
+      loadApps(i);
+    };
     li.appendChild(a);
     ul.appendChild(li);
   }
 
   // Next button
   const nextLi = document.createElement("li");
-  nextLi.className = `flex ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+  nextLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const nextA = document.createElement("a");
-  nextA.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  nextA.className =
+    "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
   nextA.textContent = "下一页";
   if (currentPage < totalPages) {
-    nextA.onclick = (e) => { e.preventDefault(); loadApps(currentPage + 1); };
+    nextA.onclick = (e) => {
+      e.preventDefault();
+      loadApps(currentPage + 1);
+    };
   }
   nextLi.appendChild(nextA);
   ul.appendChild(nextLi);
@@ -270,10 +303,10 @@ async function loadCategories() {
       { value: "entertainment", label: "娱乐" },
       { value: "education", label: "教育" },
       { value: "lifestyle", label: "生活" },
-      { value: "utilities", label: "工具" }
+      { value: "utilities", label: "工具" },
     ];
 
-    categories.forEach(cat => {
+    categories.forEach((cat) => {
       const option = document.createElement("option");
       option.value = cat.value;
       option.textContent = cat.label;
@@ -285,9 +318,9 @@ async function loadCategories() {
 }
 
 // Render top download chart
-async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
+async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) {
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch(api_url);
     const data = await response.json();
 
     let apps = [];
@@ -305,11 +338,11 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
     }
 
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
-    const yAxisMin = Math.floor(minValue * yAxisRatio);
+    const yAxisMin = Math.floor(minValue * y_axis_ratio);
 
-    const ctx = document.getElementById(ctxId).getContext("2d");
-    if (window[ctxId + "_chart"]) {
-      window[ctxId + "_chart"].destroy();
+    const ctx = document.getElementById(ctx_id).getContext("2d");
+    if (window[ctx_id + "_chart"]) {
+      window[ctx_id + "_chart"].destroy();
     }
 
     // Custom plugin for icons on bars
@@ -337,19 +370,25 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
       },
     };
 
-    window[ctxId + "_chart"] = new Chart(ctx, {
+    window[ctx_id + "_chart"] = new Chart(ctx, {
       type: "bar",
       data: {
         labels: apps.map((item) =>
-          item.name ? (item.name.length > 10 ? item.name.slice(0, 10) + "..." : item.name) : "Unknown"
+          item.name
+            ? item.name.length > 10
+              ? item.name.slice(0, 10) + "..."
+              : item.name
+            : "Unknown",
         ),
-        datasets: [{
-          label: "下载量",
-          data: apps.map((item) => item.download_count || 0),
-          backgroundColor: "rgba(59, 130, 246, 0.6)",
-          borderColor: "rgba(59, 130, 246, 1)",
-          borderWidth: 1,
-        }],
+        datasets: [
+          {
+            label: "下载量",
+            data: apps.map((item) => item.download_count || 0),
+            backgroundColor: "rgba(59, 130, 246, 0.6)",
+            borderColor: "rgba(59, 130, 246, 1)",
+            borderWidth: 1,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -413,16 +452,18 @@ async function loadStarChart() {
       type: "pie",
       data: {
         labels: ["1星", "2星", "3星", "4星", "5星"],
-        datasets: [{
-          data: starValues,
-          backgroundColor: [
-            "#ef4444",
-            "#f97316",
-            "#eab308",
-            "#22c55e",
-            "#0ea5e9",
-          ],
-        }],
+        datasets: [
+          {
+            data: starValues,
+            backgroundColor: [
+              "#ef4444",
+              "#f97316",
+              "#eab308",
+              "#22c55e",
+              "#0ea5e9",
+            ],
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -450,8 +491,16 @@ async function loadStarChart() {
 
 // Load all charts
 async function loadCharts() {
-  renderTopDownloadChart(`${API_BASE}/rankings/top-downloads?limit=25`, "top_download_chart", 0.999);
-  renderTopDownloadChart(`${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`, "top_download_chart_not_huawei", 0.9);
+  render_top_download_chart(
+    `${API_BASE}/rankings/top-downloads?limit=25`,
+    "top_download_chart",
+    0.999,
+  );
+  render_top_download_chart(
+    `${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`,
+    "top_download_chart_not_huawei",
+    0.9,
+  );
   loadStarChart();
 }
 
@@ -460,7 +509,8 @@ async function showAppDetail(appId) {
   try {
     const modal = document.getElementById("appDetailModal");
     const modalContent = document.getElementById("appDetailContent");
-    modalContent.innerHTML = '<div class="flex justify-center items-center py-8"><div class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>';
+    modalContent.innerHTML =
+      '<div class="flex justify-center items-center py-8"><div class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>';
 
     const response = await fetch(`${API_BASE}/apps/id/${appId}`);
     const data = await response.json();
@@ -484,7 +534,7 @@ async function showAppDetail(appId) {
           <div class="space-y-2 mb-4">
             <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app.download_count || 0)}</span></p>
             <p><strong class="text-gray-900">价格:</strong> <span class="text-gray-600">${app.price ? `¥${app.price.toFixed(2)}` : "免费"}</span></p>
-            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app.last_update ? new Date(app.last_update).toLocaleDateString('zh-CN') : "未知"}</span></p>
+            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app.last_update ? new Date(app.last_update).toLocaleDateString("zh-CN") : "未知"}</span></p>
           </div>
           <hr class="my-4 border-gray-200">
           <p class="text-gray-700">${app.description || "无描述"}</p>
@@ -496,7 +546,8 @@ async function showAppDetail(appId) {
     modal.classList.remove("hidden");
   } catch (error) {
     console.error("Failed to load app details:", error);
-    document.getElementById("appDetailContent").innerHTML = '<div class="text-center py-4 text-red-500">Failed to load details</div>';
+    document.getElementById("appDetailContent").innerHTML =
+      '<div class="text-center py-4 text-red-500">Failed to load details</div>';
     document.getElementById("appDetailModal").classList.remove("hidden");
   }
 }
@@ -504,7 +555,8 @@ async function showAppDetail(appId) {
 // Update last update timestamp
 function updateLastUpdate() {
   const now = new Date();
-  document.getElementById("lastUpdate").textContent = now.toLocaleString('zh-CN');
+  document.getElementById("lastUpdate").textContent =
+    now.toLocaleString("zh-CN");
 }
 
 // Refresh all data
