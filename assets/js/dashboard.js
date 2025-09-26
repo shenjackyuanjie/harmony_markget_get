@@ -300,7 +300,7 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
           if (!app || !app.icon_url) return;
 
           const x = bar.x;
-          const y = bar.y - 30;
+          const y = bar.y - 17;
 
           const img = new Image();
           img.src = app.icon_url;
@@ -355,8 +355,9 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
           datalabels: {
             anchor: "end",
             align: "end",
+            offset: -3,
             color: "#333",
-            font: { weight: "bold" },
+            font: { weight: "bold", family: "console", size: 12 },
             formatter: function (value) {
               return formatNumber(value);
             },
@@ -372,12 +373,12 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
 
 async function loadCharts() {
   renderTopDownloadChart(
-    `${API_BASE}/rankings/top-downloads?limit=20`,
+    `${API_BASE}/rankings/top-downloads?limit=25`,
     "top_download_chart",
     0.999,
   );
   renderTopDownloadChart(
-    `${API_BASE}/rankings/top-downloads?limit=30&exclude_pattern=huawei`,
+    `${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`,
     "top_download_chart_not_huawei",
     0.9,
   );
