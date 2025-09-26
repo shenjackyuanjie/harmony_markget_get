@@ -9,9 +9,9 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
     Router::new()
         // 规范化后的原有路由
         // 根据包名查询应用信息
-        .route("/api/apps/by-pkg-name/{pkg_name}", get(handlers::query_pkg))
+        .route("/api/apps/pkg_name/{pkg_name}", get(handlers::query_pkg))
         // 根据应用ID查询应用信息
-        .route("/api/apps/by-app-id/{app_id}", get(handlers::query_app_id))
+        .route("/api/apps/app_id/{app_id}", get(handlers::query_app_id))
         // 获取应用列表基本信息
         .route("/api/apps/list/info", get(handlers::app_list_info))
         // 获取分页的应用详细信息
@@ -68,9 +68,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             "/api/stats/developers/count",
             get(handlers::get_developer_count),
         )
-        // 应用基本信息API
-        // 通过应用ID获取应用基本信息
-        .route("/api/apps/{app_id}", get(handlers::query_app_id))
         // Dashboard routes
         .route("/", get(handlers::redirect_to_dashboard))
         .route("/dashboard", get(handlers::serve_dashboard))
