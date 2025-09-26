@@ -10,9 +10,9 @@ let top_download_chart_not_huawei = null;
 const PAGE_SIZE = 20;
 const API_BASE = "/api"; // Adjust if needed
 
-// Format number with commas
+// 格式化数字, 四位一分隔
 function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return num.toString().replace(/\B(?=(\d{4})+(?!\d))/g, ",");
 }
 
 // Format file size
@@ -416,7 +416,7 @@ async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) 
             align: "end",
             offset: -3,
             color: "#333",
-            font: { weight: "bold", family: "console", size: 12 },
+            font: { family: "console", size: 12 },
             formatter: function (value) {
               return formatNumber(value);
             },
@@ -451,7 +451,7 @@ async function loadStarChart() {
     starChart = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["1星", "2星", "3星", "4星", "5星"],
+        labels: ["0-1星", "1-2星", "2-3星", "3-4星", "4-5星"],
         datasets: [
           {
             data: starValues,
@@ -492,12 +492,12 @@ async function loadStarChart() {
 // Load all charts
 async function loadCharts() {
   render_top_download_chart(
-    `${API_BASE}/rankings/top-downloads?limit=25`,
+    `${API_BASE}/rankings/top-downloads?limit=20`,
     "top_download_chart",
     0.999,
   );
   render_top_download_chart(
-    `${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`,
+    `${API_BASE}/rankings/top-downloads?limit=30&exclude_pattern=huawei`,
     "top_download_chart_not_huawei",
     0.9,
   );

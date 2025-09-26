@@ -20,7 +20,7 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="container mx-auto px-4 py-6">
+    <div class="px-4 py-6">
         <!-- Header -->
         <div class="mb-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -81,31 +81,35 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="p-6">
+                    <div class="p-4">
                         <h5 class="text-lg font-semibold text-gray-900 mb-0">总下载榜</h5>
                     </div>
-                    <div class="p-6 chart-container">
-                        <canvas id="top_download_chart"></canvas>
+                    <div class="overflow-x-auto">
+                        <div class="p-2 chart-container" style="min-width: 1400px;">
+                            <canvas id="top_download_chart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
             <div>
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div class="p-6">
-                        <h5 class="text-lg font-semibold text-gray-900 mb-0">应用评分分布</h5>
+                    <div class="p-4">
+                        <h5 class="text-lg font-semibold text-gray-900 mb-0">总应用评分分布</h5>
                     </div>
-                    <div class="p-6 chart-container">
+                    <div class="p-2 chart-container">
                         <canvas id="starChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div class="p-6">
+            <div class="p-4">
                 <h5 class="text-lg font-semibold text-gray-900 mb-0">非华为应用/内置应用下载榜</h5>
             </div>
-            <div class="p-6 chart-container">
-                <canvas id="top_download_chart_not_huawei"></canvas>
+            <div class="overflow-x-auto">
+                <div class="p-2 chart-container" style="min-width: 2200px;">
+                    <canvas id="top_download_chart_not_huawei"></canvas>
+                </div>
             </div>
         </div>
 
