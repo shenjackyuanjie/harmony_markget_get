@@ -35,7 +35,7 @@
 
         <!-- Overview Cards -->
         <div class="row mb-4" id="overviewSection">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
                         <h5 class="card-title">总应用数</h5>
@@ -43,27 +43,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h5 class="card-title">总下载量</h5>
-                        <h3 id="totalDownloads" class="text-success">0</h3>
+                        <h5 class="card-title">下载王</h5>
+                        <h3 id="topDownload" class="text-success">0</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
-                        <h5 class="card-title">平均评分</h5>
-                        <h3 id="avgRating" class="text-warning">0.0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">最近更新</h5>
-                        <h3 id="recentUpdates" class="text-info">0</h3>
+                        <h5 class="card-title">开发者数</h5>
+                        <h3 id="developerCount" class="text-info">0</h3>
                     </div>
                 </div>
             </div>
@@ -187,12 +179,27 @@
         // Fetch and render overview
         async function loadOverview() {
             try {
-                const response = await fetch(`${API_BASE}/stats`);
-                const data = await response.json();
-                document.getElementById('totalApps').textContent = formatNumber(data.total_apps || 0);
-                document.getElementById('totalDownloads').textContent = formatNumber(data.total_downloads || 0);
-                document.getElementById('avgRating').textContent = (data.avg_rating || 0).toFixed(1);
-                document.getElementById('recentUpdates').textContent = data.recent_updates || 0;
+                // Concurrent fetches for overview cards
+                const [infoRes, downloadRes, developerRes] = await Promise.all([
+                    fetch(`${API_BASE}/apps/list/info`),
+                    fetch(`${API_BASE}/rankings/downloads?limit=1`),
+                    fetch(`${API_BASE}/stats/developers/count`)
+                ]);
+
+                // Parse responses
+                const infoData = await infoRes.json();
+                const downloadData = await downloadRes.json();
+                const developerData = await developerRes.json();
+
+                // Update total apps
+                document.getElementById('totalApps').textContent = formatNumber(infoData.app_count || 0);
+
+                // Update top download (from first app)
+                const topDownloadApp = (downloadData.apps || downloadData)[0] || {};
+                document.getElementById('topDownload').textContent = formatNumber(topDownloadApp.download_count || 0);
+
+                // Update developer count
+                document.getElementById('developerCount').textContent = formatNumber(developerData.count || 0);
             } catch (error) {
                 console.error('Failed to load overview:', error);
             }
@@ -209,16 +216,12 @@
             }
 
             try {
-                const params = new URLSearchParams({
-                    limit: PAGE_SIZE,
-                    page: page,
-                    search: searchTerm,
-                    filter_category: categoryFilter,
-                    sort: `${currentSort.field}_${currentSort.direction}`
-                });
-                const response = await fetch(`${API_BASE}/top-apps?${params}`);
-                const { apps, total } = await response.json();
-                totalPages = Math.ceil((total || 0) / PAGE_SIZE);
+                // Simplified to use /api/apps/list/{page}/detail, no query params supported yet
+                const response = await fetch(`${API_BASE}/apps/list/${page}/detail`);
+                const data = await response.json();
+                const apps = data.apps || data; // Adapt to response structure
+                const total = data.total_count || 0;
+                totalPages = Math.ceil(total / PAGE_SIZE);
                 currentPage = page;
 
                 tbody.innerHTML = '';
@@ -281,10 +284,10 @@
         // Load categories for filter
         async function loadCategories() {
             try {
-                // Assuming API returns unique categories; for now, simulate or fetch from apps
-                // In real, add /api/categories endpoint
-                const response = await fetch(`${API_BASE}/top-apps?limit=100`); // Fetch some to extract
-                const { apps } = await response.json();
+                // Use /api/apps/list/1/detail to fetch first page and extract categories
+                const response = await fetch(`${API_BASE}/apps/list/1/detail`);
+                const data = await response.json();
+                const apps = data.apps || data; // Adapt to response structure
                 const categories = [...new Set(apps.map(app => app.kind_name).filter(Boolean))].sort();
                 const select = document.getElementById('categoryFilter');
                 select.innerHTML = '<option value="">所有分类</option>';
@@ -303,17 +306,18 @@
         async function loadCharts() {
             // Top 10 Chart
             try {
-                const response = await fetch(`${API_BASE}/charts/top10`);
+                const response = await fetch(`${API_BASE}/rankings/downloads?limit=10`);
                 const data = await response.json();
+                const apps = data.apps || data; // Adapt to response structure
                 const ctx1 = document.getElementById('top10Chart').getContext('2d');
                 if (top10Chart) top10Chart.destroy();
                 top10Chart = new Chart(ctx1, {
                     type: 'bar',
                     data: {
-                        labels: data.map(item => item.name.slice(0, 10) + '...'),
+                        labels: apps.map(item => item.name.slice(0, 10) + '...'),
                         datasets: [{
                             label: '下载量',
-                            data: data.map(item => item.download_count),
+                            data: apps.map(item => item.download_count),
                             backgroundColor: 'rgba(54, 162, 235, 0.6)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1
@@ -361,8 +365,9 @@
             body.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
 
             try {
-                const response = await fetch(`${API_BASE}/app/${appId}`);
-                const app = await response.json();
+                const response = await fetch(`${API_BASE}/apps/${appId}`);
+                const appData = await response.json();
+                const app = appData.info || appData; // Adapt to response structure (info, metric, rating)
                 document.getElementById('modalTitle').textContent = app.name || '应用详情';
                 body.innerHTML = `
                     <div class="row">

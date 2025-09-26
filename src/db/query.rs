@@ -215,6 +215,19 @@ impl Database {
         Ok(app_infos)
     }
 
+    /// Count the number of distinct developers
+    pub async fn count_developers(&self) -> Result<i64, sqlx::Error> {
+        sqlx::query_scalar(
+            r#"
+            SELECT COUNT(DISTINCT developer_name)
+            FROM app_info
+            WHERE developer_name IS NOT NULL
+            "#,
+        )
+        .fetch_one(&self.pool)
+        .await
+    }
+
     /// 分页查询 app_info 数据（增强版），返回分页信息和数据
     ///
     /// # 参数

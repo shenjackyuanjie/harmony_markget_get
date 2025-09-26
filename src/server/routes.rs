@@ -58,6 +58,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         // 获取应用大小排行榜
         .route("/api/rankings/sizes", get(handlers::get_size_ranking))
+        // 获取开发者总数
+        .route(
+            "/api/stats/developers/count",
+            get(handlers::get_developer_count),
+        )
         // 应用基本信息API
         // 通过应用ID获取应用基本信息
         .route("/api/apps/{app_id}", get(handlers::query_app_id))

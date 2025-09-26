@@ -363,6 +363,24 @@ pub async fn get_size_ranking(
     }
 }
 
+/// Get developer count
+pub async fn get_developer_count(
+    State(state): State<std::sync::Arc<super::state::AppState>>,
+) -> impl IntoResponse {
+    event!(Level::INFO, "http 服务正在尝试获取开发者数量");
+    match state.db.count_developers().await {
+        Ok(count) => Json(ApiResponse::success(
+            json!({"developer_count": count}),
+            None,
+            None,
+        )),
+        Err(e) => {
+            event!(Level::WARN, "http服务获取开发者数量失败: {e}");
+            Json(ApiResponse::error(json!({"error": "Database error"})))
+        }
+    }
+}
+
 /// Root path redirect to dashboard
 pub async fn redirect_to_dashboard() -> impl IntoResponse {
     Redirect::permanent("/dashboard")
