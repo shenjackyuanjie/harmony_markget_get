@@ -75,5 +75,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/", get(handlers::redirect_to_dashboard))
         .route("/dashboard", get(handlers::serve_dashboard))
         .route("/js/dashboard.js", get(handlers::serve_dashboard_js))
+        .route("/favicon.ico", get(handlers::serve_favicon))
         .with_state(app_state)
 }

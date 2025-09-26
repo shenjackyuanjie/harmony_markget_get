@@ -3,15 +3,16 @@ let currentPage = 1;
 let totalPages = 1;
 let currentSort = { field: "download_count", direction: "desc" };
 let searchTerm = "";
+let categoryFilter = "all";
 let starChart = null;
-let categoryFilter = "";
 let top_download_chart = null;
+let top_download_chart_not_huawei = null;
 const PAGE_SIZE = 20;
 const API_BASE = "/api"; // Adjust if needed
 
-// Format number
+// Format number with commas
 function formatNumber(num) {
-  return num.toString().replace(/\B(?=(\d{4})+(?!\d))/g, ",");
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 // Format file size
@@ -23,107 +24,85 @@ function formatSize(size) {
   return (size / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
-// Render stars
+// Render stars using Unicode
 function renderStars(rating) {
   if (!rating) return "N/A";
   const fullStars = Math.floor(rating);
-  const halfStar = rating % 1 >= 0.5;
-  let html = "";
-  for (let i = 0; i < fullStars; i++) {
-    html += '<i class="fas fa-star text-warning"></i>';
+  const hasHalf = rating % 1 >= 0.5;
+  let stars = "";
+  for (let i = 0; i < 5; i++) {
+    if (i < fullStars) {
+      stars += "★";
+    } else if (i === fullStars && hasHalf) {
+      stars += "☆"; // Simplified half star; could use a better symbol if needed
+    } else {
+      stars += "☆";
+    }
   }
-  if (halfStar) html += '<i class="fas fa-star-half-alt text-warning"></i>';
-  return html + ` ${rating.toFixed(1)}`;
+  return stars + ` ${rating.toFixed(1)}`;
 }
 
 // Load overview data
 async function loadOverview() {
   try {
-    // 显示所有加载指示器
-    const loading_overview = document.getElementById("loadingOverview");
-    const loading_developer_count = document.getElementById(
+    // Show loading spinners
+    const loadingElements = [
+      "loadingOverview",
       "loadingDeveloperCount",
-    );
-    const loading_atomic_service_count = document.getElementById(
       "loadingAtomicServiceCount",
-    );
-    const loading_total_count = document.getElementById("loadingTotalCount");
-
-    if (loading_overview) loading_overview.style.display = "block";
-    if (loading_developer_count)
-      loading_developer_count.style.display = "block";
-    if (loading_atomic_service_count)
-      loading_atomic_service_count.style.display = "block";
-    if (loading_total_count) loading_total_count.style.display = "block";
+      "loadingTotalCount"
+    ];
+    loadingElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "inline-block";
+    });
 
     // Get app count
-    const app_response = await fetch(`${API_BASE}/apps/list/info`);
-    const app_data = await app_response.json();
+    const appResponse = await fetch(`${API_BASE}/apps/list/info`);
+    const appData = await appResponse.json();
 
     document.getElementById("totalCount").textContent = formatNumber(
-      (app_data.data.app_count || 0) +
-        (app_data.data.atomic_services_count || 0),
+      (appData.data.app_count || 0) + (appData.data.atomic_services_count || 0)
     );
-    document.getElementById("appCount").textContent = formatNumber(
-      app_data.data.app_count || 0,
-    );
-    document.getElementById("atomicServiceCount").textContent = formatNumber(
-      app_data.data.atomic_services_count || 0,
-    );
+    document.getElementById("appCount").textContent = formatNumber(appData.data.app_count || 0);
+    document.getElementById("atomicServiceCount").textContent = formatNumber(appData.data.atomic_services_count || 0);
 
     // Get developer count
-    const developer_response = await fetch(
-      `${API_BASE}/stats/developers/count`,
-    );
-    const developer_data = await developer_response.json();
+    const developerResponse = await fetch(`${API_BASE}/stats/developers/count`);
+    const developerData = await developerResponse.json();
 
-    document.getElementById("developerCount").textContent = formatNumber(
-      developer_data.data.developer_count || 0,
-    );
+    document.getElementById("developerCount").textContent = formatNumber(developerData.data.developer_count || 0);
 
-    // 隐藏所有加载指示器
-    if (loading_overview) loading_overview.style.display = "none";
-    if (loading_developer_count) loading_developer_count.style.display = "none";
-    if (loading_atomic_service_count)
-      loading_atomic_service_count.style.display = "none";
-    if (loading_total_count) loading_total_count.style.display = "none";
+    // Hide loading spinners
+    loadingElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "none";
+    });
   } catch (error) {
     console.error("Failed to load overview:", error);
-    // 错误时隐藏所有加载指示器
-    const loading_overview = document.getElementById("loadingOverview");
-    const loading_developer_count = document.getElementById(
+    // Hide loading on error
+    const loadingElements = [
+      "loadingOverview",
       "loadingDeveloperCount",
-    );
-    const loading_atomic_service_count = document.getElementById(
       "loadingAtomicServiceCount",
-    );
-    const loading_total_count = document.getElementById("loadingTotalCount");
-
-    if (loading_overview) loading_overview.style.display = "none";
-    if (loading_developer_count) loading_developer_count.style.display = "none";
-    if (loading_atomic_service_count)
-      loading_atomic_service_count.style.display = "none";
-    if (loading_total_count) loading_total_count.style.display = "none";
+      "loadingTotalCount"
+    ];
+    loadingElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "none";
+    });
   }
 }
 
-// Load apps with pagination and sorting
-async function loadApps(
-  page = 1,
-  sortField = currentSort.field,
-  sortDirection = currentSort.direction,
-  search = searchTerm,
-  category = categoryFilter,
-) {
+// Load apps with pagination, sorting, search, and category filter
+async function loadApps(page = 1, sortField = currentSort.field, sortDirection = currentSort.direction, search = searchTerm, category = categoryFilter) {
   try {
-    document.getElementById("appTableBody").innerHTML =
-      '<tr><td colspan="8" class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></td></tr>';
+    const tableBody = document.getElementById("appTableBody");
+    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
-    let url = `${API_BASE}/apps/list/${page}`;
-    if (search) {
-      // In a real implementation, you would have a search endpoint
-      console.log("Search term:", search);
-    }
+    let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&direction=${sortDirection}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (category && category !== "all") url += `&category=${encodeURIComponent(category)}`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -133,36 +112,98 @@ async function loadApps(
       currentPage = page;
     }
 
-    // Sort and filter the data
     let apps = data.data.apps || [];
+    // Additional client-side filtering if needed
+    if (search) {
+      apps = apps.filter(app => app.name.toLowerCase().includes(search.toLowerCase()));
+    }
     if (category && category !== "all") {
-      apps = apps.filter((app) => app.category === category);
+      apps = apps.filter(app => app.category.toLowerCase() === category.toLowerCase());
     }
 
-    // Sort data
+    // Client-side sort if server doesn't handle it
     apps.sort((a, b) => {
       let valueA = a[sortField] || 0;
       let valueB = b[sortField] || 0;
-
-      if (typeof valueA === "string" && typeof valueB === "string") {
-        return sortDirection === "asc"
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
+      if (typeof valueA === "string") {
+        valueA = valueA.toLowerCase();
+        valueB = valueB.toLowerCase();
       }
-
-      return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+      if (sortDirection === "asc") {
+        return valueA > valueB ? 1 : -1;
+      } else {
+        return valueA < valueB ? 1 : -1;
+      }
     });
 
-    renderApps(apps);
+    renderApps(apps.slice(0, PAGE_SIZE)); // Paginate client-side if needed
     renderPagination();
   } catch (error) {
     console.error("Failed to load apps:", error);
-    document.getElementById("appTableBody").innerHTML =
-      '<tr><td colspan="8" class="text-center">Error loading data</td></tr>';
+    document.getElementById("appTableBody").innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Error loading data</td></tr>';
   }
 }
 
-// Render pagination controls
+// Render apps in the table
+function renderApps(apps) {
+  const tableBody = document.getElementById("appTableBody");
+  tableBody.innerHTML = "";
+
+  if (!apps || apps.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">No apps found</td></tr>';
+    return;
+  }
+
+  apps.forEach((app) => {
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-gray-50 cursor-pointer transition-colors";
+    tr.onclick = () => showAppDetail(app.app_id || app.id);
+
+    tr.innerHTML = `
+      <td class="px-6 py-4 whitespace-nowrap">
+        <div class="flex items-center">
+          <img src="${app.icon || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app.name}">
+          <span class="font-medium text-gray-900">${app.name || "Unknown"}</span>
+        </div>
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.developer || "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap">
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app.category || "Uncategorized"}</span>
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app.rating)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app.download_count || 0)}</td>
+      <td class="px-6 py-4 whitespace-nowrap">
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app.price ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+          ${app.price ? `¥${app.price.toFixed(2)}` : "免费"}
+        </span>
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app.size || 0)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.last_update ? new Date(app.last_update).toLocaleDateString('zh-CN') : "Unknown"}</td>
+    `;
+
+    tableBody.appendChild(tr);
+  });
+}
+
+// Update sort icons in table headers
+function updateSortIcons() {
+  const headers = document.querySelectorAll("th[data-sort]");
+  headers.forEach((header) => {
+    const field = header.getAttribute("data-sort");
+    const span = header.querySelector("span");
+    if (!span) return;
+
+    if (field === currentSort.field) {
+      span.textContent = currentSort.direction === "asc" ? "↑" : "↓";
+      header.classList.add("bg-gray-100"); // Active state
+    } else {
+      span.textContent = "↑";
+      header.classList.remove("bg-gray-100");
+    }
+  });
+}
+
+// Render pagination controls with Tailwind
 function renderPagination() {
   const paginationEl = document.getElementById("pagination");
   paginationEl.innerHTML = "";
@@ -170,92 +211,72 @@ function renderPagination() {
   if (totalPages <= 1) return;
 
   const ul = document.createElement("ul");
-  ul.className = "pagination";
+  ul.className = "flex items-center space-x-1";
 
   // Previous button
   const prevLi = document.createElement("li");
-  prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
-  const prevLink = document.createElement("a");
-  prevLink.className = "page-link";
-  prevLink.href = "#";
-  prevLink.textContent = "上一页";
+  prevLi.className = `flex ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+  const prevA = document.createElement("a");
+  prevA.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  prevA.textContent = "上一页";
   if (currentPage > 1) {
-    prevLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadApps(currentPage - 1);
-    });
+    prevA.onclick = (e) => { e.preventDefault(); loadApps(currentPage - 1); };
   }
-  prevLi.appendChild(prevLink);
+  prevLi.appendChild(prevA);
   ul.appendChild(prevLi);
 
-  // Generate page numbers
+  // Page numbers
   const startPage = Math.max(1, currentPage - 2);
   const endPage = Math.min(totalPages, currentPage + 2);
-
   for (let i = startPage; i <= endPage; i++) {
     const li = document.createElement("li");
-    li.className = `page-item ${i === currentPage ? "active" : ""}`;
-    const link = document.createElement("a");
-    link.className = "page-link";
-    link.href = "#";
-    link.textContent = i;
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadApps(i);
-    });
-    li.appendChild(link);
+    li.className = `flex ${i === currentPage ? 'z-10' : ''}`;
+    const a = document.createElement("a");
+    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
+      ? 'border-blue-500 bg-blue-50 text-blue-600'
+      : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'}`;
+    a.textContent = i;
+    a.onclick = (e) => { e.preventDefault(); loadApps(i); };
+    li.appendChild(a);
     ul.appendChild(li);
   }
 
   // Next button
   const nextLi = document.createElement("li");
-  nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
-  const nextLink = document.createElement("a");
-  nextLink.className = "page-link";
-  nextLink.href = "#";
-  nextLink.textContent = "下一页";
+  nextLi.className = `flex ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+  const nextA = document.createElement("a");
+  nextA.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  nextA.textContent = "下一页";
   if (currentPage < totalPages) {
-    nextLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadApps(currentPage + 1);
-    });
+    nextA.onclick = (e) => { e.preventDefault(); loadApps(currentPage + 1); };
   }
-  nextLi.appendChild(nextLink);
+  nextLi.appendChild(nextA);
   ul.appendChild(nextLi);
 
   paginationEl.appendChild(ul);
 }
 
-// Load app categories
+// Load categories
 async function loadCategories() {
   try {
     const categorySelect = document.getElementById("categoryFilter");
+    categorySelect.innerHTML = '<option value="all">所有分类</option>';
 
-    // You might want to create an API endpoint for categories
-    // For now, we'll hardcode some common categories
+    // Hardcoded or fetch from API
     const categories = [
-      "All",
-      "Games",
-      "Social",
-      "Productivity",
-      "Entertainment",
-      "Education",
-      "Lifestyle",
-      "Utilities",
+      { value: "games", label: "游戏" },
+      { value: "social", label: "社交" },
+      { value: "productivity", label: "生产力" },
+      { value: "entertainment", label: "娱乐" },
+      { value: "education", label: "教育" },
+      { value: "lifestyle", label: "生活" },
+      { value: "utilities", label: "工具" }
     ];
 
-    // Add all option first
-    const allOption = document.createElement("option");
-    allOption.value = "all";
-    allOption.textContent = "All Categories";
-    categorySelect.appendChild(allOption);
-
-    // Add other categories
-    categories.forEach((category) => {
-      if (category === "All") return; // Skip "All" as we already added it
+    categories.forEach(cat => {
       const option = document.createElement("option");
-      option.value = category.toLowerCase();
-      option.textContent = category;
+      option.value = cat.value;
+      option.textContent = cat.label;
       categorySelect.appendChild(option);
     });
   } catch (error) {
@@ -263,6 +284,7 @@ async function loadCategories() {
   }
 }
 
+// Render top download chart
 async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
   try {
     const response = await fetch(apiUrl);
@@ -290,7 +312,7 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
       window[ctxId + "_chart"].destroy();
     }
 
-    // 自定义插件：在柱子上方绘制图标
+    // Custom plugin for icons on bars
     const iconPlugin = {
       id: "iconPlugin",
       afterDatasetsDraw(chart) {
@@ -304,8 +326,12 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
 
           const img = new Image();
           img.src = app.icon_url;
+          img.crossOrigin = "anonymous";
           img.onload = () => {
             ctx.drawImage(img, x - 10, y - 20, 20, 20);
+          };
+          img.onerror = () => {
+            // Fallback to default icon or skip
           };
         });
       },
@@ -315,21 +341,15 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
       type: "bar",
       data: {
         labels: apps.map((item) =>
-          item.name
-            ? item.name.length > 10
-              ? item.name.slice(0, 10) + "..."
-              : item.name
-            : "Unknown",
+          item.name ? (item.name.length > 10 ? item.name.slice(0, 10) + "..." : item.name) : "Unknown"
         ),
-        datasets: [
-          {
-            label: "下载量",
-            data: apps.map((item) => item.download_count || 0),
-            backgroundColor: "rgba(54, 162, 235, 0.6)",
-            borderColor: "rgba(54, 162, 235, 1)",
-            borderWidth: 1,
-          },
-        ],
+        datasets: [{
+          label: "下载量",
+          data: apps.map((item) => item.download_count || 0),
+          backgroundColor: "rgba(59, 130, 246, 0.6)",
+          borderColor: "rgba(59, 130, 246, 1)",
+          borderWidth: 1,
+        }],
       },
       options: {
         responsive: true,
@@ -371,26 +391,14 @@ async function renderTopDownloadChart(apiUrl, ctxId, yAxisRatio = 0.999) {
   }
 }
 
-async function loadCharts() {
-  renderTopDownloadChart(
-    `${API_BASE}/rankings/top-downloads?limit=25`,
-    "top_download_chart",
-    0.999,
-  );
-  renderTopDownloadChart(
-    `${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`,
-    "top_download_chart_not_huawei",
-    0.9,
-  );
-
-  // Star Distribution Chart
+// Load star distribution chart
+async function loadStarChart() {
   try {
     const response = await fetch(`${API_BASE}/charts/star-distribution`);
     const data = await response.json();
-
     const starData = data.data || data;
 
-    const ctx2 = document.getElementById("starChart").getContext("2d");
+    const ctx = document.getElementById("starChart").getContext("2d");
     if (starChart) starChart.destroy();
 
     const starValues = [
@@ -401,22 +409,20 @@ async function loadCharts() {
       starData.star_5 || 0,
     ];
 
-    starChart = new Chart(ctx2, {
+    starChart = new Chart(ctx, {
       type: "pie",
       data: {
         labels: ["1星", "2星", "3星", "4星", "5星"],
-        datasets: [
-          {
-            data: starValues,
-            backgroundColor: [
-              "#dc3545",
-              "#fd7e14",
-              "#ffc107",
-              "#28a745",
-              "#17a2b8",
-            ],
-          },
-        ],
+        datasets: [{
+          data: starValues,
+          backgroundColor: [
+            "#ef4444",
+            "#f97316",
+            "#eab308",
+            "#22c55e",
+            "#0ea5e9",
+          ],
+        }],
       },
       options: {
         responsive: true,
@@ -432,25 +438,7 @@ async function loadCharts() {
             },
           },
           legend: {
-            labels: {
-              generateLabels: function (chart) {
-                const data = chart.data;
-                if (data.labels.length && data.datasets.length) {
-                  return data.labels.map((label, i) => {
-                    const value = data.datasets[0].data[i];
-                    return {
-                      text: `${label} (${value} 个)`,
-                      fillStyle: data.datasets[0].backgroundColor[i],
-                      strokeStyle: data.datasets[0].backgroundColor[i],
-                      lineWidth: 1,
-                      hidden: false,
-                      index: i,
-                    };
-                  });
-                }
-                return [];
-              },
-            },
+            position: "bottom",
           },
         },
       },
@@ -460,162 +448,120 @@ async function loadCharts() {
   }
 }
 
+// Load all charts
+async function loadCharts() {
+  renderTopDownloadChart(`${API_BASE}/rankings/top-downloads?limit=25`, "top_download_chart", 0.999);
+  renderTopDownloadChart(`${API_BASE}/rankings/top-downloads?limit=35&exclude_pattern=huawei`, "top_download_chart_not_huawei", 0.9);
+  loadStarChart();
+}
+
 // Show app details in modal
 async function showAppDetail(appId) {
   try {
     const modal = document.getElementById("appDetailModal");
-    const modalBody = document.getElementById("appDetailContent");
-    modalBody.innerHTML =
-      '<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
+    const modalContent = document.getElementById("appDetailContent");
+    modalContent.innerHTML = '<div class="flex justify-center items-center py-8"><div class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>';
 
     const response = await fetch(`${API_BASE}/apps/id/${appId}`);
     const data = await response.json();
     const app = data.data.info || data.data;
 
     let html = `
-            <div class="row">
-                <div class="col-md-3 text-center">
-                    <img src="${app.icon || "/img/default-app-icon.png"}" class="app-icon img-fluid rounded mb-3" alt="${app.name}">
-                    <p class="mb-1">${renderStars(app.rating)}</p>
-                    <p class="text-muted">${app.rating_count || 0} 评分</p>
-                </div>
-                <div class="col-md-9">
-                    <h4>${app.name || "Unknown App"}</h4>
-                    <p class="text-muted">${app.developer || "Unknown Developer"}</p>
-                    <div class="mb-3">
-                        <span class="badge badge-primary mr-2">${app.category || "Uncategorized"}</span>
-                        <span class="badge badge-secondary mr-2">${formatSize(app.size || 0)}</span>
-                        <span class="badge badge-info">${app.version || "Unknown Version"}</span>
-                    </div>
-                    <p><strong>下载量:</strong> ${formatNumber(app.download_count || 0)}</p>
-                    <p><strong>价格:</strong> ${app.price ? `¥${app.price.toFixed(2)}` : "免费"}</p>
-                    <p><strong>上次更新:</strong> ${app.last_update ? new Date(app.last_update).toLocaleDateString() : "未知"}</p>
-                    <hr>
-                    <p>${app.description || "无描述"}</p>
-                </div>
-            </div>
-        `;
+      <div class="flex flex-col md:flex-row gap-6">
+        <div class="md:w-1/4 text-center md:text-left">
+          <img src="${app.icon || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app.name}">
+          <p class="mb-1 text-lg">${renderStars(app.rating)}</p>
+          <p class="text-gray-500">${app.rating_count || 0} 评分</p>
+        </div>
+        <div class="md:w-3/4">
+          <h4 class="text-2xl font-bold text-gray-900 mb-2">${app.name || "Unknown App"}</h4>
+          <p class="text-gray-600 mb-4">${app.developer || "Unknown Developer"}</p>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${app.category || "Uncategorized"}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">${formatSize(app.size || 0)}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app.version || "Unknown Version"}</span>
+          </div>
+          <div class="space-y-2 mb-4">
+            <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app.download_count || 0)}</span></p>
+            <p><strong class="text-gray-900">价格:</strong> <span class="text-gray-600">${app.price ? `¥${app.price.toFixed(2)}` : "免费"}</span></p>
+            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app.last_update ? new Date(app.last_update).toLocaleDateString('zh-CN') : "未知"}</span></p>
+          </div>
+          <hr class="my-4 border-gray-200">
+          <p class="text-gray-700">${app.description || "无描述"}</p>
+        </div>
+      </div>
+    `;
 
-    modalBody.innerHTML = html;
-
-    // Initialize and show the modal using Bootstrap's methods
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
+    modalContent.innerHTML = html;
+    modal.classList.remove("hidden");
   } catch (error) {
     console.error("Failed to load app details:", error);
+    document.getElementById("appDetailContent").innerHTML = '<div class="text-center py-4 text-red-500">Failed to load details</div>';
+    document.getElementById("appDetailModal").classList.remove("hidden");
   }
-}
-
-// Render the apps in the table
-function renderApps(apps) {
-  const tableBody = document.getElementById("appTableBody");
-  tableBody.innerHTML = "";
-
-  if (!apps || apps.length === 0) {
-    tableBody.innerHTML =
-      '<tr><td colspan="8" class="text-center">No apps found</td></tr>';
-    return;
-  }
-
-  apps.forEach((app) => {
-    const tr = document.createElement("tr");
-    tr.style.cursor = "pointer";
-    tr.onclick = () => showAppDetail(app.app_id || app.id);
-
-    tr.innerHTML = `
-            <td>
-                <img src="${app.icon || "/img/default-app-icon.png"}" class="app-icon" alt="${app.name}">
-                ${app.name || "Unknown"}
-            </td>
-            <td>${app.developer || "Unknown"}</td>
-            <td>${app.category || "Uncategorized"}</td>
-            <td>${renderStars(app.rating)}</td>
-            <td>${formatNumber(app.download_count || 0)}</td>
-            <td>${app.price ? `¥${app.price.toFixed(2)}` : "免费"}</td>
-            <td>${formatSize(app.size || 0)}</td>
-            <td>${app.last_update ? new Date(app.last_update).toLocaleDateString() : "Unknown"}</td>
-        `;
-
-    tableBody.appendChild(tr);
-  });
-}
-
-// Update sort icons in table headers
-function updateSortIcons() {
-  const headers = document.querySelectorAll("th[data-sort]");
-  headers.forEach((header) => {
-    const field = header.getAttribute("data-sort");
-    const icon = header.querySelector("i");
-    if (field === currentSort.field) {
-      icon.className =
-        currentSort.direction === "asc"
-          ? "fas fa-sort-up ml-1"
-          : "fas fa-sort-down ml-1";
-    } else {
-      icon.className = "fas fa-sort ml-1 text-muted";
-    }
-  });
 }
 
 // Update last update timestamp
 function updateLastUpdate() {
   const now = new Date();
-  document.getElementById("lastUpdate").textContent = now.toLocaleString();
+  document.getElementById("lastUpdate").textContent = now.toLocaleString('zh-CN');
 }
 
-// Event listeners to be attached when the document is loaded
+// Refresh all data
+async function refreshData() {
+  updateLastUpdate();
+  await loadOverview();
+  await loadApps(1);
+  await loadCharts();
+}
+
+// Event listeners
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize the dashboard
   loadOverview();
   loadApps();
   loadCategories();
   loadCharts();
   updateLastUpdate();
 
-  // Set up event listeners for sorting
+  // Sorting event listeners
   document.querySelectorAll("th[data-sort]").forEach((header) => {
     header.addEventListener("click", () => {
       const field = header.getAttribute("data-sort");
       let direction = "desc";
-
       if (field === currentSort.field) {
         direction = currentSort.direction === "desc" ? "asc" : "desc";
       }
-
       currentSort = { field, direction };
       updateSortIcons();
       loadApps(1);
     });
   });
 
-  // Search button event listener
+  // Search button
   document.getElementById("searchBtn").addEventListener("click", () => {
     searchTerm = document.getElementById("searchInput").value.trim();
+    categoryFilter = document.getElementById("categoryFilter").value;
     loadApps(1);
   });
 
-  // Search input enter key event
+  // Search input enter key
   document.getElementById("searchInput").addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       searchTerm = e.target.value.trim();
+      categoryFilter = document.getElementById("categoryFilter").value;
       loadApps(1);
     }
   });
 
-  // Category filter event
+  // Category filter change
   document.getElementById("categoryFilter").addEventListener("change", (e) => {
     categoryFilter = e.target.value;
+    searchTerm = document.getElementById("searchInput").value.trim();
     loadApps(1);
   });
 
-  // Set up initial sort icons
-  updateSortIcons();
+  // Refresh button
+  document.getElementById("refreshBtn").addEventListener("click", refreshData);
 
-  // Refresh button event
-  document.getElementById("refreshBtn").addEventListener("click", () => {
-    loadOverview();
-    loadApps(currentPage);
-    loadCharts();
-    updateLastUpdate();
-  });
+  // Modal close (already handled in HTML onclick)
 });
