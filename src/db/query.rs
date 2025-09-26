@@ -228,6 +228,23 @@ impl Database {
         .await
     }
 
+    /// Get star distribution counts from app_rating table
+    pub async fn get_star_distribution(&self) -> Result<(i64, i64, i64, i64, i64), sqlx::Error> {
+        sqlx::query_as::<_, (i64, i64, i64, i64, i64)>(
+            r#"
+            SELECT
+                COALESCE(SUM(star_1_count), 0) as star_1,
+                COALESCE(SUM(star_2_count), 0) as star_2,
+                COALESCE(SUM(star_3_count), 0) as star_3,
+                COALESCE(SUM(star_4_count), 0) as star_4,
+                COALESCE(SUM(star_5_count), 0) as star_5
+            FROM app_rating
+            "#,
+        )
+        .fetch_one(&self.pool)
+        .await
+    }
+
     /// 分页查询 app_info 数据（增强版），返回分页信息和数据
     ///
     /// # 参数
@@ -420,7 +437,7 @@ impl Database {
                 ai.pkg_name,
                 ai.developer_name,
                 ai.icon_url,
-                ar.average_rating,
+                ar.average_rating::text,
                 ar.total_star_rating_count
             FROM app_info ai
             JOIN app_rating ar ON ai.app_id = ar.app_id
@@ -441,7 +458,10 @@ impl Database {
                 pkg_name: row.get("pkg_name"),
                 developer_name: row.get("developer_name"),
                 icon_url: row.get("icon_url"),
-                average_rating: row.get("average_rating"),
+                average_rating: {
+                    let raw: String = row.get("average_rating");
+                    raw.parse().unwrap_or_default()
+                },
                 total_star_rating_count: row.get("total_star_rating_count"),
             };
             app_ratings.push(app_rating);
@@ -600,7 +620,7 @@ impl Database {
                 ai.pkg_name,
                 ai.developer_name,
                 ai.icon_url,
-                ar.average_rating,
+                ar.average_rating::text,
                 ar.total_star_rating_count
             FROM app_info ai
             JOIN app_rating ar ON ai.app_id = ar.app_id
@@ -621,7 +641,10 @@ impl Database {
                 pkg_name: row.get("pkg_name"),
                 developer_name: row.get("developer_name"),
                 icon_url: row.get("icon_url"),
-                average_rating: row.get("average_rating"),
+                average_rating: {
+                    let raw: String = row.get("average_rating");
+                    raw.parse().unwrap_or_default()
+                },
                 total_star_rating_count: row.get("total_star_rating_count"),
             };
             app_ratings.push(app_rating);

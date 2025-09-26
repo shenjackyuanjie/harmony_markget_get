@@ -1,4 +1,3 @@
-use axum::http::StatusCode;
 use axum::{
     Json,
     extract::{Path, Query, State},
@@ -16,7 +15,10 @@ pub async fn query_pkg(
     State(state): State<std::sync::Arc<super::state::AppState>>,
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
-    event!(Level::INFO, "http 服务正在尝试获取 {pkg_name} 的信息");
+    event!(
+        Level::INFO,
+        "http 服务正在尝试通过 pkg name 获取 {pkg_name} 的信息"
+    );
     match crate::sync::query_package(
         &state.client,
         &state.db,
@@ -40,7 +42,10 @@ pub async fn query_pkg(
             ))
         }
         Err(e) => {
-            event!(Level::WARN, "http服务获取 {pkg_name} 的信息失败: {e}");
+            event!(
+                Level::WARN,
+                "http服务获取 pkg name: {pkg_name} 的信息失败: {e}"
+            );
             Json(ApiResponse::error(json!({"error": e.to_string()})))
         }
     }
@@ -51,7 +56,10 @@ pub async fn query_app_id(
     State(state): State<std::sync::Arc<super::state::AppState>>,
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
-    event!(Level::INFO, "http 服务正在尝试获取 {app_id} 的信息");
+    event!(
+        Level::INFO,
+        "http 服务正在尝试通过 appid 获取 {app_id} 的信息"
+    );
     match crate::sync::query_package(
         &state.client,
         &state.db,
@@ -75,7 +83,7 @@ pub async fn query_app_id(
             ))
         }
         Err(e) => {
-            event!(Level::WARN, "http服务获取 {app_id} 的信息失败: {e}");
+            event!(Level::WARN, "http服务获取 appid: {app_id} 的信息失败: {e}");
             Json(ApiResponse::error(json!({"error": e.to_string()})))
         }
     }
@@ -381,19 +389,46 @@ pub async fn get_developer_count(
     }
 }
 
+/// Get star distribution
+pub async fn get_star_distribution(
+    State(state): State<std::sync::Arc<super::state::AppState>>,
+) -> impl IntoResponse {
+    event!(Level::INFO, "http 服务正在尝试获取星级分布");
+    match state.db.get_star_distribution().await {
+        Ok((star_1, star_2, star_3, star_4, star_5)) => Json(ApiResponse::success(
+            json!({"star_1": star_1, "star_2": star_2, "star_3": star_3, "star_4": star_4, "star_5": star_5}),
+            None,
+            None,
+        )),
+        Err(e) => {
+            event!(Level::WARN, "http服务获取星级分布失败: {e}");
+            Json(ApiResponse::error(json!({"error": "Database error"})))
+        }
+    }
+}
+
 /// Root path redirect to dashboard
 pub async fn redirect_to_dashboard() -> impl IntoResponse {
     Redirect::permanent("/dashboard")
 }
 
+// 使用 include_str! 宏在编译时包含静态文件
+const DASHBOARD_HTML: &str = include_str!("../../assets/html/main.html");
+const DASHBOARD_JS: &str = include_str!("../../assets/js/dashboard.js");
+
 /// Serve dashboard HTML
 pub async fn serve_dashboard() -> impl IntoResponse {
-    match tokio::fs::read_to_string("assets/html/main.html").await {
-        Ok(html) => Html(html).into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to load dashboard",
-        )
-            .into_response(),
-    }
+    Html(DASHBOARD_HTML).into_response()
+}
+
+/// Serve dashboard JavaScript
+pub async fn serve_dashboard_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        DASHBOARD_JS,
+    )
+        .into_response()
 }

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>华为应用市场看板</title>
     <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         .spinner-border-sm { width: 1rem; height: 1rem; }
@@ -25,467 +25,141 @@
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <h1 class="text-center mb-3">华为应用市场看板</h1>
-                <div class="text-center">
-                    <button id="refreshBtn" class="btn btn-primary">刷新数据</button>
-                    <span id="lastUpdate" class="ms-3 text-muted"></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Overview Cards -->
-        <div class="row mb-4" id="overviewSection">
-            <div class="col-md-4">
-                <div class="card text-center">
+                <div class="card shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title">总应用数</h5>
-                        <h3 id="totalApps" class="text-primary">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">下载王</h5>
-                        <h3 id="topDownload" class="text-success">0</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">开发者数</h5>
-                        <h3 id="developerCount" class="text-info">0</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Top Apps Table -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Top 应用列表</h5>
-                        <div class="d-flex gap-2">
-                            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="搜索名称或包名..." style="width: 200px;">
-                            <select id="categoryFilter" class="form-select form-select-sm" style="width: 150px;">
-                                <option value="">所有分类</option>
-                            </select>
-                            <button id="applyFilter" class="btn btn-sm btn-outline-secondary">应用</button>
+                        <h1 class="h3 mb-3">华为应用市场看板</h1>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button id="refreshBtn" class="btn btn-sm btn-primary"><i class="fas fa-sync-alt"></i> 刷新数据</button>
+                            <span class="text-muted small">最后更新: <span id="lastUpdate">-</span></span>
                         </div>
                     </div>
-                    <div class="card-body p-0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="py-3">
+                            <h5 class="text-muted">应用总数</h5>
+                            <h3 id="appCount"><span id="loadingOverview" class="spinner-border" role="status"></span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="py-3">
+                            <h5 class="text-muted">开发者数量</h5>
+                            <h3 id="developerCount"><span id="loadingDeveloperCount" class="spinner-border" role="status"></span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="py-3">
+                            <h5 class="text-muted">原子服务数量</h5>
+                            <h3 id="atomicServiceCount"><span id="loadingAtomicServiceCount" class="spinner-border" role="status"></span></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apps Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="card-title mb-0">应用列表</h5>
+                            <div class="d-flex align-items-center">
+                                <input type="text" id="searchInput" class="form-control form-control-sm me-2" placeholder="搜索应用">
+                                <select id="categoryFilter" class="form-control form-control-sm me-2">
+                                    <option value="all">所有分类</option>
+                                </select>
+                                <button id="searchBtn" class="btn btn-sm btn-outline-primary">搜索</button>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="appsTable">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th data-sort="icon_url">图标</th>
-                                        <th data-sort="name">名称 <span class="sort-icon"></span></th>
-                                        <th data-sort="developer_name">开发者 <span class="sort-icon"></span></th>
-                                        <th data-sort="kind_name">分类 <span class="sort-icon"></span></th>
-                                        <th data-sort="download_count">下载量 <span class="sort-icon"></span></th>
-                                        <th data-sort="average_rating">评分 <span class="sort-icon"></span></th>
-                                        <th data-sort="version">版本 <span class="sort-icon"></span></th>
-                                        <th data-sort="size_mb">大小 <span class="sort-icon"></span></th>
-                                        <th data-sort="price">价格 <span class="sort-icon"></span></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="appsTableBody">
-                                    <tr><td colspan="9" class="text-center">加载中...</td></tr>
-                                </tbody>
-                            </table>
+                            <div class="table-container">
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>应用名</th>
+                                            <th data-sort="developer">开发者 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="category">分类 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="rating">评分 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="download_count">下载量 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="price">价格 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="size">大小 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                            <th data-sort="last_update">上次更新 <span><i class="fas fa-sort ml-1 text-muted"></i></span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="appTableBody">
+                                        <tr><td colspan="8" class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <nav aria-label="Page navigation" class="mt-4">
+                                <ul id="pagination" class="pagination justify-content-center"></ul>
+                            </nav>
                         </div>
-                        <!-- Pagination -->
-                        <nav class="p-2" id="pagination">
-                            <ul class="pagination justify-content-center" id="paginationList"></ul>
-                        </nav>
                     </div>
                 </div>
             </div>
 
             <!-- Charts -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Top 10 下载量</h5>
-                    </div>
-                    <div class="card-body p-2">
-                        <canvas id="top10Chart" class="chart-container"></canvas>
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">下载量前十应用</h5>
+                        </div>
+                        <div class="card-body chart-container">
+                            <canvas id="top10Chart"></canvas>
+                        </div>
                     </div>
                 </div>
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h5 class="mb-0">星级分布</h5>
-                    </div>
-                    <div class="card-body p-2">
-                        <canvas id="starChart" class="chart-container"></canvas>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">星级分布</h5>
+                        </div>
+                        <div class="card-body chart-container">
+                            <canvas id="starChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Detail Modal -->
-    <div class="modal fade" id="appDetailModal" tabindex="-1">
+    <!-- App Detail Modal -->
+    <div class="modal fade" id="appDetailModal" tabindex="-1" aria-labelledby="appDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">应用详情</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="appDetailModalLabel">应用详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="modalBody">
-                    <div class="loading">加载中...</div>
+                <div class="modal-body">
+                    <div id="appDetailContent"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-    <script>
-        // Global variables
-        let currentPage = 1;
-        let totalPages = 1;
-        let currentSort = { field: 'download_count', direction: 'desc' };
-        let searchTerm = '';
-        let categoryFilter = '';
-        let top10Chart, starChart;
-        const PAGE_SIZE = 20;
-        const API_BASE = '/api'; // Adjust if needed
-
-        // Format number
-        function formatNumber(num) {
-            return new Intl.NumberFormat('zh-CN').format(num);
-        }
-
-        // Format size to MB
-        function formatSize(bytes) {
-            if (!bytes) return '0 MB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-
-        // Render stars
-        function renderStars(rating) {
-            const fullStars = Math.floor(rating);
-            const hasHalf = rating % 1 >= 0.5;
-            let stars = '★'.repeat(fullStars);
-            if (hasHalf) stars += '☆'; // Half star approximation
-            stars += '☆'.repeat(5 - fullStars - (hasHalf ? 1 : 0));
-            return `<span class="star-rating">${stars} ${rating}</span>`;
-        }
-
-        // Fetch and render overview
-        async function loadOverview() {
-            try {
-                // Concurrent fetches for overview cards
-                const [infoRes, downloadRes, developerRes] = await Promise.all([
-                    fetch(`${API_BASE}/apps/list/info`),
-                    fetch(`${API_BASE}/rankings/downloads?limit=1`),
-                    fetch(`${API_BASE}/stats/developers/count`)
-                ]);
-
-                // Parse responses
-                const infoData = await infoRes.json();
-                const downloadData = await downloadRes.json();
-                const developerData = await developerRes.json();
-
-                // Update total apps
-                document.getElementById('totalApps').textContent = formatNumber(infoData.app_count || 0);
-
-                // Update top download (from first app)
-                const topDownloadApp = (downloadData.apps || downloadData)[0] || {};
-                document.getElementById('topDownload').textContent = formatNumber(topDownloadApp.download_count || 0);
-
-                // Update developer count
-                document.getElementById('developerCount').textContent = formatNumber(developerData.count || 0);
-            } catch (error) {
-                console.error('Failed to load overview:', error);
-            }
-        }
-
-        // Fetch and render table
-        async function loadApps(page = 1) {
-            const tbody = document.getElementById('appsTableBody');
-            const loadingRow = tbody.querySelector('tr.loading');
-            if (!loadingRow) {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="9" class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> 加载中...</td>';
-                tbody.appendChild(row);
-            }
-
-            try {
-                // Simplified to use /api/apps/list/{page}/detail, no query params supported yet
-                const response = await fetch(`${API_BASE}/apps/list/${page}/detail`);
-                const data = await response.json();
-                const apps = data.apps || data; // Adapt to response structure
-                const total = data.total_count || 0;
-                totalPages = Math.ceil(total / PAGE_SIZE);
-                currentPage = page;
-
-                tbody.innerHTML = '';
-                apps.forEach(app => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><img src="${app.icon_url}" alt="${app.name}" class="app-icon" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0iI2NjYyIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNiIvPjwvc3ZnPg=='"></td>
-                        <td>${app.name}</td>
-                        <td>${app.developer_name || 'N/A'}</td>
-                        <td>${app.kind_name || 'N/A'}</td>
-                        <td>${formatNumber(app.download_count || 0)}</td>
-                        <td>${renderStars(app.average_rating || 0)}</td>
-                        <td>${app.version || 'N/A'}</td>
-                        <td>${formatSize(app.size_bytes)}</td>
-                        <td>${app.price ? '¥' + app.price.toFixed(2) : '免费'}</td>
-                    `;
-                    row.addEventListener('click', () => showAppDetail(app.app_id));
-                    tbody.appendChild(row);
-                });
-
-                renderPagination();
-            } catch (error) {
-                console.error('Failed to load apps:', error);
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">加载失败，请刷新重试</td></tr>';
-            }
-        }
-
-        // Render pagination
-        function renderPagination() {
-            const paginationList = document.getElementById('paginationList');
-            paginationList.innerHTML = '';
-
-            // Previous
-            if (currentPage > 1) {
-                const prevLi = document.createElement('li');
-                prevLi.className = 'page-item';
-                prevLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage - 1}">上一页</a>`;
-                paginationList.appendChild(prevLi);
-            }
-
-            // Pages
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, currentPage + 2);
-            for (let i = startPage; i <= endPage; i++) {
-                const li = document.createElement('li');
-                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
-                paginationList.appendChild(li);
-            }
-
-            // Next
-            if (currentPage < totalPages) {
-                const nextLi = document.createElement('li');
-                nextLi.className = 'page-item';
-                nextLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">下一页</a>`;
-                paginationList.appendChild(nextLi);
-            }
-        }
-
-        // Load categories for filter
-        async function loadCategories() {
-            try {
-                // Use /api/apps/list/1/detail to fetch first page and extract categories
-                const response = await fetch(`${API_BASE}/apps/list/1/detail`);
-                const data = await response.json();
-                const apps = data.apps || data; // Adapt to response structure
-                const categories = [...new Set(apps.map(app => app.kind_name).filter(Boolean))].sort();
-                const select = document.getElementById('categoryFilter');
-                select.innerHTML = '<option value="">所有分类</option>';
-                categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Failed to load categories:', error);
-            }
-        }
-
-        // Load charts
-        async function loadCharts() {
-            // Top 10 Chart
-            try {
-                const response = await fetch(`${API_BASE}/rankings/downloads?limit=10`);
-                const data = await response.json();
-                const apps = data.apps || data; // Adapt to response structure
-                const ctx1 = document.getElementById('top10Chart').getContext('2d');
-                if (top10Chart) top10Chart.destroy();
-                top10Chart = new Chart(ctx1, {
-                    type: 'bar',
-                    data: {
-                        labels: apps.map(item => item.name.slice(0, 10) + '...'),
-                        datasets: [{
-                            label: '下载量',
-                            data: apps.map(item => item.download_count),
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to load top10 chart:', error);
-            }
-
-            // Star Distribution Chart
-            try {
-                const response = await fetch(`${API_BASE}/charts/star-distribution`);
-                const data = await response.json();
-                const ctx2 = document.getElementById('starChart').getContext('2d');
-                if (starChart) starChart.destroy();
-                starChart = new Chart(ctx2, {
-                    type: 'pie',
-                    data: {
-                        labels: ['1星', '2星', '3星', '4星', '5星'],
-                        datasets: [{
-                            data: [data.star_1 || 0, data.star_2 || 0, data.star_3 || 0, data.star_4 || 0, data.star_5 || 0],
-                            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#17a2b8']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to load star chart:', error);
-            }
-        }
-
-        // Show app detail modal
-        async function showAppDetail(appId) {
-            const modal = new bootstrap.Modal(document.getElementById('appDetailModal'));
-            const body = document.getElementById('modalBody');
-            body.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"></div></div>';
-
-            try {
-                const response = await fetch(`${API_BASE}/apps/${appId}`);
-                const appData = await response.json();
-                const app = appData.info || appData; // Adapt to response structure (info, metric, rating)
-                document.getElementById('modalTitle').textContent = app.name || '应用详情';
-                body.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-4">
-                            <img src="${app.icon_url}" alt="${app.name}" class="img-fluid rounded" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9IiNjY2MiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNzUiIGN5PSI3NSIgcj0iNzUiLz48L3N2Zz4='">
-                            <p class="mt-2"><strong>包名:</strong> ${app.pkg_name}</p>
-                            <p><strong>开发者:</strong> ${app.developer_name}</p>
-                            <p><strong>分类:</strong> ${app.kind_name}</p>
-                            <p><strong>版本:</strong> ${app.version}</p>
-                            <p><strong>大小:</strong> ${formatSize(app.size_bytes)}</p>
-                            <p><strong>价格:</strong> ${app.price ? '¥' + app.price.toFixed(2) : '免费'}</p>
-                            <p><strong>下载量:</strong> ${formatNumber(app.download_count)}</p>
-                            <p><strong>评分:</strong> ${renderStars(app.average_rating)}</p>
-                        </div>
-                        <div class="col-md-8">
-                            <h6>简述</h6>
-                            <p>${app.brief_desc || 'N/A'}</p>
-                            <h6>详细描述</h6>
-                            <p>${app.description || 'N/A'}</p>
-                            <h6>新功能</h6>
-                            <p>${app.new_features || 'N/A'}</p>
-                            <h6>升级提示</h6>
-                            <p>${app.upgrade_msg || 'N/A'}</p>
-                            <h6>星级分布</h6>
-                            <ul class="list-unstyled">
-                                <li>1星: ${app.star_1_rating_count || 0}</li>
-                                <li>2星: ${app.star_2_rating_count || 0}</li>
-                                <li>3星: ${app.star_3_rating_count || 0}</li>
-                                <li>4星: ${app.star_4_rating_count || 0}</li>
-                                <li>5星: ${app.star_5_rating_count || 0}</li>
-                            </ul>
-                            <p><a href="${app.privacy_url}" target="_blank">隐私政策</a></p>
-                        </div>
-                    </div>
-                `;
-                modal.show();
-            } catch (error) {
-                console.error('Failed to load app detail:', error);
-                body.innerHTML = '<div class="text-danger text-center">加载详情失败</div>';
-                modal.show();
-            }
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            loadOverview();
-            loadCategories();
-            loadApps();
-            loadCharts();
-            updateLastUpdate();
-
-            // Refresh button
-            document.getElementById('refreshBtn').addEventListener('click', () => {
-                loadOverview();
-                loadApps(currentPage);
-                loadCharts();
-                updateLastUpdate();
-            });
-
-            // Search input (debounce)
-            let searchTimeout;
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    searchTerm = e.target.value;
-                    loadApps(1);
-                }, 300);
-            });
-
-            // Filter
-            document.getElementById('applyFilter').addEventListener('click', () => {
-                categoryFilter = document.getElementById('categoryFilter').value;
-                loadApps(1);
-            });
-            document.getElementById('categoryFilter').addEventListener('change', () => {
-                categoryFilter = document.getElementById('categoryFilter').value;
-                loadApps(1);
-            });
-
-            // Table sort
-            document.querySelectorAll('#appsTable th[data-sort]').forEach(th => {
-                th.addEventListener('click', () => {
-                    const field = th.dataset.sort;
-                    if (currentSort.field === field) {
-                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        currentSort.field = field;
-                        currentSort.direction = 'desc';
-                    }
-                    updateSortIcons();
-                    loadApps(1);
-                });
-            });
-
-            // Pagination
-            document.getElementById('pagination').addEventListener('click', (e) => {
-                if (e.target.tagName === 'A' && e.target.dataset.page) {
-                    e.preventDefault();
-                    loadApps(parseInt(e.target.dataset.page));
-                }
-            });
-        });
-
-        // Update sort icons
-        function updateSortIcons() {
-            document.querySelectorAll('.sort-icon').forEach(icon => {
-                icon.innerHTML = '';
-            });
-            const activeTh = document.querySelector(`th[data-sort="${currentSort.field}"] .sort-icon`);
-            if (activeTh) {
-                activeTh.innerHTML = currentSort.direction === 'asc' ? '↑' : '↓';
-            }
-        }
-
-        // Update last update time
-        function updateLastUpdate() {
-            document.getElementById('lastUpdate').textContent = `最后更新: ${new Date().toLocaleString('zh-CN')}`;
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <!-- Custom JavaScript -->
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>

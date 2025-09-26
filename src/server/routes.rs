@@ -58,6 +58,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         // 获取应用大小排行榜
         .route("/api/rankings/sizes", get(handlers::get_size_ranking))
+        // 获取星级分布
+        .route(
+            "/api/charts/star-distribution",
+            get(handlers::get_star_distribution),
+        )
         // 获取开发者总数
         .route(
             "/api/stats/developers/count",
@@ -69,5 +74,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         // Dashboard routes
         .route("/", get(handlers::redirect_to_dashboard))
         .route("/dashboard", get(handlers::serve_dashboard))
+        .route("/js/dashboard.js", get(handlers::serve_dashboard_js))
         .with_state(app_state)
 }
