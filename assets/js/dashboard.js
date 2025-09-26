@@ -253,7 +253,7 @@ async function loadCategories() {
 
 async function loadCharts() {
   try {
-    const response = await fetch(`${API_BASE}/rankings/top-downloads?limit=15`);
+    const response = await fetch(`${API_BASE}/rankings/top-downloads?limit=20`);
     const data = await response.json();
 
     let apps = [];
@@ -271,7 +271,7 @@ async function loadCharts() {
     }
 
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
-    const yAxisMin = Math.floor(minValue * 0.995);
+    const yAxisMin = Math.floor(minValue * 0.999);
 
     const ctx1 = document.getElementById("top_download_chart").getContext("2d");
     if (top10Chart) top10Chart.destroy();
