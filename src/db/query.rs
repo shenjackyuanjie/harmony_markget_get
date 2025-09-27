@@ -1,4 +1,4 @@
-use crate::model::{AppInfo, AppMetric, AppRating, FullAppInfo, ShortAppInfo, ShortAppRating};
+use crate::model::{AppInfo, AppMetric, AppRating, FullAppInfo, ShortAppRating};
 use anyhow::Result;
 use chrono::{DateTime, Local};
 use serde_json::Value;
