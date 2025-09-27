@@ -168,7 +168,7 @@ function renderApps(apps) {
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app_rating.average_rating)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app_metric.download_count || 0)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app_metric.size_bytes || 0)}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.last_update ? new Date(app_metric.last_update).toLocaleDateString("zh-CN") : "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "Unknown"}</td>
     `;
 
     tableBody.appendChild(tr);

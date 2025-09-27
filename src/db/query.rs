@@ -134,7 +134,7 @@ impl Database {
                 raw.parse().unwrap_or(0.0)
             },
             source_type: row.get("source_type"),
-            created_at: row.get("created_at"),
+            created_at: row.get("rating_created_at"),
         }
     }
 
@@ -142,10 +142,9 @@ impl Database {
         let app_info = Self::read_app_info_from_row(row);
         let app_metrics = Self::read_app_metric_from_row(row);
         // 检查对应字段有没有内容
-        let app_rating = if let Ok(star_3_rating_count) =
-            row.try_get::<'_, Option<i64>, _>("star_3_rating_count")
+        let app_rating = if let Ok(rate) = row.try_get::<'_, Option<i32>, _>("star_1_rating_count")
         {
-            if let Some(_) = star_3_rating_count {
+            if rate.is_some() {
                 Some(Self::read_app_rating_from_row(row))
             } else {
                 None
