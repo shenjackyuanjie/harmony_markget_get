@@ -1,7 +1,7 @@
+pub mod handle_static;
 pub mod handlers;
 pub mod routes;
 pub mod state;
-pub mod handle_static;
 
 use std::sync::Arc;
 

@@ -1,6 +1,4 @@
-use axum::{
-    response::{Html, IntoResponse, Redirect},
-};
+use axum::response::{Html, IntoResponse, Redirect};
 
 /// Root path redirect to dashboard
 pub async fn redirect_to_dashboard() -> impl IntoResponse {

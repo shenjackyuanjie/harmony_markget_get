@@ -1,7 +1,7 @@
 use axum::{
     Json,
     extract::{Path, Query, State},
-    response::{IntoResponse},
+    response::IntoResponse,
 };
 use serde_json::json;
 use tracing::{Level, event};
@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use crate::{
     model::{AppInfo, AppMetric, AppQuery, AppRating},
-    server::state::{ApiResponse, RankingQuery, AppState},
+    server::state::{ApiResponse, AppState, RankingQuery},
 };
 
 /// 查询应用包名信息
@@ -93,9 +93,7 @@ pub async fn query_app_id(
 }
 
 /// 获取应用列表统计信息
-pub async fn app_list_info(
-    State(state): State<Arc<AppState>>,
-) -> impl IntoResponse {
+pub async fn app_list_info(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
     #[derive(serde::Deserialize, serde::Serialize)]
     struct MarketInfo {
@@ -401,9 +399,7 @@ pub async fn get_size_ranking(
 }
 
 /// Get star distribution
-pub async fn get_star_distribution(
-    State(state): State<Arc<AppState>>,
-) -> impl IntoResponse {
+pub async fn get_star_distribution(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取星级分布");
     match state.db.get_star_distribution().await {
         Ok((star_1, star_2, star_3, star_4, star_5)) => Json(ApiResponse::success(

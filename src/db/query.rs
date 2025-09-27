@@ -2,7 +2,7 @@ use crate::model::{AppInfo, AppMetric, ShortAppInfo, ShortAppRating};
 use anyhow::Result;
 use chrono::{DateTime, Local};
 use serde_json::Value;
-use sqlx::{postgres::PgRow, Row};
+use sqlx::{Row, postgres::PgRow};
 use std::ops::Range;
 
 use crate::db::{Database, PaginatedAppInfo};

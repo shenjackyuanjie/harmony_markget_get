@@ -1,8 +1,8 @@
-use axum::{Router, routing::get, http::StatusCode, Json, response::IntoResponse};
+use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 use std::sync::Arc;
 
-use crate::server::{handlers, handle_static};
 use crate::server::state::{ApiResponse, AppState};
+use crate::server::{handle_static, handlers};
 
 /// 创建应用路由
 pub fn create_router(app_state: Arc<AppState>) -> Router {
@@ -51,10 +51,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(handlers::get_rating_growth_ranking),
         )
         // 获取开发者排行榜
-        .route(
-            "/rankings/developers",
-            get(handlers::get_developer_ranking),
-        )
+        .route("/rankings/developers", get(handlers::get_developer_ranking))
         // 获取应用大小排行榜
         .route("/rankings/sizes", get(handlers::get_size_ranking))
         // 获取星级分布
