@@ -10,7 +10,7 @@ pub use query::AppQuery;
 pub use raw::{RawJsonData, RawRatingData};
 
 /// 比较完整的 应用数据
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FullAppInfo {
     pub info: AppInfo,
     pub metric: AppMetric,
@@ -28,7 +28,7 @@ impl FullAppInfo {
 }
 
 /// 简化版评分排行结构体
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ShortAppRating {
     pub app_id: String,
     pub name: String,
@@ -40,7 +40,7 @@ pub struct ShortAppRating {
 }
 
 /// 2. app_info 表
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AppInfo {
     pub app_id: String,
     pub alliance_app_id: String,
@@ -170,21 +170,32 @@ impl From<&RawJsonData> for ShortAppInfo {
     }
 }
 
-impl From<&FullAppInfo> for ShortAppInfo {
-    fn from(full_info: &FullAppInfo) -> Self {
-        let info = &full_info.info;
+impl From<FullAppInfo> for AppInfo {
+    fn from(full_info: FullAppInfo) -> Self {
+        full_info.info
+    }
+}
+impl From<FullAppInfo> for AppMetric {
+    fn from(full_info: FullAppInfo) -> Self {
+        full_info.metric
+    }
+}
+
+impl From<FullAppInfo> for ShortAppInfo {
+    fn from(full_info: FullAppInfo) -> Self {
+        let info = full_info.info;
         ShortAppInfo {
-            app_id: info.app_id.clone(),
-            name: info.name.clone(),
-            pkg_name: info.pkg_name.clone(),
-            icon_url: info.icon_url.clone(),
+            app_id: info.app_id,
+            name: info.name,
+            pkg_name: info.pkg_name,
+            icon_url: info.icon_url,
             create_at: info.created_at,
         }
     }
 }
 
 /// 4. app_metrics 表
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AppMetric {
     pub id: i64,
     pub app_id: String,
@@ -208,7 +219,7 @@ pub struct AppMetric {
 }
 
 /// 5. app_rating 表
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AppRating {
     pub id: i64,
     pub app_id: String,
@@ -274,7 +285,7 @@ impl AppRating {
 }
 
 /// 6. app_raw 表
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AppRaw {
     pub id: i64,
     pub app_id: String,

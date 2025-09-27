@@ -9,7 +9,7 @@ use tracing::{Level, event};
 use std::sync::Arc;
 
 use crate::{
-    model::{AppInfo, AppMetric, AppQuery, AppRating},
+    model::{AppInfo, AppMetric, AppQuery, AppRating, FullAppInfo, ShortAppInfo},
     server::state::{ApiResponse, AppListQuery, AppState, RankingQuery},
 };
 
@@ -143,7 +143,7 @@ pub async fn app_list_paged(
         Ok(page) => {
             match state
                 .db
-                .get_app_info_paginated_enhanced(
+                .get_app_info_paginated_enhanced::<FullAppInfo>(
                     page,
                     PAGE_BATCH,
                     query.sort_key(),
@@ -180,7 +180,7 @@ pub async fn app_list_paged_short(
         Ok(page) => {
             match state
                 .db
-                .get_app_info_paginated_short(
+                .get_app_info_paginated_enhanced::<ShortAppInfo>(
                     page,
                     PAGE_BATCH,
                     query.sort_key(),

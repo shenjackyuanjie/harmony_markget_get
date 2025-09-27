@@ -24,6 +24,9 @@ path = "src/get_nextmax.rs"
 name = "read_appgallery"
 path = "src/read_appgallery.rs"
 
+[features]
+no_sync = []
+
 [dependencies]
 anyhow = "1.0"
 axum = { version = "0.8.4", features = [

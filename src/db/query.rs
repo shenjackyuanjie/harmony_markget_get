@@ -308,7 +308,7 @@ impl Database {
         let query = format!(
             r#"
         SELECT {}, {}, {}
-        FROM app_info ai
+        FROM app_latest_info ai
         ORDER BY {} {}
         LIMIT $1 OFFSET $2
         "#,
@@ -376,13 +376,13 @@ impl Database {
     /// println!("第 {} 页，共 {} 页，总计 {} 条记录",
     ///     result.page, result.total_pages, result.total_count);
     /// ```
-    pub async fn get_app_info_paginated_enhanced(
+    pub async fn get_app_info_paginated_enhanced<D: From<FullAppInfo>>(
         &self,
         page: u32,
         page_size: u32,
         sort_key: Option<&str>,
         sort_desc: bool,
-    ) -> Result<PaginatedAppInfo<AppInfo>> {
+    ) -> Result<PaginatedAppInfo<D>> {
         let total_count = self.get_app_info_count().await?;
         let total_pages = if page_size == 0 {
             0
@@ -397,7 +397,10 @@ impl Database {
                 sort_key.unwrap_or("create_at"),
                 sort_desc,
             )
-            .await?;
+            .await?
+            .into_iter()
+            .map(D::from)
+            .collect();
 
         Ok(PaginatedAppInfo {
             data,
@@ -405,34 +408,6 @@ impl Database {
             page,
             page_size,
             total_pages,
-        })
-    }
-
-    /// 同 get_app_info_paginated_enhanced
-    ///
-    /// 但是数据简洁一些
-    pub async fn get_app_info_paginated_short(
-        &self,
-        page: u32,
-        page_size: u32,
-        sort_key: Option<&str>,
-        sort_desc: bool,
-    ) -> Result<PaginatedAppInfo<ShortAppInfo>> {
-        let detail_info = self
-            .get_app_info_paginated_enhanced(page, page_size, sort_key, sort_desc)
-            .await?;
-        let data = detail_info
-            .data
-            .into_iter()
-            .map(|app| ShortAppInfo::from(&app))
-            .collect();
-
-        Ok(PaginatedAppInfo {
-            data,
-            total_count: detail_info.total_count,
-            page,
-            page_size,
-            total_pages: detail_info.total_pages,
         })
     }
 

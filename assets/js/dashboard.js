@@ -2,7 +2,7 @@
 // 全局变量：用于管理页面状态和图表实例
 let currentPage = 1;  // 当前页码
 let totalPages = 1;   // 总页数
-let currentSort = { field: "download_count", direction: "desc" };  // 当前排序字段和方向
+let currentSort = { field: "download_count", desc: true };  // 当前排序字段和方向
 let searchTerm = "";  // 搜索关键词
 let categoryFilter = "all";  // 分类过滤器
 let starChart = null;  // 星级分布图表实例
@@ -25,7 +25,7 @@ function formatSize(size) {
 
 // 使用 Unicode 渲染星级评分
 function renderStars(rating) {
-  if (!rating) return "N/A";
+  if (!rating) return null;
   const fullStars = Math.floor(rating);
   const hasHalf = rating % 1 >= 0.5;
   let stars = "";
@@ -92,7 +92,7 @@ async function loadOverview() {
 async function loadApps(
   page = 1,
   sortField = currentSort.field,
-  sortDirection = currentSort.direction,
+  sort_desc = currentSort.desc,
   search = searchTerm,
   category = categoryFilter,
 ) {
@@ -101,7 +101,7 @@ async function loadApps(
     tableBody.innerHTML =
       '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
-    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&direction=${sortDirection}`;
+    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&desc=${sort_desc}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (category && category !== "all")
       url += `&category=${encodeURIComponent(category)}`;
@@ -127,21 +127,6 @@ async function loadApps(
       );
     }
 
-    // Client-side sort if server doesn't handle it
-    apps.sort((a, b) => {
-      let valueA = a[sortField] || 0;
-      let valueB = b[sortField] || 0;
-      if (typeof valueA === "string") {
-        valueA = valueA.toLowerCase();
-        valueB = valueB.toLowerCase();
-      }
-      if (sortDirection === "asc") {
-        return valueA > valueB ? 1 : -1;
-      } else {
-        return valueA < valueB ? 1 : -1;
-      }
-    });
-
     renderApps(apps.slice(0, PAGE_SIZE)); // Paginate client-side if needed
     renderPagination();
   } catch (error) {
@@ -161,32 +146,34 @@ function renderApps(apps) {
       '<tr><td colspan="8" class="text-center py-4 text-gray-500">No apps found</td></tr>';
     return;
   }
-
   apps.forEach((app) => {
+    const app_info = app.info;
+    const app_metric = app.metric;
+    const app_rating = app.rating || {};
+
     const tr = document.createElement("tr");
     tr.className = "hover:bg-gray-50 cursor-pointer transition-colors";
-    tr.onclick = () => showAppDetail(app.app_id || app.id);
-
+    tr.onclick = () => showAppDetail(app_info.app_id);
     tr.innerHTML = `
       <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center">
-          <img src="${app.icon_url || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app.name}">
-          <span class="font-medium text-gray-900">${app.name || "Unknown"}</span>
+          <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app_info.name}">
+          <span class="font-medium text-gray-900">${app_info.name || "Unknown"}</span>
         </div>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.developer_name || "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_info.developer_name || "Unknown"}</td>
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app.kind_type_name || "未知"}-${app.kind_name || "未知"}</span>
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app.rating)}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app.download_count || 0)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app_rating.average_rating)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app_metric.download_count || 0)}</td>
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app.price ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}">
-          ${app.price ? `¥${app.price.toFixed(2)}` : "免费"}
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app_metric.price ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}">
+          ${app_metric.price ? `¥${app_metric.price.toFixed(2)}` : "免费"}
         </span>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app.size || 0)}</td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.last_update ? new Date(app.last_update).toLocaleDateString("zh-CN") : "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app_metric.size || 0)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.last_update ? new Date(app_metric.last_update).toLocaleDateString("zh-CN") : "Unknown"}</td>
     `;
 
     tableBody.appendChild(tr);
@@ -202,7 +189,7 @@ function updateSortIcons() {
     if (!span) return;
 
     if (field === currentSort.field) {
-      span.textContent = currentSort.direction === "asc" ? "↑" : "↓";
+      span.textContent = currentSort.desc === false ? "↑" : "↓";
       header.classList.add("bg-gray-100"); // Active state
     } else {
       span.textContent = "↑";
@@ -531,14 +518,14 @@ async function showAppDetail(appId) {
     const data = await response.json();
     const app_info = data.data.info;
     const app_metric = data.data.metric;
-    const app_rating = data.data.rating;
+    const app_rating = data.data.rating || {};
 
     let html = `
       <div class="flex flex-col md:flex-row gap-6">
         <div class="md:w-1/4 text-center md:text-left">
           <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app_info.name}">
-          <p class="mb-1 text-lg">${renderStars(app_rating.average_rating)}</p>
-          <p class="text-gray-500">${app_rating.total_star_rating_count || 0} 评分</p>
+          <p class="mb-1 text-lg">${renderStars(app_rating.average_rating) || "无评分"}</p>
+          <p class="text-gray-500">${app_rating.total_star_rating_count || "无"} 评分</p>
         </div>
         <div class="md:w-3/4">
           <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "Unknown App"}</h4>
@@ -596,11 +583,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("th[data-sort]").forEach((header) => {
     header.addEventListener("click", () => {
       const field = header.getAttribute("data-sort");
-      let direction = "desc";
+      let desc = "desc";
       if (field === currentSort.field) {
-        direction = currentSort.direction === "desc" ? "asc" : "desc";
+        desc = currentSort.desc === false ? true : false;
       }
-      currentSort = { field, direction };
+      currentSort = { field, desc };
       updateSortIcons();
       loadApps(1);
     });
