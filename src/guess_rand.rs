@@ -25,7 +25,10 @@ impl Random {
     }
 
     pub fn next(&mut self) -> u64 {
-        self.state = self.state.wrapping_mul(1664525u64).wrapping_add(1013904223u64);
+        self.state = self
+            .state
+            .wrapping_mul(1664525u64)
+            .wrapping_add(1013904223u64);
         self.state
     }
 }
@@ -116,10 +119,7 @@ async fn async_main() -> anyhow::Result<()> {
             });
         }
         join_set.join_all().await;
-        println!(
-            "处理了 {batch} 个随机 ID，等待 {:?}",
-            wait_time
-        );
+        println!("处理了 {batch} 个随机 ID，等待 {:?}", wait_time);
         tokio::time::sleep(wait_time).await;
     }
 }

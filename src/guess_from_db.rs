@@ -35,7 +35,11 @@ async fn async_main() -> anyhow::Result<()> {
     // 获取数据库中所有的 app_id
     println!("正在从数据库获取所有 app_id...");
     let existing_app_ids = db.get_all_app_ids().await?;
-    let existing_app_ids = existing_app_ids.iter().filter(|i| i.starts_with("C69175")).cloned().collect::<Vec<_>>();
+    let existing_app_ids = existing_app_ids
+        .iter()
+        .filter(|i| i.starts_with("C69175"))
+        .cloned()
+        .collect::<Vec<_>>();
     println!("从数据库获取到 {} 个 app_id", existing_app_ids.len());
 
     if existing_app_ids.is_empty() {
