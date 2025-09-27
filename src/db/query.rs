@@ -138,7 +138,27 @@ impl Database {
         }
     }
 
-    // fn read_app_raing_from_row()
+    fn read_full_app_data_from_row(row: &PgRow) -> FullAppInfo {
+        let app_info = Self::read_app_info_from_row(row);
+        let app_metrics = Self::read_app_metric_from_row(row);
+        // 检查对应字段有没有内容
+        let app_rating = if let Ok(star_3_rating_count) =
+            row.try_get::<'_, Option<i64>, _>("star_3_rating_count")
+        {
+            if let Some(_) = star_3_rating_count {
+                Some(Self::read_app_rating_from_row(row))
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        FullAppInfo {
+            info: app_info,
+            metric: app_metrics,
+            rating: app_rating,
+        }
+    }
 
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_id: &str) -> Result<bool> {
@@ -279,25 +299,36 @@ impl Database {
     /// let apps = db.get_app_info_paginated(0..10).await?;
     /// println!("获取到 {} 条应用信息", apps.len());
     /// ```
-    pub async fn get_app_info_paginated(&self, range: Range<u32>) -> Result<Vec<AppInfo>> {
-        const QUERY: &str = r#"
-        SELECT ai.*
+    pub async fn get_app_info_paginated(
+        &self,
+        range: Range<u32>,
+        sort_key: &str,
+        sort_desc: bool,
+    ) -> Result<Vec<FullAppInfo>> {
+        let query = format!(
+            r#"
+        SELECT {}, {}, {}
         FROM app_info ai
-        ORDER BY ai.created_at DESC
+        ORDER BY {} {}
         LIMIT $1 OFFSET $2
-        "#;
+        "#,
+            SELECT_APP_INFO_FIELDS,
+            SELECT_APP_METRIC_FIELDS,
+            SELECT_APP_RATING_FIELDS,
+            sort_key,
+            if sort_desc { "DESC" } else { "ASC" }
+        );
 
         let limit = (range.end - range.start) as i64;
         let offset = range.start as i64;
 
-        let rows = sqlx::query(QUERY)
+        let rows = sqlx::query(&query)
             .bind(limit) // LIMIT
             .bind(offset) // OFFSET - 修正了参数顺序
             .fetch_all(&self.pool)
             .await?;
 
-        let app_infos = rows.iter().map(Self::read_app_info_from_row).collect();
-
+        let app_infos = rows.iter().map(Self::read_full_app_data_from_row).collect();
         Ok(app_infos)
     }
 
@@ -349,6 +380,8 @@ impl Database {
         &self,
         page: u32,
         page_size: u32,
+        sort_key: Option<&str>,
+        sort_desc: bool,
     ) -> Result<PaginatedAppInfo<AppInfo>> {
         let total_count = self.get_app_info_count().await?;
         let total_pages = if page_size == 0 {
@@ -359,7 +392,11 @@ impl Database {
         let offset = (page.saturating_sub(1)) * page_size;
 
         let data = self
-            .get_app_info_paginated(offset..(offset + page_size))
+            .get_app_info_paginated(
+                offset..(offset + page_size),
+                sort_key.unwrap_or("create_at"),
+                sort_desc,
+            )
             .await?;
 
         Ok(PaginatedAppInfo {
@@ -378,9 +415,11 @@ impl Database {
         &self,
         page: u32,
         page_size: u32,
+        sort_key: Option<&str>,
+        sort_desc: bool,
     ) -> Result<PaginatedAppInfo<ShortAppInfo>> {
         let detail_info = self
-            .get_app_info_paginated_enhanced(page, page_size)
+            .get_app_info_paginated_enhanced(page, page_size, sort_key, sort_desc)
             .await?;
         let data = detail_info
             .data

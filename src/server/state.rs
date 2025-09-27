@@ -105,4 +105,12 @@ impl AppListQuery {
             false
         }
     }
+
+    pub fn sort_key(&self) -> Option<&str> {
+        if self.is_valid_sort() {
+            self.sort.as_deref()
+        } else {
+            None
+        }
+    }
 }

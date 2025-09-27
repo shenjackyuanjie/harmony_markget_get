@@ -170,6 +170,19 @@ impl From<&RawJsonData> for ShortAppInfo {
     }
 }
 
+impl From<&FullAppInfo> for ShortAppInfo {
+    fn from(full_info: &FullAppInfo) -> Self {
+        let info = &full_info.info;
+        ShortAppInfo {
+            app_id: info.app_id.clone(),
+            name: info.name.clone(),
+            pkg_name: info.pkg_name.clone(),
+            icon_url: info.icon_url.clone(),
+            create_at: info.created_at,
+        }
+    }
+}
+
 /// 4. app_metrics 表
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppMetric {

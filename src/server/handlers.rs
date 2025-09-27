@@ -143,7 +143,12 @@ pub async fn app_list_paged(
         Ok(page) => {
             match state
                 .db
-                .get_app_info_paginated_enhanced(page, PAGE_BATCH)
+                .get_app_info_paginated_enhanced(
+                    page,
+                    PAGE_BATCH,
+                    query.sort_key(),
+                    query.desc.unwrap_or_default(),
+                )
                 .await
             {
                 Ok(apps) => {
@@ -175,7 +180,12 @@ pub async fn app_list_paged_short(
         Ok(page) => {
             match state
                 .db
-                .get_app_info_paginated_short(page, PAGE_BATCH)
+                .get_app_info_paginated_short(
+                    page,
+                    PAGE_BATCH,
+                    query.sort_key(),
+                    query.desc.unwrap_or_default(),
+                )
                 .await
             {
                 Ok(apps) => {
