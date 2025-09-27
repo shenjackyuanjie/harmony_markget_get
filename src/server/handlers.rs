@@ -1,18 +1,21 @@
 use axum::{
     Json,
     extract::{Path, Query, State},
-    response::{Html, IntoResponse, Redirect},
+    response::{IntoResponse},
 };
 use serde_json::json;
 use tracing::{Level, event};
 
-use crate::model::{AppInfo, AppMetric, AppQuery, AppRating};
+use std::sync::Arc;
 
-use super::state::{ApiResponse, RankingQuery};
+use crate::{
+    model::{AppInfo, AppMetric, AppQuery, AppRating},
+    server::state::{ApiResponse, RankingQuery, AppState},
+};
 
 /// 查询应用包名信息
 pub async fn query_pkg(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(pkg_name): Path<String>,
 ) -> impl IntoResponse {
     event!(
@@ -53,7 +56,7 @@ pub async fn query_pkg(
 
 /// 查询应用ID信息
 pub async fn query_app_id(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(app_id): Path<String>,
 ) -> impl IntoResponse {
     event!(
@@ -91,7 +94,7 @@ pub async fn query_app_id(
 
 /// 获取应用列表统计信息
 pub async fn app_list_info(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
     #[derive(serde::Deserialize, serde::Serialize)]
@@ -133,7 +136,7 @@ pub async fn app_list_info(
 
 /// 分页获取应用详细信息
 pub async fn app_list_paged(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(page): Path<String>,
 ) -> impl IntoResponse {
     const PAGE_BATCH: u32 = 100;
@@ -164,7 +167,7 @@ pub async fn app_list_paged(
 
 /// 分页获取应用简略信息
 pub async fn app_list_paged_short(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(page): Path<String>,
 ) -> impl IntoResponse {
     const PAGE_BATCH: u32 = 100;
@@ -195,7 +198,7 @@ pub async fn app_list_paged_short(
 
 /// 获取下载量排行
 pub async fn get_download_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -223,7 +226,7 @@ pub async fn get_download_ranking(
 
 /// 获取评分排行
 pub async fn get_rating_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -243,7 +246,7 @@ pub async fn get_rating_ranking(
 
 /// 获取最近更新排行
 pub async fn get_recent_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -263,7 +266,7 @@ pub async fn get_recent_ranking(
 
 /// 获取价格排行
 pub async fn get_price_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -283,7 +286,7 @@ pub async fn get_price_ranking(
 
 /// 获取评分人数排行
 pub async fn get_rating_count_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -303,7 +306,7 @@ pub async fn get_rating_count_ranking(
 
 /// 获取下载量增长排行
 pub async fn get_download_growth_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -329,7 +332,7 @@ pub async fn get_download_growth_ranking(
 
 /// 获取评分增长排行
 pub async fn get_rating_growth_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -355,7 +358,7 @@ pub async fn get_rating_growth_ranking(
 
 /// 获取开发者排行
 pub async fn get_developer_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -379,7 +382,7 @@ pub async fn get_developer_ranking(
 
 /// 获取应用大小排行
 pub async fn get_size_ranking(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(query): Query<RankingQuery>,
 ) -> impl IntoResponse {
     let limit = query.limit.unwrap_or(10);
@@ -399,7 +402,7 @@ pub async fn get_size_ranking(
 
 /// Get star distribution
 pub async fn get_star_distribution(
-    State(state): State<std::sync::Arc<super::state::AppState>>,
+    State(state): State<Arc<AppState>>,
 ) -> impl IntoResponse {
     event!(Level::INFO, "http 服务正在尝试获取星级分布");
     match state.db.get_star_distribution().await {
@@ -413,42 +416,4 @@ pub async fn get_star_distribution(
             Json(ApiResponse::error(json!({"error": "Database error"})))
         }
     }
-}
-
-/// Root path redirect to dashboard
-pub async fn redirect_to_dashboard() -> impl IntoResponse {
-    Redirect::permanent("/dashboard")
-}
-
-// 使用 include_str! 宏在编译时包含静态文件
-const DASHBOARD_HTML: &str = include_str!("../../assets/html/main.html");
-const DASHBOARD_JS: &str = include_str!("../../assets/js/dashboard.js");
-const FAVICON_ICO: &[u8] = include_bytes!("../../assets/icon/favicon.ico");
-
-/// Serve dashboard HTML
-pub async fn serve_dashboard() -> impl IntoResponse {
-    Html(DASHBOARD_HTML).into_response()
-}
-
-pub async fn serve_favicon() -> impl IntoResponse {
-    (
-        [(
-            axum::http::header::CONTENT_TYPE,
-            axum::http::HeaderValue::from_static("image/x-icon"),
-        )],
-        FAVICON_ICO,
-    )
-        .into_response()
-}
-
-/// Serve dashboard JavaScript
-pub async fn serve_dashboard_js() -> impl IntoResponse {
-    (
-        [(
-            axum::http::header::CONTENT_TYPE,
-            axum::http::HeaderValue::from_static("application/javascript"),
-        )],
-        DASHBOARD_JS,
-    )
-        .into_response()
 }

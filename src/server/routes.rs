@@ -1,72 +1,83 @@
-use axum::{Router, routing::get};
+use axum::{Router, routing::get, http::StatusCode, Json, response::IntoResponse};
 use std::sync::Arc;
 
-use crate::server::handlers;
-use crate::server::state::AppState;
+use crate::server::{handlers, handle_static};
+use crate::server::state::{ApiResponse, AppState};
 
 /// 创建应用路由
 pub fn create_router(app_state: Arc<AppState>) -> Router {
-    Router::new()
-        // 规范化后的原有路由
+    let api_router = Router::new()
         // 根据包名查询应用信息
-        .route("/api/apps/pkg_name/{pkg_name}", get(handlers::query_pkg))
+        .route("/apps/pkg_name/{pkg_name}", get(handlers::query_pkg))
         // 根据应用ID查询应用信息
-        .route("/api/apps/app_id/{app_id}", get(handlers::query_app_id))
+        .route("/apps/app_id/{app_id}", get(handlers::query_app_id))
         // 获取市场信息
-        .route("/api/market_info", get(handlers::app_list_info))
+        .route("/market_info", get(handlers::app_list_info))
         // 获取分页的应用详细信息
         .route(
-            "/api/apps/list/{page_count}/detail",
+            "/apps/list/{page_count}/detail",
             get(handlers::app_list_paged),
         )
         // 获取分页的应用简要信息
         .route(
-            "/api/apps/list/{page_count}",
+            "/apps/list/{page_count}",
             get(handlers::app_list_paged_short),
         )
         // 新增排行API路由
         // 获取下载量排行榜
         .route(
-            "/api/rankings/top-downloads",
+            "/rankings/top-downloads",
             get(handlers::get_download_ranking),
         )
         // 获取评分排行榜
-        .route("/api/rankings/ratings", get(handlers::get_rating_ranking))
+        .route("/rankings/ratings", get(handlers::get_rating_ranking))
         // 获取最新应用排行榜
-        .route("/api/rankings/recent", get(handlers::get_recent_ranking))
+        .route("/rankings/recent", get(handlers::get_recent_ranking))
         // 获取价格排行榜
-        .route("/api/rankings/prices", get(handlers::get_price_ranking))
+        .route("/rankings/prices", get(handlers::get_price_ranking))
         // 获取评分数量排行榜
         .route(
-            "/api/rankings/rating-counts",
+            "/rankings/rating-counts",
             get(handlers::get_rating_count_ranking),
         )
         // 获取下载量增长率排行榜
         .route(
-            "/api/rankings/download-growth",
+            "/rankings/download-growth",
             get(handlers::get_download_growth_ranking),
         )
         // 获取评分增长率排行榜
         .route(
-            "/api/rankings/rating-growth",
+            "/rankings/rating-growth",
             get(handlers::get_rating_growth_ranking),
         )
         // 获取开发者排行榜
         .route(
-            "/api/rankings/developers",
+            "/rankings/developers",
             get(handlers::get_developer_ranking),
         )
         // 获取应用大小排行榜
-        .route("/api/rankings/sizes", get(handlers::get_size_ranking))
+        .route("/rankings/sizes", get(handlers::get_size_ranking))
         // 获取星级分布
         .route(
-            "/api/charts/star-distribution",
+            "/charts/star-distribution",
             get(handlers::get_star_distribution),
         )
+        .fallback(api_not_found)
+        .with_state(app_state.clone());
+
+    Router::new()
         // Dashboard routes
-        .route("/", get(handlers::redirect_to_dashboard))
-        .route("/dashboard", get(handlers::serve_dashboard))
-        .route("/js/dashboard.js", get(handlers::serve_dashboard_js))
-        .route("/favicon.ico", get(handlers::serve_favicon))
+        .route("/", get(handle_static::redirect_to_dashboard))
+        .route("/dashboard", get(handle_static::serve_dashboard))
+        .route("/js/dashboard.js", get(handle_static::serve_dashboard_js))
+        .route("/favicon.ico", get(handle_static::serve_favicon))
+        .nest("/api", api_router)
+        .fallback(handle_static::serve_not_found)
         .with_state(app_state)
+}
+
+/// API-specific 404 handler returning JSON error
+async fn api_not_found() -> impl IntoResponse {
+    let payload = ApiResponse::error("Api Not Found");
+    (StatusCode::NOT_FOUND, Json(payload))
 }
