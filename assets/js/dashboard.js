@@ -6,8 +6,6 @@ let currentSort = { field: "download_count", direction: "desc" };  // 当前排�
 let searchTerm = "";  // 搜索关键词
 let categoryFilter = "all";  // 分类过滤器
 let starChart = null;  // 星级分布图表实例
-let top_download_chart = null;  // 下载量图表实例（包含华为）
-let top_download_chart_not_huawei = null;  // 下载量图表实例（排除华为）
 const PAGE_SIZE = 20;  // 每页显示的应用数量
 const API_BASE = "/api";  // API 基础路径，根据需要调整
 
@@ -529,32 +527,34 @@ async function showAppDetail(appId) {
     modalContent.innerHTML =
       '<div class="flex justify-center items-center py-8"><div class="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>';
 
-    const response = await fetch(`${API_BASE}/apps/id/${appId}`);
+    const response = await fetch(`${API_BASE}/apps/app_id/${appId}`);
     const data = await response.json();
-    const app = data.data.info || data.data;
+    const app_info = data.data.info;
+    const app_metric = data.data.metric;
+    const app_rating = data.data.rating;
 
     let html = `
       <div class="flex flex-col md:flex-row gap-6">
         <div class="md:w-1/4 text-center md:text-left">
-          <img src="${app.icon || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app.name}">
-          <p class="mb-1 text-lg">${renderStars(app.rating)}</p>
-          <p class="text-gray-500">${app.rating_count || 0} 评分</p>
+          <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app_info.name}">
+          <p class="mb-1 text-lg">${renderStars(app_rating.average_rating)}</p>
+          <p class="text-gray-500">${app_rating.total_star_rating_count || 0} 评分</p>
         </div>
         <div class="md:w-3/4">
-          <h4 class="text-2xl font-bold text-gray-900 mb-2">${app.name || "Unknown App"}</h4>
-          <p class="text-gray-600 mb-4">${app.developer || "Unknown Developer"}</p>
+          <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "Unknown App"}</h4>
+          <p class="text-gray-600 mb-4">${app_info.developer_name || "Unknown Developer"}</p>
           <div class="flex flex-wrap gap-2 mb-4">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${app.category || "Uncategorized"}</span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">${formatSize(app.size || 0)}</span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app.version || "Unknown Version"}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">${formatSize(app_metric.size_bytes || 0)}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app_info.version || "Unknown Version"}</span>
           </div>
           <div class="space-y-2 mb-4">
-            <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app.download_count || 0)}</span></p>
-            <p><strong class="text-gray-900">价格:</strong> <span class="text-gray-600">${app.price ? `¥${app.price.toFixed(2)}` : "免费"}</span></p>
-            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app.last_update ? new Date(app.last_update).toLocaleDateString("zh-CN") : "未知"}</span></p>
+            <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app_metric.download_count || 0)}</span></p>
+            <p><strong class="text-gray-900">价格:</strong> <span class="text-gray-600">${app_metric.price ? `¥${app_metric.price}` : "免费"}</span></p>
+            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
           </div>
           <hr class="my-4 border-gray-200">
-          <p class="text-gray-700">${app.description || "无描述"}</p>
+          <p class="text-gray-700">${app_info.description || "无描述"}</p>
         </div>
       </div>
     `;
