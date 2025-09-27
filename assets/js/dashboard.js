@@ -167,12 +167,7 @@ function renderApps(apps) {
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app_rating.average_rating)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app_metric.download_count || 0)}</td>
-      <td class="px-6 py-4 whitespace-nowrap">
-        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${app_metric.price ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}">
-          ${app_metric.price ? `¥${app_metric.price.toFixed(2)}` : "免费"}
-        </span>
-      </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app_metric.size || 0)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatSize(app_metric.size_bytes || 0)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.last_update ? new Date(app_metric.last_update).toLocaleDateString("zh-CN") : "Unknown"}</td>
     `;
 
