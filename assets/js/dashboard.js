@@ -101,7 +101,7 @@ async function loadApps(
     tableBody.innerHTML =
       '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
-    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&desc=${sort_desc}`;
+    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&desc=${sort_desc}&page_size=${PAGE_SIZE}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (category && category !== "all")
       url += `&category=${encodeURIComponent(category)}`;
@@ -203,6 +203,22 @@ function renderPagination() {
   const ul = document.createElement("ul");
   ul.className = "flex items-center space-x-1";
 
+  // First page button
+  const firstLi = document.createElement("li");
+  firstLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
+  const firstA = document.createElement("a");
+  firstA.className =
+    "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  firstA.textContent = "第一页";
+  if (currentPage > 1) {
+    firstA.onclick = (e) => {
+      e.preventDefault();
+      loadApps(1);
+    };
+  }
+  firstLi.appendChild(firstA);
+  ul.appendChild(firstLi);
+
   // Previous button
   const prevLi = document.createElement("li");
   prevLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
@@ -255,6 +271,22 @@ function renderPagination() {
   }
   nextLi.appendChild(nextA);
   ul.appendChild(nextLi);
+
+  // Last page button
+  const lastLi = document.createElement("li");
+  lastLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
+  const lastA = document.createElement("a");
+  lastA.className =
+    "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+  lastA.textContent = "最后一页";
+  if (currentPage < totalPages) {
+    lastA.onclick = (e) => {
+      e.preventDefault();
+      loadApps(totalPages);
+    };
+  }
+  lastLi.appendChild(lastA);
+  ul.appendChild(lastLi);
 
   paginationEl.appendChild(ul);
 }
@@ -536,7 +568,7 @@ async function showAppDetail(appId) {
             <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
           </div>
           <hr class="my-4 border-gray-200">
-          <p class="text-gray-700">${app_info.description || "无描述"}</p>
+          <p class="text-gray-700">${(app_info.description || "无描述").replace(/\n/g, '<br>')}</p>
         </div>
       </div>
     `;

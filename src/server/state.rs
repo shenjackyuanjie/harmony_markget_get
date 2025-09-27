@@ -86,6 +86,7 @@ pub struct AppListQuery {
     pub sort: Option<String>,
     pub desc: Option<bool>,
     pub search: Option<String>,
+    pub page_size: Option<u32>,
 }
 
 impl AppListQuery {
@@ -112,5 +113,9 @@ impl AppListQuery {
         } else {
             None
         }
+    }
+
+    pub fn page_size(&self) -> u32 {
+        self.page_size.unwrap_or(100)
     }
 }

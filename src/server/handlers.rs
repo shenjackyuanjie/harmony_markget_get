@@ -138,14 +138,13 @@ pub async fn app_list_paged(
     Path(page): Path<String>,
     Query(query): Query<AppListQuery>,
 ) -> impl IntoResponse {
-    const PAGE_BATCH: u32 = 100;
     match page.parse::<u32>() {
         Ok(page) => {
             match state
                 .db
                 .get_app_info_paginated_enhanced::<FullAppInfo>(
                     page,
-                    PAGE_BATCH,
+                    query.page_size(),
                     query.sort_key(),
                     query.desc.unwrap_or_default(),
                 )
@@ -156,7 +155,7 @@ pub async fn app_list_paged(
                     Json(ApiResponse::success(
                         apps,
                         Some(total_count),
-                        Some(PAGE_BATCH),
+                        Some(query.page_size()),
                     ))
                 }
                 Err(e) => {
@@ -175,14 +174,13 @@ pub async fn app_list_paged_short(
     Path(page): Path<String>,
     Query(query): Query<AppListQuery>,
 ) -> impl IntoResponse {
-    const PAGE_BATCH: u32 = 100;
     match page.parse::<u32>() {
         Ok(page) => {
             match state
                 .db
                 .get_app_info_paginated_enhanced::<ShortAppInfo>(
                     page,
-                    PAGE_BATCH,
+                    query.page_size(),
                     query.sort_key(),
                     query.desc.unwrap_or_default(),
                 )
@@ -193,7 +191,7 @@ pub async fn app_list_paged_short(
                     Json(ApiResponse::success(
                         apps,
                         Some(total_count),
-                        Some(PAGE_BATCH),
+                        Some(query.page_size()),
                     ))
                 }
                 Err(e) => {
