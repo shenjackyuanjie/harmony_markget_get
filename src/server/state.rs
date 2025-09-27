@@ -1,4 +1,5 @@
 use reqwest::Client;
+use serde::{Deserialize, Serialize};
 
 use crate::{config::Config, db::Database};
 
@@ -18,7 +19,7 @@ impl AppState {
 }
 
 /// 用于API响应的统一格式
-#[derive(serde::Serialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ApiResponse {
     pub success: bool,
     pub data: serde_json::Value,
@@ -62,7 +63,7 @@ impl ApiResponse {
 }
 
 /// 用于排行API的查询参数
-#[derive(serde::Deserialize)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct RankingQuery {
     pub limit: Option<u32>,
     pub exclude_pattern: Option<String>,
@@ -75,6 +76,33 @@ impl Default for RankingQuery {
             limit: Some(10),
             exclude_pattern: None,
             time_range: None,
+        }
+    }
+}
+
+/// 用于查询应用列表的查询参数
+#[derive(Deserialize, Serialize, Clone, Debug, Default)]
+pub struct AppListQuery {
+    pub sort: Option<String>,
+    pub desc: Option<bool>,
+    pub search: Option<String>,
+}
+
+impl AppListQuery {
+    pub fn is_valid_sort(&self) -> bool {
+        if let Some(sort_field) = &self.sort {
+            matches!(
+                sort_field.as_str(),
+                "download_count"
+                    | "ratings"
+                    | "price"
+                    | "size"
+                    | "rating_count"
+                    | "last_updated"
+                    | "created_at"
+            )
+        } else {
+            false
         }
     }
 }

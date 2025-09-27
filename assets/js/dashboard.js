@@ -546,7 +546,7 @@ async function showAppDetail(appId) {
           <div class="flex flex-wrap gap-2 mb-4">
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">${formatSize(app_metric.size_bytes || 0)}</span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app_info.version || "Unknown Version"}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app_metric.version || "Unknown Version"}</span>
           </div>
           <div class="space-y-2 mb-4">
             <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app_metric.download_count || 0)}</span></p>

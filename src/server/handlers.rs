@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use crate::{
     model::{AppInfo, AppMetric, AppQuery, AppRating},
-    server::state::{ApiResponse, AppState, RankingQuery},
+    server::state::{ApiResponse, AppListQuery, AppState, RankingQuery},
 };
 
 /// 查询应用包名信息
@@ -136,6 +136,7 @@ pub async fn app_list_info(State(state): State<Arc<AppState>>) -> impl IntoRespo
 pub async fn app_list_paged(
     State(state): State<Arc<AppState>>,
     Path(page): Path<String>,
+    Query(query): Query<AppListQuery>,
 ) -> impl IntoResponse {
     const PAGE_BATCH: u32 = 100;
     match page.parse::<u32>() {
@@ -167,6 +168,7 @@ pub async fn app_list_paged(
 pub async fn app_list_paged_short(
     State(state): State<Arc<AppState>>,
     Path(page): Path<String>,
+    Query(query): Query<AppListQuery>,
 ) -> impl IntoResponse {
     const PAGE_BATCH: u32 = 100;
     match page.parse::<u32>() {
