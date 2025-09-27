@@ -103,7 +103,7 @@ async function loadApps(
     tableBody.innerHTML =
       '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
-    let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&direction=${sortDirection}`;
+    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&direction=${sortDirection}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (category && category !== "all")
       url += `&category=${encodeURIComponent(category)}`;
@@ -116,7 +116,7 @@ async function loadApps(
       currentPage = page;
     }
 
-    let apps = data.data.apps || [];
+    let apps = data.data.data || [];
     // Additional client-side filtering if needed
     if (search) {
       apps = apps.filter((app) =>
@@ -172,13 +172,13 @@ function renderApps(apps) {
     tr.innerHTML = `
       <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center">
-          <img src="${app.icon || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app.name}">
+          <img src="${app.icon_url || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app.name}">
           <span class="font-medium text-gray-900">${app.name || "Unknown"}</span>
         </div>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.developer || "Unknown"}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app.developer_name || "Unknown"}</td>
       <td class="px-6 py-4 whitespace-nowrap">
-        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app.category || "Uncategorized"}</span>
+        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app.kind_type_name || "未知"}-${app.kind_name || "未知"}</span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${renderStars(app.rating)}</td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatNumber(app.download_count || 0)}</td>

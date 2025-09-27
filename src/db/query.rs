@@ -239,53 +239,7 @@ impl Database {
             .fetch_all(&self.pool)
             .await?;
 
-        let mut app_infos = Vec::new();
-        for row in rows {
-            let app_info = AppInfo {
-                app_id: row.get("app_id"),
-                alliance_app_id: row.get("alliance_app_id"),
-                name: row.get("name"),
-                pkg_name: row.get("pkg_name"),
-                dev_id: row.get("dev_id"),
-                developer_name: row.get("developer_name"),
-                dev_en_name: row.get("dev_en_name"),
-                supplier: row.get("supplier"),
-                kind_id: row.get("kind_id"),
-                kind_name: row.get("kind_name"),
-                tag_name: row.get("tag_name"),
-                kind_type_id: row.get("kind_type_id"),
-                kind_type_name: row.get("kind_type_name"),
-                icon_url: row.get("icon_url"),
-                brief_desc: row.get("brief_desc"),
-                description: row.get("description"),
-                privacy_url: row.get("privacy_url"),
-                ctype: row.get("ctype"),
-                detail_id: row.get("detail_id"),
-                app_level: row.get("app_level"),
-                jocat_id: row.get("jocat_id"),
-                iap: row.get("iap"),
-                hms: row.get("hms"),
-                tariff_type: row.get("tariff_type"),
-                packing_type: row.get("packing_type"),
-                order_app: row.get("order_app"),
-                denpend_gms: row.get("denpend_gms"),
-                denpend_hms: row.get("denpend_hms"),
-                force_update: row.get("force_update"),
-                img_tag: row.get("img_tag"),
-                is_pay: row.get("is_pay"),
-                is_disciplined: row.get("is_disciplined"),
-                is_shelves: row.get("is_shelves"),
-                submit_type: row.get("submit_type"),
-                delete_archive: row.get("delete_archive"),
-                charging: row.get("charging"),
-                button_grey: row.get("button_grey"),
-                app_gift: row.get("app_gift"),
-                free_days: row.get("free_days"),
-                pay_install_type: row.get("pay_install_type"),
-                created_at: row.get("created_at"),
-            };
-            app_infos.push(app_info);
-        }
+        let app_infos = rows.iter().map(Self::read_app_info_from_row).collect();
 
         Ok(app_infos)
     }
@@ -441,7 +395,7 @@ impl Database {
                 am.version_code,
                 am.size_bytes,
                 am.sha256,
-                am.info_score,
+                am.info_score::text,
                 am.info_rate_count,
                 am.download_count,
                 am.price,
@@ -465,31 +419,7 @@ impl Database {
             .fetch_all(&self.pool)
             .await?;
 
-        let mut app_metrics = Vec::new();
-        for row in rows {
-            let app_metric = AppMetric {
-                id: row.get("id"),
-                app_id: row.get("app_id"),
-                version: row.get("version"),
-                version_code: row.get("version_code"),
-                size_bytes: row.get("size_bytes"),
-                sha256: row.get("sha256"),
-                info_score: row.get("info_score"),
-                info_rate_count: row.get("info_rate_count"),
-                download_count: row.get("download_count"),
-                price: row.get("price"),
-                release_date: row.get("release_date"),
-                new_features: row.get("new_features"),
-                upgrade_msg: row.get("upgrade_msg"),
-                target_sdk: row.get("target_sdk"),
-                minsdk: row.get("minsdk"),
-                compile_sdk_version: row.get("compile_sdk_version"),
-                min_hmos_api_level: row.get("min_hmos_api_level"),
-                api_release_type: row.get("api_release_type"),
-                created_at: row.get("created_at"),
-            };
-            app_metrics.push(app_metric);
-        }
+        let app_metrics = rows.iter().map(Self::read_app_metric_from_row).collect();
 
         Ok(app_metrics)
     }
@@ -572,53 +502,7 @@ impl Database {
             .fetch_all(&self.pool)
             .await?;
 
-        let mut app_infos = Vec::new();
-        for row in rows {
-            let app_info = AppInfo {
-                app_id: row.get("app_id"),
-                alliance_app_id: row.get("alliance_app_id"),
-                name: row.get("name"),
-                pkg_name: row.get("pkg_name"),
-                dev_id: row.get("dev_id"),
-                developer_name: row.get("developer_name"),
-                dev_en_name: row.get("dev_en_name"),
-                supplier: row.get("supplier"),
-                kind_id: row.get("kind_id"),
-                kind_name: row.get("kind_name"),
-                tag_name: row.get("tag_name"),
-                kind_type_id: row.get("kind_type_id"),
-                kind_type_name: row.get("kind_type_name"),
-                icon_url: row.get("icon_url"),
-                brief_desc: row.get("brief_desc"),
-                description: row.get("description"),
-                privacy_url: row.get("privacy_url"),
-                ctype: row.get("ctype"),
-                detail_id: row.get("detail_id"),
-                app_level: row.get("app_level"),
-                jocat_id: row.get("jocat_id"),
-                iap: row.get("iap"),
-                hms: row.get("hms"),
-                tariff_type: row.get("tariff_type"),
-                packing_type: row.get("packing_type"),
-                order_app: row.get("order_app"),
-                denpend_gms: row.get("denpend_gms"),
-                denpend_hms: row.get("denpend_hms"),
-                force_update: row.get("force_update"),
-                img_tag: row.get("img_tag"),
-                is_pay: row.get("is_pay"),
-                is_disciplined: row.get("is_disciplined"),
-                is_shelves: row.get("is_shelves"),
-                submit_type: row.get("submit_type"),
-                delete_archive: row.get("delete_archive"),
-                charging: row.get("charging"),
-                button_grey: row.get("button_grey"),
-                app_gift: row.get("app_gift"),
-                free_days: row.get("free_days"),
-                pay_install_type: row.get("pay_install_type"),
-                created_at: row.get("created_at"),
-            };
-            app_infos.push(app_info);
-        }
+        let app_infos = rows.iter().map(Self::read_app_info_from_row).collect();
 
         Ok(app_infos)
     }
