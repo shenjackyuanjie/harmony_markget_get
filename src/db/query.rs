@@ -1,4 +1,4 @@
-use crate::model::{AppInfo, AppMetric, ShortAppInfo, ShortAppRating};
+use crate::model::{AppInfo, AppMetric, AppRating, FullAppInfo, ShortAppInfo, ShortAppRating};
 use anyhow::Result;
 use chrono::{DateTime, Local};
 use serde_json::Value;
@@ -6,6 +6,38 @@ use sqlx::{Row, postgres::PgRow};
 use std::ops::Range;
 
 use crate::db::{Database, PaginatedAppInfo};
+
+const SELECT_APP_INFO_FIELDS: &str = r#"
+    app_id, alliance_app_id, name, pkg_name,
+    dev_id, developer_name, dev_en_name,
+    supplier, kind_id, kind_name,
+    tag_name, kind_type_id, kind_type_name, icon_url,
+    brief_desc, description, privacy_url, ctype,
+    detail_id, app_level, jocat_id, iap, hms,
+    tariff_type, packing_type, order_app, denpend_gms,
+    denpend_hms, force_update, img_tag, is_pay,
+    is_disciplined, is_shelves, submit_type, delete_archive,
+    charging, button_grey, app_gift, free_days,
+    pay_install_type, created_at
+"#;
+
+const SELECT_APP_METRIC_FIELDS: &str = r#"
+    app_id, version, version_code, size_bytes,
+    sha256, info_score::text, info_rate_count,
+    download_count, price, release_date,
+    new_features, upgrade_msg, target_sdk,
+    minsdk, compile_sdk_version, min_hmos_api_level,
+    api_release_type, created_at AS metrics_created_at
+"#;
+
+const SELECT_APP_RATING_FIELDS: &str = r#"
+    average_rating::text, star_1_rating_count,
+    star_2_rating_count, star_3_rating_count,
+    star_4_rating_count, star_5_rating_count,
+    my_star_rating, total_star_rating_count,
+    only_star_count, full_average_rating::text,
+    source_type, created_at AS rating_created_at
+"#;
 
 impl Database {
     fn read_app_info_from_row(row: &PgRow) -> AppInfo {
@@ -78,6 +110,31 @@ impl Database {
             min_hmos_api_level: row.get("min_hmos_api_level"),
             api_release_type: row.get("api_release_type"),
             created_at: row.get("metrics_created_at"),
+        }
+    }
+
+    fn read_app_rating_from_row(row: &PgRow) -> AppRating {
+        AppRating {
+            id: row.try_get("id").unwrap_or(0),
+            app_id: row.get("app_id"),
+            average_rating: {
+                let raw: String = row.get("average_rating");
+                raw.parse().unwrap_or(0.0)
+            },
+            star_1_rating_count: row.get("star_1_rating_count"),
+            star_2_rating_count: row.get("star_2_rating_count"),
+            star_3_rating_count: row.get("star_3_rating_count"),
+            star_4_rating_count: row.get("star_4_rating_count"),
+            star_5_rating_count: row.get("star_5_rating_count"),
+            my_star_rating: row.get("my_star_rating"),
+            total_star_rating_count: row.get("total_star_rating_count"),
+            only_star_count: row.get("only_star_count"),
+            full_average_rating: {
+                let raw: String = row.get("full_average_rating");
+                raw.parse().unwrap_or(0.0)
+            },
+            source_type: row.get("source_type"),
+            created_at: row.get("created_at"),
         }
     }
 
@@ -521,7 +578,25 @@ impl Database {
     pub async fn get_top_priced_apps(&self, limit: u32) -> Result<Vec<AppMetric>> {
         const QUERY: &str = r#"
             SELECT
-                am.*
+                am.id,
+                am.app_id,
+                am.version,
+                am.version_code,
+                am.size_bytes,
+                am.sha256,
+                am.info_score::text,
+                am.info_rate_count,
+                am.download_count,
+                am.price,
+                am.release_date,
+                am.new_features,
+                am.upgrade_msg,
+                am.target_sdk,
+                am.minsdk,
+                am.compile_sdk_version,
+                am.min_hmos_api_level,
+                am.api_release_type,
+                am.created_at
             FROM app_metrics am
             ORDER BY am.price DESC
             LIMIT $1
@@ -532,31 +607,7 @@ impl Database {
             .fetch_all(&self.pool)
             .await?;
 
-        let mut app_metrics = Vec::new();
-        for row in rows {
-            let app_metric = AppMetric {
-                id: row.get("id"),
-                app_id: row.get("app_id"),
-                version: row.get("version"),
-                version_code: row.get("version_code"),
-                size_bytes: row.get("size_bytes"),
-                sha256: row.get("sha256"),
-                info_score: row.get("info_score"),
-                info_rate_count: row.get("info_rate_count"),
-                download_count: row.get("download_count"),
-                price: row.get("price"),
-                release_date: row.get("release_date"),
-                new_features: row.get("new_features"),
-                upgrade_msg: row.get("upgrade_msg"),
-                target_sdk: row.get("target_sdk"),
-                minsdk: row.get("minsdk"),
-                compile_sdk_version: row.get("compile_sdk_version"),
-                min_hmos_api_level: row.get("min_hmos_api_level"),
-                api_release_type: row.get("api_release_type"),
-                created_at: row.get("created_at"),
-            };
-            app_metrics.push(app_metric);
-        }
+        let app_metrics = rows.iter().map(Self::read_app_metric_from_row).collect();
 
         Ok(app_metrics)
     }

@@ -9,6 +9,24 @@ use crate::utils::sanitize_utf8_string;
 pub use query::AppQuery;
 pub use raw::{RawJsonData, RawRatingData};
 
+/// 比较完整的 应用数据
+#[derive(Debug, Deserialize, Serialize)]
+pub struct FullAppInfo {
+    pub info: AppInfo,
+    pub metric: AppMetric,
+    pub rating: Option<AppRating>,
+}
+
+impl FullAppInfo {
+    pub fn new(info: AppInfo, metric: AppMetric, rating: Option<AppRating>) -> Self {
+        FullAppInfo {
+            info,
+            metric,
+            rating,
+        }
+    }
+}
+
 /// 简化版评分排行结构体
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ShortAppRating {
