@@ -6,7 +6,11 @@ default-run = "get_market"
 
 [[bin]]
 name = "guess_market"
-path = "src/guess.rs"
+path = "src/guess_market.rs"
+
+[[bin]]
+name = "guess_rand"
+path = "src/guess_rand.rs"
 
 [[bin]]
 name = "guess_from_db"

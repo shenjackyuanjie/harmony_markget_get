@@ -1,6 +1,7 @@
 use colored::Colorize;
 
 use crate::{model::AppQuery, sync::code::GLOBAL_CODE_MANAGER};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod config;
 pub mod db;
@@ -8,6 +9,26 @@ pub mod model;
 pub mod server;
 pub mod sync;
 pub mod utils;
+
+#[derive(Clone)]
+struct Random {
+    state: u64,
+}
+
+impl Random {
+    pub fn new() -> Self {
+        let seed = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos() as u64;
+        Self { state: seed }
+    }
+
+    pub fn next(&mut self) -> u64 {
+        self.state = self.state.wrapping_mul(1664525u64).wrapping_add(1013904223u64);
+        self.state
+    }
+}
 
 fn main() -> anyhow::Result<()> {
     utils::init_log();
@@ -23,37 +44,42 @@ async fn async_main() -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
 
-    // C576588020785 6374145
-    // C576588020785 6366961
-    // C576588020785 2915863
-    // C576588020785 2866435
+    // C69175 59057467250518
+    // C69175 84361454081323
 
-    // let range = 2915863..=6366961;
-    // let range = 0..=6366961;
-    // let range = 2860000..=6390000;
-    let range = 0000000..=9999999;
-    let start = "C576588020785";
+    // let range = 59057467250518_u64..=84361454081323_u64;
+    let code_start = 59057467250518_u64;
+    let size = 25303986830805_u64;
+    let start = "C69175";
 
-    let _token = GLOBAL_CODE_MANAGER.get_token().await;
+    let _token = GLOBAL_CODE_MANAGER.update_token().await;
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
-    let batch = 1000;
+    let batch = 10000;
     let wait_time = std::time::Duration::from_millis(50);
 
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
 
-    for bunch_id in range.collect::<Vec<_>>().chunks(batch) {
+    let mut rng = Random::new();
+
+    loop {
+        let mut ids: Vec<u64> = Vec::with_capacity(batch as usize);
+        for _ in 0..batch {
+            let id = code_start + (rng.next() % size);
+            ids.push(id);
+        }
+
         let mut join_set = tokio::task::JoinSet::new();
-        for id in bunch_id.iter() {
+        for &id in &ids {
             let client = client.clone();
             let db = db.clone();
             let api_url = config.api_info_url().to_string();
             let star_url = config.api_detail_url().to_string();
             let locale = config.locale().to_string();
-            let app_id = format!("{start}{id:07}");
+            let app_id = format!("{start}{}", id);
             join_set.spawn(async move {
                 if let Ok(data) = crate::sync::get_app_info(
                     &client,
@@ -91,13 +117,9 @@ async fn async_main() -> anyhow::Result<()> {
         }
         join_set.join_all().await;
         println!(
-            "id {} - {} 的包处理完成，等待 {:?}",
-            bunch_id[0],
-            bunch_id[bunch_id.len() - 1],
+            "处理了 {batch} 个随机 ID，等待 {:?}",
             wait_time
         );
         tokio::time::sleep(wait_time).await;
     }
-
-    Ok(())
 }

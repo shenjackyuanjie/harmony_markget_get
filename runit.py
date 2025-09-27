@@ -4,9 +4,12 @@ import sys
 import subprocess
 import os
 
+
 # 需要执行的任务函数 - 运行 cargo run --release
 def scheduled_task():
-    print(f"开始执行 cargo run --release - 当前时间: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(
+        f"开始执行 cargo run --release - 当前时间: {time.strftime('%Y-%m-%d %H:%M:%S')}"
+    )
 
     try:
         # 使用subprocess运行cargo命令
@@ -17,7 +20,7 @@ def scheduled_task():
             capture_output=False,
             text=True,
             shell=True,
-            timeout=600  # 设置超时时间为10分钟，防止任务执行时间过长
+            timeout=600,  # 设置超时时间为10分钟，防止任务执行时间过长
         )
 
         # 输出执行结果
@@ -35,10 +38,12 @@ def scheduled_task():
     except Exception as e:
         print(f"执行任务时发生错误: {e}")
 
+
 # 信号处理函数，用于优雅退出
 def signal_handler(sig, frame):
     print("\n接收到中断信号，程序将退出...")
     sys.exit(0)
+
 
 def main():
     # 注册信号处理
@@ -52,8 +57,10 @@ def main():
             # 执行任务
             scheduled_task()
 
-            print(f"等待1小时，下次执行时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() + 60*60))}")
-            time.sleep(60*60)
+            print(
+                f"等待1小时，下次执行时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() + 60 * 60))}"
+            )
+            time.sleep(60 * 60)
 
     except KeyboardInterrupt:
         print("\n程序被用户中断")
@@ -61,6 +68,7 @@ def main():
         print(f"程序执行出错: {e}")
     finally:
         print("程序结束")
+
 
 if __name__ == "__main__":
     main()
