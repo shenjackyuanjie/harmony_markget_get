@@ -1,21 +1,22 @@
 // Global variables
-let currentPage = 1;
-let totalPages = 1;
-let currentSort = { field: "download_count", direction: "desc" };
-let searchTerm = "";
-let categoryFilter = "all";
-let starChart = null;
-let top_download_chart = null;
-let top_download_chart_not_huawei = null;
-const PAGE_SIZE = 20;
-const API_BASE = "/api"; // Adjust if needed
+// 全局变量：用于管理页面状态和图表实例
+let currentPage = 1;  // 当前页码
+let totalPages = 1;   // 总页数
+let currentSort = { field: "download_count", direction: "desc" };  // 当前排序字段和方向
+let searchTerm = "";  // 搜索关键词
+let categoryFilter = "all";  // 分类过滤器
+let starChart = null;  // 星级分布图表实例
+let top_download_chart = null;  // 下载量图表实例（包含华为）
+let top_download_chart_not_huawei = null;  // 下载量图表实例（排除华为）
+const PAGE_SIZE = 20;  // 每页显示的应用数量
+const API_BASE = "/api";  // API 基础路径，根据需要调整
 
-// 格式化数字, 四位一分隔
+// 格式化数字，四位一分隔
 function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{4})+(?!\d))/g, ",");
 }
 
-// Format file size
+// 格式化文件大小
 function formatSize(size) {
   if (size < 1024) return size + " B";
   if (size < 1024 * 1024) return (size / 1024).toFixed(2) + " KB";
@@ -24,7 +25,7 @@ function formatSize(size) {
   return (size / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
-// Render stars using Unicode
+// 使用 Unicode 渲染星级评分
 function renderStars(rating) {
   if (!rating) return "N/A";
   const fullStars = Math.floor(rating);
@@ -32,20 +33,20 @@ function renderStars(rating) {
   let stars = "";
   for (let i = 0; i < 5; i++) {
     if (i < fullStars) {
-      stars += "★";
+      stars += "★";  // 满星
     } else if (i === fullStars && hasHalf) {
-      stars += "☆"; // Simplified half star; could use a better symbol if needed
+      stars += "☆";  // 半星（简化表示，可替换为更好符号）
     } else {
-      stars += "☆";
+      stars += "☆";  // 空星
     }
   }
   return stars + ` ${rating.toFixed(1)}`;
 }
 
-// Load overview data
+// 加载概览数据
 async function loadOverview() {
   try {
-    // Show loading spinners
+    // 显示加载指示器
     const loadingElements = [
       "loadingOverview",
       "loadingDeveloperCount",
@@ -57,7 +58,7 @@ async function loadOverview() {
       if (el) el.style.display = "inline-block";
     });
 
-    // Get app count
+    // 获取应用统计
     const appResponse = await fetch(`${API_BASE}/market_info`);
     const market_info = await appResponse.json();
 
@@ -74,20 +75,14 @@ async function loadOverview() {
       market_info.data.developer_count || 0,
     );
 
-    // Hide loading spinners
+    // 隐藏加载指示器
     loadingElements.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.style.display = "none";
     });
   } catch (error) {
     console.error("Failed to load overview:", error);
-    // Hide loading on error
-    const loadingElements = [
-      "loadingOverview",
-      "loadingDeveloperCount",
-      "loadingAtomicServiceCount",
-      "loadingTotalCount",
-    ];
+    // 错误时隐藏加载指示器
     loadingElements.forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.style.display = "none";
@@ -312,7 +307,7 @@ async function loadCategories() {
   }
 }
 
-// Render top download chart
+// 渲染下载量柱状图
 async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) {
   try {
     const response = await fetch(api_url);
@@ -332,116 +327,127 @@ async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) 
       return;
     }
 
-    // Preload images to avoid async loading issues on hover
-    const preloadedImages = [];
-    const loadPromises = apps.map((app, index) => {
-      if (!app || !app.icon_url) {
-        preloadedImages[index] = null;
-        return Promise.resolve();
-      }
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          preloadedImages[index] = img;
-          resolve();
-        };
-        img.onerror = () => {
-          preloadedImages[index] = null;
-          resolve();
-        };
-        img.src = app.icon_url;
-      });
-    });
-    await Promise.all(loadPromises);
+    // 子函数：预加载图标图像，避免悬停时异步加载问题
+    const preloadedImages = await preloadImages(apps);
 
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
     const yAxisMin = Math.floor(minValue * y_axis_ratio);
 
-    const ctx = document.getElementById(ctx_id).getContext("2d");
-    if (window[ctx_id + "_chart"]) {
-      window[ctx_id + "_chart"].destroy();
-    }
-
-    // Custom plugin for icons on bars
-    const iconPlugin = {
-      id: "iconPlugin",
-      afterDatasetsDraw(chart) {
-        const { ctx } = chart;
-        const meta = chart.getDatasetMeta(0);
-        meta.data.forEach((bar, index) => {
-          const img = preloadedImages[index];
-          if (!img) return;
-
-          const x = bar.x;
-          const y = bar.y - 17;
-
-          ctx.drawImage(img, x - 10, y - 20, 20, 20);
-        });
-      },
-    };
-
-    window[ctx_id + "_chart"] = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: apps.map((item) =>
-          item.name
-            ? item.name.length > 10
-              ? item.name.slice(0, 10) + "..."
-              : item.name
-            : "Unknown",
-        ),
-        datasets: [
-          {
-            label: "下载量",
-            data: apps.map((item) => item.download_count || 0),
-            backgroundColor: "rgba(59, 130, 246, 0.6)",
-            borderColor: "rgba(59, 130, 246, 1)",
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            min: yAxisMin,
-            ticks: {
-              callback: function (value) {
-                return formatNumber(value);
-              },
-            },
-          },
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                return `下载量: ${formatNumber(context.raw)}`;
-              },
-            },
-          },
-          datalabels: {
-            anchor: "end",
-            align: "end",
-            offset: -3,
-            color: "#333",
-            font: { family: "console", size: 12 },
-            formatter: function (value) {
-              return formatNumber(value);
-            },
-          },
-        },
-      },
-      plugins: [ChartDataLabels, iconPlugin],
-    });
+    createChart(ctx_id, apps, preloadedImages, yAxisMin);
   } catch (error) {
     console.error("Failed to load top download chart:", error);
   }
 }
 
-// Load star distribution chart
+// 子函数：预加载图像
+async function preloadImages(apps) {
+  const preloadedImages = [];
+  const loadPromises = apps.map((app, index) => {
+    if (!app || !app.icon_url) {
+      preloadedImages[index] = null;
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        preloadedImages[index] = img;
+        resolve();
+      };
+      img.onerror = () => {
+        preloadedImages[index] = null;
+        resolve();
+      };
+      img.src = app.icon_url;
+    });
+  });
+  await Promise.all(loadPromises);
+  return preloadedImages;
+}
+
+// 子函数：创建 Chart.js 图表实例
+function createChart(ctx_id, apps, preloadedImages, yAxisMin) {
+  const ctx = document.getElementById(ctx_id).getContext("2d");
+  if (window[ctx_id + "_chart"]) {
+    window[ctx_id + "_chart"].destroy();
+  }
+
+  // 自定义插件：在柱状图上绘制图标
+  const iconPlugin = {
+    id: "iconPlugin",
+    afterDatasetsDraw(chart) {
+      const { ctx } = chart;
+      const meta = chart.getDatasetMeta(0);
+      meta.data.forEach((bar, index) => {
+        const img = preloadedImages[index];
+        if (!img) return;
+
+        const x = bar.x;
+        const y = bar.y - 17;
+
+        ctx.drawImage(img, x - 10, y - 20, 20, 20);
+      });
+    },
+  };
+
+  window[ctx_id + "_chart"] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: apps.map((item) =>
+        item.name
+          ? item.name.length > 10
+            ? item.name.slice(0, 10) + "..."
+            : item.name
+          : "Unknown",
+      ),
+      datasets: [
+        {
+          label: "下载量",
+          data: apps.map((item) => item.download_count || 0),
+          backgroundColor: "rgba(59, 130, 246, 0.6)",
+          borderColor: "rgba(59, 130, 246, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: yAxisMin,
+          ticks: {
+            callback: function (value) {
+              return formatNumber(value);
+            },
+          },
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `下载量: ${formatNumber(context.raw)}`;
+            },
+          },
+        },
+        datalabels: {
+          anchor: "end",
+          align: "end",
+          offset: -3,
+          color: "#333",
+          font: { family: "console", size: 12 },
+          formatter: function (value) {
+            return formatNumber(value);
+          },
+        },
+      },
+    },
+    plugins: [ChartDataLabels, iconPlugin],  // 假设 ChartDataLabels 已引入
+  });
+}
+
+// 加载星级分布饼图
 async function loadStarChart() {
   try {
     const response = await fetch(`${API_BASE}/charts/star-distribution`);
@@ -563,14 +569,14 @@ async function showAppDetail(appId) {
   }
 }
 
-// Update last update timestamp
+// 更新最后更新时间戳
 function updateLastUpdate() {
   const now = new Date();
   document.getElementById("lastUpdate").textContent =
     now.toLocaleString("zh-CN");
 }
 
-// Refresh all data
+// 刷新所有数据
 async function refreshData() {
   updateLastUpdate();
   await loadOverview();
