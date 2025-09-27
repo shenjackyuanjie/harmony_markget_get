@@ -332,6 +332,29 @@ async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) 
       return;
     }
 
+    // Preload images to avoid async loading issues on hover
+    const preloadedImages = [];
+    const loadPromises = apps.map((app, index) => {
+      if (!app || !app.icon_url) {
+        preloadedImages[index] = null;
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          preloadedImages[index] = img;
+          resolve();
+        };
+        img.onerror = () => {
+          preloadedImages[index] = null;
+          resolve();
+        };
+        img.src = app.icon_url;
+      });
+    });
+    await Promise.all(loadPromises);
+
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
     const yAxisMin = Math.floor(minValue * y_axis_ratio);
 
@@ -345,22 +368,15 @@ async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) 
       id: "iconPlugin",
       afterDatasetsDraw(chart) {
         const { ctx } = chart;
-        chart.getDatasetMeta(0).data.forEach((bar, index) => {
-          const app = apps[index];
-          if (!app || !app.icon_url) return;
+        const meta = chart.getDatasetMeta(0);
+        meta.data.forEach((bar, index) => {
+          const img = preloadedImages[index];
+          if (!img) return;
 
           const x = bar.x;
           const y = bar.y - 17;
 
-          const img = new Image();
-          img.src = app.icon_url;
-          img.crossOrigin = "anonymous";
-          img.onload = () => {
-            ctx.drawImage(img, x - 10, y - 20, 20, 20);
-          };
-          img.onerror = () => {
-            // Fallback to default icon or skip
-          };
+          ctx.drawImage(img, x - 10, y - 20, 20, 20);
         });
       },
     };
