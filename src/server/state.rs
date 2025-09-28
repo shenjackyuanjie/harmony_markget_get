@@ -98,7 +98,7 @@ impl AppListQuery {
                 "download_count"
                     | "ratings"
                     | "price"
-                    | "size"
+                    | "size_bytes"
                     | "rating_count"
                     | "last_updated"
                     | "created_at"
