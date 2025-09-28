@@ -140,63 +140,53 @@ pub async fn app_list_paged(
 ) -> impl IntoResponse {
     match page.parse::<u32>() {
         Ok(page) => {
-            match state
-                .db
-                .get_app_info_paginated_enhanced::<FullAppInfo>(
-                    page,
-                    query.page_size(),
-                    query.sort_key(),
-                    query.desc.unwrap_or_default(),
-                )
-                .await
-            {
-                Ok(apps) => {
-                    let total_count = apps.total_count;
-                    Json(ApiResponse::success(
-                        apps,
-                        Some(total_count),
-                        Some(query.page_size()),
-                    ))
+            if query.detail() {
+                match state
+                    .db
+                    .get_app_info_paginated_enhanced::<FullAppInfo>(
+                        page,
+                        query.page_size(),
+                        &query.sort_key(),
+                        query.desc.unwrap_or_default(),
+                    )
+                    .await
+                {
+                    Ok(apps) => {
+                        let total_count = apps.total_count;
+                        Json(ApiResponse::success(
+                            apps,
+                            Some(total_count),
+                            Some(query.page_size()),
+                        ))
+                    }
+                    Err(e) => {
+                        event!(Level::WARN, "http服务获取分页应用信息失败: {e}");
+                        Json(ApiResponse::error("Database error".to_string()))
+                    }
                 }
-                Err(e) => {
-                    event!(Level::WARN, "http服务获取分页应用信息失败: {e}");
-                    Json(ApiResponse::error("Database error".to_string()))
-                }
-            }
-        }
-        Err(e) => Json(ApiResponse::error(format!("Failed to parse page: {}", e))),
-    }
-}
-
-/// 分页获取应用简略信息
-pub async fn app_list_paged_short(
-    State(state): State<Arc<AppState>>,
-    Path(page): Path<String>,
-    Query(query): Query<AppListQuery>,
-) -> impl IntoResponse {
-    match page.parse::<u32>() {
-        Ok(page) => {
-            match state
-                .db
-                .get_app_info_paginated_enhanced::<ShortAppInfo>(
-                    page,
-                    query.page_size(),
-                    query.sort_key(),
-                    query.desc.unwrap_or_default(),
-                )
-                .await
-            {
-                Ok(apps) => {
-                    let total_count = apps.total_count;
-                    Json(ApiResponse::success(
-                        apps,
-                        Some(total_count),
-                        Some(query.page_size()),
-                    ))
-                }
-                Err(e) => {
-                    event!(Level::WARN, "http服务获取分页应用简略信息失败: {e}");
-                    Json(ApiResponse::error("Database error".to_string()))
+            } else {
+                match state
+                    .db
+                    .get_app_info_paginated_enhanced::<ShortAppInfo>(
+                        page,
+                        query.page_size(),
+                        &query.sort_key(),
+                        query.desc.unwrap_or_default(),
+                    )
+                    .await
+                {
+                    Ok(apps) => {
+                        let total_count = apps.total_count;
+                        Json(ApiResponse::success(
+                            apps,
+                            Some(total_count),
+                            Some(query.page_size()),
+                        ))
+                    }
+                    Err(e) => {
+                        event!(Level::WARN, "http服务获取分页应用信息失败: {e}");
+                        Json(ApiResponse::error("Database error".to_string()))
+                    }
                 }
             }
         }

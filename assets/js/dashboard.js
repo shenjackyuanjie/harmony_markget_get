@@ -101,7 +101,7 @@ async function loadApps(
     tableBody.innerHTML =
       '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
-    let url = `${API_BASE}/apps/list/${page}/detail?sort=${sortField}&desc=${sort_desc}&page_size=${PAGE_SIZE}`;
+    let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&desc=${sort_desc}&page_size=${PAGE_SIZE}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (category && category !== "all")
       url += `&category=${encodeURIComponent(category)}`;

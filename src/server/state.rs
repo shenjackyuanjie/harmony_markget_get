@@ -87,6 +87,7 @@ pub struct AppListQuery {
     pub desc: Option<bool>,
     pub search: Option<String>,
     pub page_size: Option<u32>,
+    pub detail: Option<bool>,
 }
 
 impl AppListQuery {
@@ -107,15 +108,19 @@ impl AppListQuery {
         }
     }
 
-    pub fn sort_key(&self) -> Option<&str> {
+    pub fn sort_key(&self) -> String {
         if self.is_valid_sort() {
-            self.sort.as_deref()
+            self.sort.as_deref().unwrap_or("created_at").to_string()
         } else {
-            None
+            "created_at".to_string()
         }
     }
 
     pub fn page_size(&self) -> u32 {
         self.page_size.unwrap_or(100)
+    }
+
+    pub fn detail(&self) -> bool {
+        self.detail.unwrap_or(true)
     }
 }

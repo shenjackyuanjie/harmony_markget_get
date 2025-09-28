@@ -13,16 +13,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/apps/app_id/{app_id}", get(handlers::query_app_id))
         // 获取市场信息
         .route("/market_info", get(handlers::app_list_info))
-        // 获取分页的应用详细信息
-        .route(
-            "/apps/list/{page_count}/detail",
-            get(handlers::app_list_paged),
-        )
-        // 获取分页的应用简要信息
-        .route(
-            "/apps/list/{page_count}",
-            get(handlers::app_list_paged_short),
-        )
+        // 获取分页的应用信息
+        .route("/apps/list/{page_count}", get(handlers::app_list_paged))
         // 新增排行API路由
         // 获取下载量排行榜
         .route(

@@ -306,10 +306,10 @@ impl Database {
     ) -> Result<Vec<FullAppInfo>> {
         let query = format!(
             r#"
-        SELECT {}, {}, {}
-        FROM app_latest_info ai
-        ORDER BY {} {}
-        LIMIT $1 OFFSET $2
+            SELECT {}, {}, {}
+            FROM app_latest_info
+            ORDER BY {} {}
+            LIMIT $1 OFFSET $2
         "#,
             SELECT_APP_INFO_FIELDS,
             SELECT_APP_METRIC_FIELDS,
@@ -379,7 +379,7 @@ impl Database {
         &self,
         page: u32,
         page_size: u32,
-        sort_key: Option<&str>,
+        sort_key: &str,
         sort_desc: bool,
     ) -> Result<PaginatedAppInfo<D>> {
         let total_count = self.get_app_info_count().await?;
@@ -391,11 +391,7 @@ impl Database {
         let offset = (page.saturating_sub(1)) * page_size;
 
         let data = self
-            .get_app_info_paginated(
-                offset..(offset + page_size),
-                sort_key.unwrap_or("create_at"),
-                sort_desc,
-            )
+            .get_app_info_paginated(offset..(offset + page_size), sort_key, sort_desc)
             .await?
             .into_iter()
             .map(D::from)
