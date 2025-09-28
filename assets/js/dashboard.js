@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("th[data-sort]").forEach((header) => {
     header.addEventListener("click", () => {
       const field = header.getAttribute("data-sort");
-      let desc = "desc";
+      let desc = false;
       if (field === currentSort.field) {
         desc = currentSort.desc === false ? true : false;
       }
