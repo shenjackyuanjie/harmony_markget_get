@@ -7,7 +7,11 @@ pub async fn redirect_to_dashboard() -> impl IntoResponse {
 
 // 使用 include_str! 宏在编译时包含静态文件
 const DASHBOARD_HTML: &str = include_str!("../../assets/html/main.html");
+
 const DASHBOARD_JS: &str = include_str!("../../assets/js/dashboard.js");
+const CHART_JS: &str = include_str!("../../assets/js/chart.js");
+const CHARTJS_PLUGIN_DATALABELS_JS: &str = include_str!("../../assets/js/chartjs-plugin-datalables.js");
+
 const FAVICON_ICO: &[u8] = include_bytes!("../../assets/icon/favicon.ico");
 
 /// Serve dashboard HTML
@@ -34,6 +38,28 @@ pub async fn serve_dashboard_js() -> impl IntoResponse {
             axum::http::HeaderValue::from_static("application/javascript"),
         )],
         DASHBOARD_JS,
+    )
+        .into_response()
+}
+
+pub async fn serve_chart_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        CHART_JS,
+    )
+        .into_response()
+}
+
+pub async fn serve_chart_plugin_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        CHARTJS_PLUGIN_DATALABELS_JS,
     )
         .into_response()
 }

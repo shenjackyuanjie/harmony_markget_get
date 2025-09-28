@@ -59,6 +59,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/", get(handle_static::redirect_to_dashboard))
         .route("/dashboard", get(handle_static::serve_dashboard))
         .route("/js/dashboard.js", get(handle_static::serve_dashboard_js))
+        .route("/js/chart.js", get(handle_static::serve_chart_js))
+        .route("/js/chartjs-plugin-datalabels.js", get(handle_static::serve_chart_plugin_js))
         .route("/favicon.ico", get(handle_static::serve_favicon))
         .nest("/api", api_router)
         .fallback(handle_static::serve_not_found)
