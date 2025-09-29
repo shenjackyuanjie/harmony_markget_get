@@ -477,10 +477,19 @@ async function loadStarChart() {
       starData.star_5 || 0,
     ];
 
+    // 创建带数字的标签
+    const labels = [
+      `[0-1)星 (${starValues[0]})`,
+      `[1-2)星 (${starValues[1]})`,
+      `[2-3)星 (${starValues[2]})`,
+      `[3-4)星 (${starValues[3]})`,
+      `[4-5]星 (${starValues[4]})`,
+    ];
+
     starChart = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["0-1星", "1-2星", "2-3星", "3-4星", "4-5星"],
+        labels: labels,
         datasets: [
           {
             data: starValues,
@@ -498,15 +507,6 @@ async function loadStarChart() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                const label = context.label || "";
-                const value = context.parsed || 0;
-                return `${label}: ${value} 个`;
-              },
-            },
-          },
           legend: {
             position: "bottom",
           },
