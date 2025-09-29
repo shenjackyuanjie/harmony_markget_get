@@ -23,6 +23,23 @@ function formatSize(size) {
   return (size / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
+function formatDate(dateInput) {
+  const date = new Date(dateInput);
+  const pad = (n) => (n < 10 ? "0" + n : n);
+  return (
+    date.getFullYear() +
+    "-" +
+    pad(date.getMonth() + 1) +
+    "-" +
+    pad(date.getDate()) +
+    " " +
+    pad(date.getHours()) +
+    ":" +
+    pad(date.getMinutes())
+  );
+}
+
+
 // 使用 Unicode 渲染星级评分
 function renderStars(rating) {
   if (!rating) return null;
@@ -62,7 +79,7 @@ async function loadOverview() {
 
     document.getElementById("totalCount").textContent = formatNumber(
       (market_info.data.app_count || 0) +
-        (market_info.data.atomic_services_count || 0),
+      (market_info.data.atomic_services_count || 0),
     );
     document.getElementById("appCount").textContent = formatNumber(
       market_info.data.app_count || 0,
@@ -243,11 +260,10 @@ function renderPagination() {
     const li = document.createElement("li");
     li.className = `flex ${i === currentPage ? "z-10" : ""}`;
     const a = document.createElement("a");
-    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${
-      i === currentPage
-        ? "border-blue-500 bg-blue-50 text-blue-600"
-        : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
-    }`;
+    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
+      ? "border-blue-500 bg-blue-50 text-blue-600"
+      : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+      }`;
     a.textContent = i;
     a.onclick = (e) => {
       e.preventDefault();
@@ -606,7 +622,6 @@ async function showAppDetail(appId) {
     const MAX_LENGTH = 200;
     let isExpanded = false;
 
-    const lines = plainDesc.split('\n');
     if (plainDesc.length > MAX_LENGTH) {
       const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
       const truncatedHtml = truncated.replace(/\n/g, "<br>");
@@ -614,7 +629,7 @@ async function showAppDetail(appId) {
         <p id="descriptionText" class="text-gray-700">${truncatedHtml}</p>
         <button id="toggleDescription" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-medium mt-2">展开更多</button>
       `;
-      document.getElementById("toggleDescription").addEventListener("click", function() {
+      document.getElementById("toggleDescription").addEventListener("click", function () {
         if (!isExpanded) {
           document.getElementById("descriptionText").innerHTML = description;
           this.textContent = "收起";
@@ -690,6 +705,21 @@ async function showAppDetail(appId) {
             // 把增量的第一个点的y值设置为第二个点的y值
             increments[0].y = increments[1].y;
 
+            const chart_plugin = {
+                  legend: { display: true, position: "top" },
+                  tooltip: {
+                    callbacks: {
+                      // 顶部标题行（时间）
+                      title: function (contexts) {
+                        const date = new Date(contexts[0].parsed.x);
+                        return formatDate(date);
+                      },
+                      label: function (context) {
+                        return `下载量: ${formatNumber(context.parsed.y)}`;
+                      }
+                    }
+                  }
+            };
             // 创建下载量图表（原有）
             const ctx = chartCanvas.getContext("2d");
             window.downloadHistoryChart = new Chart(ctx, {
@@ -713,6 +743,19 @@ async function showAppDetail(appId) {
                   x: {
                     type: "time",
                     title: { display: true, text: "日期" },
+                    time: {
+                      displayFormats: {
+                        minute: "yyyy-MM-dd HH:mm",
+                        hour: "yyyy-MM-dd HH:mm",
+                        day: "yyyy-MM-dd HH:mm",
+                      }
+                    },
+                    ticks: {
+                      callback: function (value) {
+                        const date = new Date(value);
+                        return formatDate(date);
+                      }
+                    }
                   },
                   y: {
                     beginAtZero: false,
@@ -723,7 +766,7 @@ async function showAppDetail(appId) {
                     },
                   },
                 },
-                plugins: { legend: { display: true, position: "top" } },
+                plugins: chart_plugin,
               },
             });
 
@@ -751,6 +794,19 @@ async function showAppDetail(appId) {
                     x: {
                       type: "time",
                       title: { display: true, text: "日期" },
+                      time: {
+                        displayFormats: {
+                          minute: "yyyy-MM-dd HH:mm",
+                          hour: "yyyy-MM-dd HH:mm",
+                          day: "yyyy-MM-dd HH:mm",
+                        }
+                      },
+                      ticks: {
+                        callback: function (value) {
+                          const date = new Date(value);
+                          return formatDate(date);
+                        }
+                      }
                     },
                     y: {
                       beginAtZero: false,
@@ -761,7 +817,7 @@ async function showAppDetail(appId) {
                       },
                     },
                   },
-                  plugins: { legend: { display: true, position: "top" } },
+                  plugins: chart_plugin,
                 },
               });
               incrementCanvas.style.display = "block";
