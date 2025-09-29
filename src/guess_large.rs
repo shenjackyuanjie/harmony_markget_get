@@ -35,7 +35,7 @@ async fn async_main() -> anyhow::Result<()> {
     // let range = 0000000..=9999999;
     // let start = "C576588020785";
     let scan_range = 1000_0000;
-    let middle = 6917566468465598293_u64;
+    let middle = 6917584511757810835_u64;
     let range = middle-scan_range..middle+scan_range;
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
@@ -43,7 +43,7 @@ async fn async_main() -> anyhow::Result<()> {
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
     let batch = 1000;
-    let wait_time = std::time::Duration::from_millis(25);
+    let wait_time = std::time::Duration::from_millis(5);
     let mut batch_count = 0;
     let total_batches = ((range.end - range.start) / batch as u64) + 1;
     let total_batches_u32 = total_batches as u32;
