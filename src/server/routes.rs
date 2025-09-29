@@ -51,6 +51,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             "/charts/star-distribution",
             get(handlers::get_star_distribution),
         )
+        // 获取应用下载量历史数据
+        .route(
+            "/apps/metrics/{pkg_id}",
+            get(handlers::get_app_download_history),
+        )
         .fallback(api_not_found)
         .with_state(app_state.clone());
 
@@ -60,7 +65,14 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/dashboard", get(handle_static::serve_dashboard))
         .route("/js/dashboard.js", get(handle_static::serve_dashboard_js))
         .route("/js/chart.js", get(handle_static::serve_chart_js))
-        .route("/js/chartjs-plugin-datalabels.js", get(handle_static::serve_chart_plugin_js))
+        .route(
+            "/js/chartjs-plugin-datalabels.js",
+            get(handle_static::serve_chart_plugin_datalables_js),
+        )
+        .route(
+            "/js/chartjs-adapter-date-fns.js",
+            get(handle_static::serve_chartjs_adapter_date_fns_js),
+        )
         .route("/favicon.ico", get(handle_static::serve_favicon))
         .nest("/api", api_router)
         .fallback(handle_static::serve_not_found)

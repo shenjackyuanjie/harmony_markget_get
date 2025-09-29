@@ -473,7 +473,7 @@ impl Database {
                 am.compile_sdk_version,
                 am.min_hmos_api_level,
                 am.api_release_type,
-                am.created_at
+                am.created_at metrics_created_at
             FROM app_metrics am
             JOIN app_info ai ON am.app_id = ai.app_id
             WHERE ai.pkg_name = $1

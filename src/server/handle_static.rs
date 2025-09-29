@@ -10,7 +10,10 @@ const DASHBOARD_HTML: &str = include_str!("../../assets/html/main.html");
 
 const DASHBOARD_JS: &str = include_str!("../../assets/js/dashboard.js");
 const CHART_JS: &str = include_str!("../../assets/js/chart.js");
-const CHARTJS_PLUGIN_DATALABELS_JS: &str = include_str!("../../assets/js/chartjs-plugin-datalables.js");
+const CHARTJS_PLUGIN_DATALABELS_JS: &str =
+    include_str!("../../assets/js/chartjs-plugin-datalabels.js");
+const CHARTJS_ADAPTER_DATE_FNS_JS: &str =
+    include_str!("../../assets/js/chartjs-adapter-date-fns.js");
 
 const FAVICON_ICO: &[u8] = include_bytes!("../../assets/icon/favicon.ico");
 
@@ -53,13 +56,24 @@ pub async fn serve_chart_js() -> impl IntoResponse {
         .into_response()
 }
 
-pub async fn serve_chart_plugin_js() -> impl IntoResponse {
+pub async fn serve_chart_plugin_datalables_js() -> impl IntoResponse {
     (
         [(
             axum::http::header::CONTENT_TYPE,
             axum::http::HeaderValue::from_static("application/javascript"),
         )],
         CHARTJS_PLUGIN_DATALABELS_JS,
+    )
+        .into_response()
+}
+
+pub async fn serve_chartjs_adapter_date_fns_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        CHARTJS_ADAPTER_DATE_FNS_JS,
     )
         .into_response()
 }

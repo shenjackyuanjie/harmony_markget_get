@@ -1,13 +1,13 @@
 // Global variables
 // 全局变量：用于管理页面状态和图表实例
-let currentPage = 1;  // 当前页码
-let totalPages = 1;   // 总页数
-let currentSort = { field: "download_count", desc: true };  // 当前排序字段和方向
-let searchTerm = "";  // 搜索关键词
-let categoryFilter = "all";  // 分类过滤器
-let starChart = null;  // 星级分布图表实例
-const PAGE_SIZE = 20;  // 每页显示的应用数量
-const API_BASE = "/api";  // API 基础路径，根据需要调整
+let currentPage = 1; // 当前页码
+let totalPages = 1; // 总页数
+let currentSort = { field: "download_count", desc: true }; // 当前排序字段和方向
+let searchTerm = ""; // 搜索关键词
+let categoryFilter = "all"; // 分类过滤器
+let starChart = null; // 星级分布图表实例
+const PAGE_SIZE = 20; // 每页显示的应用数量
+const API_BASE = "/api"; // API 基础路径，根据需要调整
 
 // 格式化数字，四位一分隔
 function formatNumber(num) {
@@ -31,11 +31,11 @@ function renderStars(rating) {
   let stars = "";
   for (let i = 0; i < 5; i++) {
     if (i < fullStars) {
-      stars += "★";  // 满星
+      stars += "★"; // 满星
     } else if (i === fullStars && hasHalf) {
-      stars += "☆";  // 半星（简化表示，可替换为更好符号）
+      stars += "☆"; // 半星（简化表示，可替换为更好符号）
     } else {
-      stars += "☆";  // 空星
+      stars += "☆"; // 空星
     }
   }
   return stars + ` ${rating.toFixed(1)}`;
@@ -61,7 +61,8 @@ async function loadOverview() {
     const market_info = await appResponse.json();
 
     document.getElementById("totalCount").textContent = formatNumber(
-      (market_info.data.app_count || 0) + (market_info.data.atomic_services_count || 0),
+      (market_info.data.app_count || 0) +
+        (market_info.data.atomic_services_count || 0),
     );
     document.getElementById("appCount").textContent = formatNumber(
       market_info.data.app_count || 0,
@@ -320,7 +321,11 @@ async function loadCategories() {
 }
 
 // 渲染下载量柱状图
-async function render_top_download_chart(api_url, ctx_id, y_axis_ratio = 0.999) {
+async function render_top_download_chart(
+  api_url,
+  ctx_id,
+  y_axis_ratio = 0.999,
+) {
   try {
     const response = await fetch(api_url);
     const data = await response.json();
@@ -455,7 +460,7 @@ function createChart(ctx_id, apps, preloadedImages, yAxisMin) {
         },
       },
     },
-    plugins: [ChartDataLabels, iconPlugin],  // 假设 ChartDataLabels 已引入
+    plugins: [ChartDataLabels, iconPlugin], // 假设 ChartDataLabels 已引入
   });
 }
 
@@ -549,12 +554,12 @@ async function showAppDetail(appId) {
 
     let html = `
       <div class="flex flex-col md:flex-row gap-6">
-        <div class="md:w-1/4 text-center md:text-left">
+        <div class="md:w-1/5 text-center md:text-left">
           <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app_info.name}">
           <p class="mb-1 text-lg">${renderStars(app_rating.average_rating) || "无评分"}</p>
           <p class="text-gray-500">${app_rating.total_star_rating_count || "无"} 评分</p>
         </div>
-        <div class="md:w-3/4">
+        <div class="md:w-4/5">
           <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "Unknown App"}</h4>
           <p class="text-gray-600 mb-4">${app_info.developer_name || "Unknown Developer"}</p>
           <div class="flex flex-wrap gap-2 mb-4">
@@ -568,13 +573,119 @@ async function showAppDetail(appId) {
             <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
           </div>
           <hr class="my-4 border-gray-200">
-          <p class="text-gray-700">${(app_info.description || "无描述").replace(/\n/g, '<br>')}</p>
+          <p class="text-gray-700">${(app_info.description || "无描述").replace(/\n/g, "<br>")}</p>
         </div>
+      </div>
+      <div class="mt-6">
+        <h5 class="text-lg font-semibold text-gray-900 mb-3">下载量变化趋势</h5>
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="downloadHistoryChart"></canvas>
+        </div>
+        <div id="noHistoryMessage" class="text-center py-4 text-gray-500 hidden">暂无历史下载数据</div>
       </div>
     `;
 
     modalContent.innerHTML = html;
     modal.classList.remove("hidden");
+
+    // Load download history chart asynchronously
+    if (app_info && app_info.pkg_name) {
+      const pkgName = app_info.pkg_name;
+      fetch(`${API_BASE}/apps/metrics/${pkgName}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((historyResult) => {
+          let history = historyResult.data || [];
+          // 去重 download_count
+          // 保留其他字段
+          // 只保留 download_count 变化的点（相邻相同的去掉）
+          if (Array.isArray(history) && history.length > 1) {
+            const deduped = [history[0]];
+            for (let i = 1; i < history.length; i++) {
+              if (history[i].download_count !== history[i - 1].download_count) {
+                deduped.push(history[i]);
+              }
+            }
+            history = deduped;
+          }
+          const chartCanvas = document.getElementById("downloadHistoryChart");
+          const noHistoryMsg = document.getElementById("noHistoryMessage");
+          if (history.length > 1) {
+            // 倒序
+            history.reverse();
+            const data = history.map((item) => ({
+              x: new Date(item.created_at),
+              y: item.download_count
+            }));
+            const ctx = chartCanvas.getContext("2d");
+            window.downloadHistoryChart = new Chart(ctx, {
+              type: "line",
+              data: {
+                datasets: [
+                  {
+                    label: "下载量",
+                    data: data,
+                    borderColor: "rgb(59, 130, 246)",
+                    backgroundColor: "rgba(59, 130, 246, 0.1)",
+                    fill: true,
+                    tension: 0.1,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    type: "time",
+                    display: true,
+                    title: {
+                      display: true,
+                      text: "日期",
+                    },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function (value) {
+                        return formatNumber(value);
+                      },
+                    },
+                  },
+                },
+                plugins: {
+                  legend: {
+                    display: true,
+                    position: "top",
+                  },
+                },
+              },
+            });
+            chartCanvas.style.display = "block";
+            noHistoryMsg.classList.add("hidden");
+          } else {
+            chartCanvas.style.display = "none";
+            noHistoryMsg.classList.remove("hidden");
+          }
+        })
+        .catch((historyError) => {
+          console.error("Failed to load download history:", historyError);
+          document.getElementById("downloadHistoryChart").style.display =
+            "none";
+          document.getElementById("noHistoryMessage").innerHTML =
+            "加载历史数据失败";
+          document
+            .getElementById("noHistoryMessage")
+            .classList.remove("hidden");
+        });
+    } else {
+      document.getElementById("downloadHistoryChart").style.display = "none";
+      document.getElementById("noHistoryMessage").classList.remove("hidden");
+    }
   } catch (error) {
     console.error("Failed to load app details:", error);
     document.getElementById("appDetailContent").innerHTML =

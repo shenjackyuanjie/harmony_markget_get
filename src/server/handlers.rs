@@ -413,3 +413,26 @@ pub async fn get_star_distribution(State(state): State<Arc<AppState>>) -> impl I
         }
     }
 }
+
+/// 获取指定应用的下载量历史变化数据
+pub async fn get_app_download_history(
+    State(state): State<Arc<AppState>>,
+    Path(pkg_name): Path<String>,
+) -> impl IntoResponse {
+    event!(
+        Level::INFO,
+        "http 服务正在尝试获取应用 {} 的下载量历史数据",
+        pkg_name
+    );
+    match state.db.get_app_metrics_by_pkg_id(&pkg_name).await {
+        Ok(metrics) => Json(ApiResponse::success(metrics, None, None)),
+        Err(e) => {
+            event!(
+                Level::WARN,
+                "http服务获取应用 {} 下载量历史失败: {e}",
+                pkg_name
+            );
+            Json(ApiResponse::error(json!({"error": "Database error"})))
+        }
+    }
+}
