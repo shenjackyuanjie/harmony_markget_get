@@ -287,6 +287,20 @@ impl Database {
         Ok(app_ids)
     }
 
+    /// 获取数据库中所有的 app_id
+    pub async fn get_all_alliance_app_id(&self) -> Result<Vec<i64>> {
+        const QUERY: &str = "SELECT DISTINCT alliance_app_id FROM app_info WHERE alliance_app_id IS NOT NULL";
+
+        let rows = sqlx::query(QUERY).fetch_all(&self.pool).await?;
+
+        let app_ids = rows
+            .into_iter()
+            .map(|row| row.get::<i64, _>("alliance_app_id"))
+            .collect();
+
+        Ok(app_ids)
+    }
+
     /// 分页查询 app_info 数据，按照创建时间排序
     ///
     /// # 参数

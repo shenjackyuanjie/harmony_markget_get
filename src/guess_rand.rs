@@ -47,19 +47,21 @@ async fn async_main() -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
 
+    // C69175 59067092904725
     // C69175 59057467250518
     // C69175 84361454081323
+    // C69175 85170011059280
 
     // let range = 59057467250518_u64..=84361454081323_u64;
-    let code_start = 59057467250518_u64;
-    let size = 25303986830805_u64;
+    let code_start = 59067092904725_u64;
+    let size = 85170011059280_u64 - code_start;
     let start = "C69175";
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
-    let batch = 10000;
+    let batch = 1000;
     let wait_time = std::time::Duration::from_millis(50);
 
     let client = reqwest::ClientBuilder::new()
