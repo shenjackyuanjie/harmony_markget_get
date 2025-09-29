@@ -1,20 +1,70 @@
-// Global variables
-// 全局变量：用于管理页面状态和图表实例
-let currentPage = 1; // 当前页码
-let totalPages = 1; // 总页数
-let currentSort = { field: "download_count", desc: true }; // 当前排序字段和方向
-let searchTerm = ""; // 搜索关键词
-let categoryFilter = "all"; // 分类过滤器
-let starChart = null; // 星级分布图表实例
-const PAGE_SIZE = 20; // 每页显示的应用数量
-const API_BASE = "/api"; // API 基础路径，根据需要调整
+// 应用市场仪表板 JavaScript 文件
+// 提供应用列表、统计图表、搜索排序等功能
 
-// 格式化数字，四位一分隔
+// ==============================================
+// 全局变量定义
+// ==============================================
+
+/**
+ * @type {number} 当前页码，从1开始
+ */
+let currentPage = 1;
+
+/**
+ * @type {number} 总页数，根据数据总量和分页大小计算
+ */
+let totalPages = 1;
+
+/**
+ * @type {Object} 当前排序配置
+ * @property {string} field - 排序字段名
+ * @property {boolean} desc - 是否降序排列
+ */
+let currentSort = { field: "download_count", desc: true };
+
+/**
+ * @type {string} 搜索关键词，用于过滤应用列表
+ */
+let searchTerm = "";
+
+/**
+ * @type {string} 分类过滤器，'all'表示所有分类
+ */
+let categoryFilter = "all";
+
+/**
+ * @type {Chart|null} 星级分布图表实例，使用Chart.js库
+ */
+let starChart = null;
+
+/**
+ * @type {number} 每页显示的应用数量
+ */
+const PAGE_SIZE = 20;
+
+/**
+ * @type {string} API基础路径，根据部署环境调整
+ */
+const API_BASE = "/api";
+
+// ==============================================
+// 工具函数
+// ==============================================
+
+/**
+ * 格式化数字，四位一分隔（中文习惯）
+ * @param {number} num - 要格式化的数字
+ * @returns {string} 格式化后的字符串
+ */
 function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{4})+(?!\d))/g, ",");
 }
 
-// 格式化文件大小
+/**
+ * 格式化文件大小，自动选择合适的单位
+ * @param {number} size - 文件大小（字节）
+ * @returns {string} 格式化后的大小字符串
+ */
 function formatSize(size) {
   if (size < 1024) return size + " B";
   if (size < 1024 * 1024) return (size / 1024).toFixed(2) + " KB";
@@ -23,6 +73,11 @@ function formatSize(size) {
   return (size / (1024 * 1024 * 1024)).toFixed(2) + " GB";
 }
 
+/**
+ * 格式化日期时间，输出为YYYY-MM-DD HH:mm格式
+ * @param {string|Date} dateInput - 日期时间字符串或Date对象
+ * @returns {string} 格式化后的日期时间字符串
+ */
 function formatDate(dateInput) {
   const date = new Date(dateInput);
   const pad = (n) => (n < 10 ? "0" + n : n);
@@ -39,8 +94,11 @@ function formatDate(dateInput) {
   );
 }
 
-
-// 使用 Unicode 渲染星级评分
+/**
+ * 使用Unicode字符渲染星级评分显示
+ * @param {number} rating - 评分值，范围0-5
+ * @returns {string|null} 星级字符串，如果无评分返回null
+ */
 function renderStars(rating) {
   if (!rating) return null;
   const fullStars = Math.floor(rating);
@@ -58,7 +116,14 @@ function renderStars(rating) {
   return stars + ` ${rating.toFixed(1)}`;
 }
 
-// 加载概览数据
+// ==============================================
+// 数据加载函数
+// ==============================================
+
+/**
+ * 加载应用市场概览统计信息
+ * @async
+ */
 async function loadOverview() {
   try {
     // 显示加载指示器
@@ -77,9 +142,10 @@ async function loadOverview() {
     const appResponse = await fetch(`${API_BASE}/market_info`);
     const market_info = await appResponse.json();
 
+    // 更新统计数据到页面
     document.getElementById("totalCount").textContent = formatNumber(
       (market_info.data.app_count || 0) +
-      (market_info.data.atomic_services_count || 0),
+        (market_info.data.atomic_services_count || 0),
     );
     document.getElementById("appCount").textContent = formatNumber(
       market_info.data.app_count || 0,
@@ -97,7 +163,7 @@ async function loadOverview() {
       if (el) el.style.display = "none";
     });
   } catch (error) {
-    console.error("Failed to load overview:", error);
+    console.error("加载概览统计失败:", error);
     // 错误时隐藏加载指示器
     loadingElements.forEach((id) => {
       const el = document.getElementById(id);
@@ -106,7 +172,15 @@ async function loadOverview() {
   }
 }
 
-// Load apps with pagination, sorting, search, and category filter
+/**
+ * 加载应用列表，支持分页、排序、搜索和分类过滤
+ * @async
+ * @param {number} [page=1] - 页码
+ * @param {string} [sortField=currentSort.field] - 排序字段
+ * @param {boolean} [sort_desc=currentSort.desc] - 是否降序
+ * @param {string} [search=searchTerm] - 搜索关键词
+ * @param {string} [category=categoryFilter] - 分类过滤
+ */
 async function loadApps(
   page = 1,
   sortField = currentSort.field,
@@ -119,6 +193,7 @@ async function loadApps(
     tableBody.innerHTML =
       '<tr><td colspan="8" class="text-center py-12"><div class="inline-block w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></td></tr>';
 
+    // 构建API请求URL
     let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&desc=${sort_desc}&page_size=${PAGE_SIZE}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (category && category !== "all")
@@ -127,13 +202,14 @@ async function loadApps(
     const response = await fetch(url);
     const data = await response.json();
 
+    // 更新分页信息
     if (data.data && data.data.total_count) {
       totalPages = Math.ceil(data.data.total_count / PAGE_SIZE);
       currentPage = page;
     }
 
     let apps = data.data.data || [];
-    // Additional client-side filtering if needed
+    // 客户端额外过滤（如果需要）
     if (search) {
       apps = apps.filter((app) =>
         app.name.toLowerCase().includes(search.toLowerCase()),
@@ -145,25 +221,33 @@ async function loadApps(
       );
     }
 
-    renderApps(apps.slice(0, PAGE_SIZE)); // Paginate client-side if needed
+    renderApps(apps.slice(0, PAGE_SIZE)); // 客户端分页（如果需要）
     renderPagination();
   } catch (error) {
-    console.error("Failed to load apps:", error);
+    console.error("加载应用列表失败:", error);
     document.getElementById("appTableBody").innerHTML =
-      '<tr><td colspan="8" class="text-center py-4 text-gray-500">Error loading data</td></tr>';
+      '<tr><td colspan="8" class="text-center py-4 text-gray-500">加载数据失败</td></tr>';
   }
 }
 
-// Render apps in the table
+// ==============================================
+// 渲染函数
+// ==============================================
+
+/**
+ * 渲染应用列表到表格
+ * @param {Array} apps - 应用数据数组
+ */
 function renderApps(apps) {
   const tableBody = document.getElementById("appTableBody");
   tableBody.innerHTML = "";
 
   if (!apps || apps.length === 0) {
     tableBody.innerHTML =
-      '<tr><td colspan="8" class="text-center py-4 text-gray-500">No apps found</td></tr>';
+      '<tr><td colspan="8" class="text-center py-4 text-gray-500">未找到应用</td></tr>';
     return;
   }
+
   apps.forEach((app) => {
     const app_info = app.info;
     const app_metric = app.metric;
@@ -193,7 +277,9 @@ function renderApps(apps) {
   });
 }
 
-// Update sort icons in table headers
+/**
+ * 更新表格排序图标状态
+ */
 function updateSortIcons() {
   const headers = document.querySelectorAll("th[data-sort]");
   headers.forEach((header) => {
@@ -203,7 +289,7 @@ function updateSortIcons() {
 
     if (field === currentSort.field) {
       span.textContent = currentSort.desc === false ? "↑" : "↓";
-      header.classList.add("bg-gray-100"); // Active state
+      header.classList.add("bg-gray-100"); // 激活状态
     } else {
       span.textContent = "↑";
       header.classList.remove("bg-gray-100");
@@ -211,7 +297,9 @@ function updateSortIcons() {
   });
 }
 
-// Render pagination controls with Tailwind
+/**
+ * 渲染分页控件（使用Tailwind CSS样式）
+ */
 function renderPagination() {
   const paginationEl = document.getElementById("pagination");
   paginationEl.innerHTML = "";
@@ -221,7 +309,7 @@ function renderPagination() {
   const ul = document.createElement("ul");
   ul.className = "flex items-center space-x-1";
 
-  // First page button
+  // 第一页按钮
   const firstLi = document.createElement("li");
   firstLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const firstA = document.createElement("a");
@@ -237,7 +325,7 @@ function renderPagination() {
   firstLi.appendChild(firstA);
   ul.appendChild(firstLi);
 
-  // Previous button
+  // 上一页按钮
   const prevLi = document.createElement("li");
   prevLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const prevA = document.createElement("a");
@@ -253,17 +341,18 @@ function renderPagination() {
   prevLi.appendChild(prevA);
   ul.appendChild(prevLi);
 
-  // Page numbers
+  // 页码数字
   const startPage = Math.max(1, currentPage - 2);
   const endPage = Math.min(totalPages, currentPage + 2);
   for (let i = startPage; i <= endPage; i++) {
     const li = document.createElement("li");
     li.className = `flex ${i === currentPage ? "z-10" : ""}`;
     const a = document.createElement("a");
-    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
-      ? "border-blue-500 bg-blue-50 text-blue-600"
-      : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
-      }`;
+    a.className = `px-3 py-2 text-sm font-medium rounded-md border ${
+      i === currentPage
+        ? "border-blue-500 bg-blue-50 text-blue-600"
+        : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+    }`;
     a.textContent = i;
     a.onclick = (e) => {
       e.preventDefault();
@@ -273,7 +362,7 @@ function renderPagination() {
     ul.appendChild(li);
   }
 
-  // Next button
+  // 下一页按钮
   const nextLi = document.createElement("li");
   nextLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const nextA = document.createElement("a");
@@ -289,7 +378,7 @@ function renderPagination() {
   nextLi.appendChild(nextA);
   ul.appendChild(nextLi);
 
-  // Last page button
+  // 最后一页按钮
   const lastLi = document.createElement("li");
   lastLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
   const lastA = document.createElement("a");
@@ -308,13 +397,20 @@ function renderPagination() {
   paginationEl.appendChild(ul);
 }
 
-// Load categories
+// ==============================================
+// 分类管理函数
+// ==============================================
+
+/**
+ * 加载应用分类列表
+ * @async
+ */
 async function loadCategories() {
   try {
     const categorySelect = document.getElementById("categoryFilter");
     categorySelect.innerHTML = '<option value="all">所有分类</option>';
 
-    // Hardcoded or fetch from API
+    // 硬编码分类列表（可从API获取）
     const categories = [
       { value: "games", label: "游戏" },
       { value: "social", label: "社交" },
@@ -332,11 +428,21 @@ async function loadCategories() {
       categorySelect.appendChild(option);
     });
   } catch (error) {
-    console.error("Failed to load categories:", error);
+    console.error("加载分类列表失败:", error);
   }
 }
 
-// 渲染下载量柱状图
+// ==============================================
+// 图表相关函数
+// ==============================================
+
+/**
+ * 渲染下载量柱状图
+ * @async
+ * @param {string} api_url - API接口地址
+ * @param {string} ctx_id - Canvas元素ID
+ * @param {number} [y_axis_ratio=0.999] - Y轴最小值比例
+ */
 async function render_top_download_chart(
   api_url,
   ctx_id,
@@ -356,11 +462,11 @@ async function render_top_download_chart(
     }
 
     if (apps.length === 0) {
-      console.error("Invalid or empty apps data for chart:", data);
+      console.error("图表数据无效或为空:", data);
       return;
     }
 
-    // 子函数：预加载图标图像，避免悬停时异步加载问题
+    // 预加载图标图像，避免悬停时异步加载问题
     const preloadedImages = await preloadImages(apps);
 
     const minValue = Math.min(...apps.map((item) => item.download_count || 0));
@@ -368,11 +474,16 @@ async function render_top_download_chart(
 
     createChart(ctx_id, apps, preloadedImages, yAxisMin);
   } catch (error) {
-    console.error("Failed to load top download chart:", error);
+    console.error("加载下载量图表失败:", error);
   }
 }
 
-// 子函数：预加载图像
+/**
+ * 预加载应用图标图像
+ * @async
+ * @param {Array} apps - 应用数据数组
+ * @returns {Promise<Array>} 预加载的图像数组
+ */
 async function preloadImages(apps) {
   const preloadedImages = [];
   const loadPromises = apps.map((app, index) => {
@@ -398,7 +509,13 @@ async function preloadImages(apps) {
   return preloadedImages;
 }
 
-// 子函数：创建 Chart.js 图表实例
+/**
+ * 创建Chart.js图表实例
+ * @param {string} ctx_id - Canvas元素ID
+ * @param {Array} apps - 应用数据数组
+ * @param {Array} preloadedImages - 预加载的图像数组
+ * @param {number} yAxisMin - Y轴最小值
+ */
 function createChart(ctx_id, apps, preloadedImages, yAxisMin) {
   const ctx = document.getElementById(ctx_id).getContext("2d");
   if (window[ctx_id + "_chart"]) {
@@ -480,7 +597,10 @@ function createChart(ctx_id, apps, preloadedImages, yAxisMin) {
   });
 }
 
-// 加载星级分布饼图
+/**
+ * 加载星级分布饼图
+ * @async
+ */
 async function loadStarChart() {
   try {
     const response = await fetch(`${API_BASE}/charts/star-distribution`);
@@ -535,11 +655,14 @@ async function loadStarChart() {
       },
     });
   } catch (error) {
-    console.error("Failed to load star distribution chart:", error);
+    console.error("加载星级分布图表失败:", error);
   }
 }
 
-// Load all charts
+/**
+ * 加载所有图表
+ * @async
+ */
 async function loadCharts() {
   render_top_download_chart(
     `${API_BASE}/rankings/top-downloads?limit=20`,
@@ -554,7 +677,15 @@ async function loadCharts() {
   loadStarChart();
 }
 
-// Show app details in modal
+// ==============================================
+// 应用详情相关函数
+// ==============================================
+
+/**
+ * 在模态框中显示应用详细信息
+ * @async
+ * @param {string} appId - 应用ID
+ */
 async function showAppDetail(appId) {
   try {
     const modal = document.getElementById("appDetailModal");
@@ -615,7 +746,7 @@ async function showAppDetail(appId) {
 
     modalContent.innerHTML = html;
 
-    // Handle description toggle
+    // 处理描述文本展开/收起
     const plainDesc = app_info.description || "无描述";
     const description = plainDesc.replace(/\n/g, "<br>");
     const descContainer = document.getElementById("descriptionContainer");
@@ -629,24 +760,27 @@ async function showAppDetail(appId) {
         <p id="descriptionText" class="text-gray-700">${truncatedHtml}</p>
         <button id="toggleDescription" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-medium mt-2">展开更多</button>
       `;
-      document.getElementById("toggleDescription").addEventListener("click", function () {
-        if (!isExpanded) {
-          document.getElementById("descriptionText").innerHTML = description;
-          this.textContent = "收起";
-          isExpanded = true;
-        } else {
-          const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
-          document.getElementById("descriptionText").innerHTML = truncated.replace(/\n/g, "<br>");
-          this.textContent = "展开更多";
-          isExpanded = false;
-        }
-      });
+      document
+        .getElementById("toggleDescription")
+        .addEventListener("click", function () {
+          if (!isExpanded) {
+            document.getElementById("descriptionText").innerHTML = description;
+            this.textContent = "收起";
+            isExpanded = true;
+          } else {
+            const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+            document.getElementById("descriptionText").innerHTML =
+              truncated.replace(/\n/g, "<br>");
+            this.textContent = "展开更多";
+            isExpanded = false;
+          }
+        });
     } else {
       descContainer.innerHTML = `<p class="text-gray-700">${description}</p>`;
     }
 
     modal.classList.remove("hidden");
-    // Load download history chart asynchronously
+    // 异步加载下载历史图表
     if (app_info && app_info.pkg_name) {
       const pkgName = app_info.pkg_name;
       fetch(`${API_BASE}/apps/metrics/${pkgName}`)
@@ -679,14 +813,22 @@ async function showAppDetail(appId) {
             // 倒序（从新到旧，便于显示）
             history.reverse();
 
-            // 原有下载量图表数据
+            /**
+             * @type {Array} 下载量历史数据
+             */
             const downloadData = history.map((item) => ({
               x: new Date(item.created_at),
               y: item.download_count,
             }));
 
             // 计算增量数据和每小时增量数据
+            /**
+             * @type {Array} 下载增量数据
+             */
             const increments = [];
+            /**
+             * @type {Array} 每小时增量数据
+             */
             const hourlyIncrements = [];
 
             if (history.length > 0) {
@@ -702,14 +844,18 @@ async function showAppDetail(appId) {
             }
 
             for (let i = 1; i < history.length; i++) {
-              const increment = history[i].download_count - history[i - 1].download_count;
+              const increment =
+                history[i].download_count - history[i - 1].download_count;
               increments.push({
                 x: new Date(history[i].created_at),
                 y: increment,
               });
 
               // 计算每小时增量
-              const timeDiff = (new Date(history[i].created_at) - new Date(history[i - 1].created_at)) / (1000 * 60 * 60); // 转换为小时
+              const timeDiff =
+                (new Date(history[i].created_at) -
+                  new Date(history[i - 1].created_at)) /
+                (1000 * 60 * 60); // 转换为小时
               const hourlyIncrement = timeDiff > 0 ? increment / timeDiff : 0;
               hourlyIncrements.push({
                 x: new Date(history[i].created_at),
@@ -723,6 +869,9 @@ async function showAppDetail(appId) {
               hourlyIncrements[0].y = hourlyIncrements[1].y;
             }
 
+            /**
+             * @type {Object} 图表插件配置
+             */
             const chart_plugin = {
               legend: { display: true, position: "top" },
               tooltip: {
@@ -734,9 +883,9 @@ async function showAppDetail(appId) {
                   },
                   label: function (context) {
                     return `下载量: ${formatNumber(context.parsed.y)}`;
-                  }
-                }
-              }
+                  },
+                },
+              },
             };
 
             // 创建下载量图表（原有）
@@ -767,14 +916,14 @@ async function showAppDetail(appId) {
                         minute: "yyyy-MM-dd HH:mm",
                         hour: "yyyy-MM-dd HH:mm",
                         day: "yyyy-MM-dd HH:mm",
-                      }
+                      },
                     },
                     ticks: {
                       callback: function (value) {
                         const date = new Date(value);
                         return formatDate(date);
-                      }
-                    }
+                      },
+                    },
                   },
                   y: {
                     beginAtZero: false,
@@ -789,11 +938,14 @@ async function showAppDetail(appId) {
               },
             });
 
-            // 修改：创建增量图表，包含总增量和每小时增量
+            // 创建增量图表，包含总增量和每小时增量
             if (increments.length > 0) {
               const incrementCtx = incrementCanvas.getContext("2d");
 
               // 修改tooltip以区分两个数据集
+              /**
+               * @type {Object} 增量图表插件配置
+               */
               const incrementChartPlugin = {
                 legend: { display: true, position: "top" },
                 tooltip: {
@@ -803,16 +955,16 @@ async function showAppDetail(appId) {
                       return formatDate(date);
                     },
                     label: function (context) {
-                      const datasetLabel = context.dataset.label || '';
-                      if (datasetLabel === '下载增量') {
+                      const datasetLabel = context.dataset.label || "";
+                      if (datasetLabel === "下载增量") {
                         return `下载增量: ${formatNumber(context.parsed.y)}`;
-                      } else if (datasetLabel === '每小时增量') {
+                      } else if (datasetLabel === "每小时增量") {
                         return `每小时增量: ${formatNumber(context.parsed.y)}`;
                       }
                       return `${datasetLabel}: ${formatNumber(context.parsed.y)}`;
-                    }
-                  }
-                }
+                    },
+                  },
+                },
               };
 
               window.downloadIncrementChart = new Chart(incrementCtx, {
@@ -834,7 +986,7 @@ async function showAppDetail(appId) {
                       backgroundColor: "rgba(255, 99, 132, 0.1)",
                       fill: true,
                       tension: 0.1,
-                    }
+                    },
                   ],
                 },
                 options: {
@@ -849,14 +1001,14 @@ async function showAppDetail(appId) {
                           minute: "yyyy-MM-dd HH:mm",
                           hour: "yyyy-MM-dd HH:mm",
                           day: "yyyy-MM-dd HH:mm",
-                        }
+                        },
                       },
                       ticks: {
                         callback: function (value) {
                           const date = new Date(value);
                           return formatDate(date);
-                        }
-                      }
+                        },
+                      },
                     },
                     y: {
                       beginAtZero: false,
@@ -928,11 +1080,21 @@ function updateLastUpdate() {
 
 // 刷新所有数据
 async function refreshData() {
-  updateLastUpdate();
   await loadOverview();
-  await loadApps(1);
+  await loadApps();
   await loadCharts();
+  updateLastUpdate();
 }
+
+// ESC键关闭详情弹窗
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    const modal = document.getElementById("appDetailModal");
+    if (!modal.classList.contains("hidden")) {
+      modal.classList.add("hidden");
+    }
+  }
+});
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
