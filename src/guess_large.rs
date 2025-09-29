@@ -1,7 +1,6 @@
 use colored::Colorize;
 
 use crate::{model::AppQuery, sync::code::GLOBAL_CODE_MANAGER};
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub mod config;
 pub mod db;
@@ -9,29 +8,6 @@ pub mod model;
 pub mod server;
 pub mod sync;
 pub mod utils;
-
-#[derive(Clone)]
-struct Random {
-    state: u64,
-}
-
-impl Random {
-    pub fn new() -> Self {
-        let seed = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos() as u64;
-        Self { state: seed }
-    }
-
-    pub fn next(&mut self) -> u64 {
-        self.state = self
-            .state
-            .wrapping_mul(1664525u64)
-            .wrapping_add(1013904223u64);
-        self.state
-    }
-}
 
 fn main() -> anyhow::Result<()> {
     utils::init_log();
@@ -47,45 +23,46 @@ async fn async_main() -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
 
-    // C69175 59067092904725
-    // C69175 59057467250518
-    // C69175 84361454081323
-    // C69175 85170011059280
+    // C576588020785 6374145
+    // C576588020785 6366961
+    // C576588020785 2915863
+    // C576588020785 2866435
+    // 6917566197931927039
 
-    // let range = 59057467250518_u64..=84361454081323_u64;
-    let code_start = 59067092904725_u64;
-    let size = 85170011059280_u64 - code_start;
-    let start = "C69175";
+    // let range = 2915863..=6366961;
+    // let range = 0..=6366961;
+    // let range = 2860000..=6390000;
+    // let range = 0000000..=9999999;
+    // let start = "C576588020785";
+    let scan_range = 1000_0000;
+    let middle = 6917566468465598293_u64;
+    let range = middle-scan_range..middle+scan_range;
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
 
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
     let batch = 1000;
-    let wait_time = std::time::Duration::from_millis(5);
+    let wait_time = std::time::Duration::from_millis(25);
     let mut batch_count = 0;
+    let total_batches = ((range.end - range.start) / batch as u64) + 1;
+    let total_batches_u32 = total_batches as u32;
+    let start_time = std::time::Instant::now();
 
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
 
-    let mut rng = Random::new();
-
-    loop {
-        let mut ids: Vec<u64> = Vec::with_capacity(batch as usize);
-        for _ in 0..batch {
-            let id = code_start + (rng.next() % size);
-            ids.push(id);
-        }
-
+    let range_vec: Vec<u64> = range.into_iter().collect();
+    for bunch_id in range_vec.chunks(batch) {
         let mut join_set = tokio::task::JoinSet::new();
-        for &id in &ids {
+        for id in bunch_id.iter() {
             let client = client.clone();
             let db = db.clone();
             let api_url = config.api_info_url().to_string();
             let star_url = config.api_detail_url().to_string();
             let locale = config.locale().to_string();
-            let app_id = format!("{start}{}", id);
+            let app_id = format!("C{id}");
             join_set.spawn(async move {
                 if let Ok(data) = crate::sync::get_app_info(
                     &client,
@@ -123,8 +100,24 @@ async fn async_main() -> anyhow::Result<()> {
         }
         join_set.join_all().await;
         batch_count += 1;
-        print!("\r[批次 {}] 已处理 {} 个随机 ID，等待 {:?}", batch_count, batch, wait_time);
+        let total_elapsed = start_time.elapsed();
+        let avg_time_per_batch = total_elapsed / batch_count;
+        let estimated_total_time = avg_time_per_batch * total_batches_u32;
+        let remaining_time = estimated_total_time.saturating_sub(total_elapsed);
+
+        print!(
+            "\r[批次 {}/{}] id {} - {} 处理完成，总耗时 {:?}，预计剩余 {:?}，等待 {:?}",
+            batch_count,
+            total_batches,
+            bunch_id[0],
+            bunch_id[bunch_id.len() - 1],
+            total_elapsed,
+            remaining_time,
+            wait_time
+        );
         std::io::Write::flush(&mut std::io::stdout()).unwrap();
         tokio::time::sleep(wait_time).await;
     }
+
+    Ok(())
 }

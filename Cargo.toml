@@ -17,6 +17,10 @@ name = "guess_from_db"
 path = "src/guess_from_db.rs"
 
 [[bin]]
+name = "guess_large"
+path = "src/guess_large.rs"
+
+[[bin]]
 name = "get_nextmax"
 path = "src/get_nextmax.rs"
 
