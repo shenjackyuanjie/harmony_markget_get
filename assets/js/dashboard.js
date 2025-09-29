@@ -554,7 +554,7 @@ async function showAppDetail(appId) {
 
     const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
     let html = `
-      <div class="flex flex-col md:flex-row gap-6">
+      <div class="flex flex-col md:flex-row gap-2">
         <div class="md:w-1/5 text-center md:text-left">
           <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app_info.name}">
           <p class="mb-1 text-lg">${renderStars(app_rating.average_rating) || "无评分"}</p>
@@ -565,18 +565,20 @@ async function showAppDetail(appId) {
           <p class="text-gray-600 mb-4">${app_info.developer_name || "Unknown Developer"}</p>
           <div class="flex flex-wrap gap-2 mb-4">
             <span ${same_css} bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
-            <span ${same_css} bg-gray-100 text-gray-800">${formatSize(app_metric.size_bytes || 0)}</span>
             <span ${same_css} bg-indigo-100 text-indigo-800">${app_metric.version || "Unknown Version"}</span>
             <span ${same_css} bg-gray-100 text-green-800">目标 api 版本${app_metric.target_sdk || "未知"}</span>
             <span ${same_css} bg-gray-100 text-green-800">最小 api 版本${app_metric.minsdk || "未知"}</span>
+            <span ${same_css} bg-gray-100 text-green-800">编译 api 版本${app_metric.compile_sdk_version || "未知"}</span>
           </div>
-          <div class="space-y-2 mb-4">
-            <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app_metric.download_count || 0)}</span></p>
-            <p><strong class="text-gray-900">价格:</strong> <span class="text-gray-600">${app_metric.price ? `¥${app_metric.price}` : "免费"}</span></p>
-            <p><strong class="text-gray-900">上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
+          <div class="space-y-2 mb-2">
+            <p><strong>下载量:</strong> <span class="text-gray-600">${formatNumber(app_metric.download_count || 0)}</span></p>
+            <p><strong>上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
+            <p><strong>应用大小:</strong> <span class="text-gray-600">${formatSize(app_metric.size_bytes || 0)}</span></p>
+            <p><strong>App ID:</strong> <span class="text-gray-600">${app_info.app_id}</span></p>
+            <p><strong>Package Name:</strong> <span class="text-gray-600">${app_info.pkg_name}</span></p>
           </div>
           <hr class="my-4 border-gray-200">
-          <p class="text-gray-700">${(app_info.description || "无描述").replace(/\n/g, "<br>")}</p>
+          <div id="descriptionContainer"></div>
         </div>
       </div>
       <div class="mt-6">
@@ -596,6 +598,38 @@ async function showAppDetail(appId) {
     `;
 
     modalContent.innerHTML = html;
+
+    // Handle description toggle
+    const plainDesc = app_info.description || "无描述";
+    const description = plainDesc.replace(/\n/g, "<br>");
+    const descContainer = document.getElementById("descriptionContainer");
+    const MAX_LENGTH = 200;
+    let isExpanded = false;
+
+    const lines = plainDesc.split('\n');
+    if (plainDesc.length > MAX_LENGTH) {
+      const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+      const truncatedHtml = truncated.replace(/\n/g, "<br>");
+      descContainer.innerHTML = `
+        <p id="descriptionText" class="text-gray-700">${truncatedHtml}</p>
+        <button id="toggleDescription" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm font-medium mt-2">展开更多</button>
+      `;
+      document.getElementById("toggleDescription").addEventListener("click", function() {
+        if (!isExpanded) {
+          document.getElementById("descriptionText").innerHTML = description;
+          this.textContent = "收起";
+          isExpanded = true;
+        } else {
+          const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+          document.getElementById("descriptionText").innerHTML = truncated.replace(/\n/g, "<br>");
+          this.textContent = "展开更多";
+          isExpanded = false;
+        }
+      });
+    } else {
+      descContainer.innerHTML = `<p class="text-gray-700">${description}</p>`;
+    }
+
     modal.classList.remove("hidden");
 
     // Load download history chart asynchronously
