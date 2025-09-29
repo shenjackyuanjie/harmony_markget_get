@@ -552,6 +552,7 @@ async function showAppDetail(appId) {
     const app_metric = data.data.metric;
     const app_rating = data.data.rating || {};
 
+    const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
     let html = `
       <div class="flex flex-col md:flex-row gap-6">
         <div class="md:w-1/5 text-center md:text-left">
@@ -563,9 +564,11 @@ async function showAppDetail(appId) {
           <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "Unknown App"}</h4>
           <p class="text-gray-600 mb-4">${app_info.developer_name || "Unknown Developer"}</p>
           <div class="flex flex-wrap gap-2 mb-4">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">${formatSize(app_metric.size_bytes || 0)}</span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">${app_metric.version || "Unknown Version"}</span>
+            <span ${same_css} bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
+            <span ${same_css} bg-gray-100 text-gray-800">${formatSize(app_metric.size_bytes || 0)}</span>
+            <span ${same_css} bg-indigo-100 text-indigo-800">${app_metric.version || "Unknown Version"}</span>
+            <span ${same_css} bg-gray-100 text-green-800">目标 api 版本${app_metric.target_sdk || "未知"}</span>
+            <span ${same_css} bg-gray-100 text-green-800">最小 api 版本${app_metric.minsdk || "未知"}</span>
           </div>
           <div class="space-y-2 mb-4">
             <p><strong class="text-gray-900">下载量:</strong> <span class="text-gray-600">${formatNumber(app_metric.download_count || 0)}</span></p>
@@ -673,24 +676,10 @@ async function showAppDetail(appId) {
                 scales: {
                   x: {
                     type: "time",
-                    display: true,
                     title: { display: true, text: "日期" },
-                    time: {
-                      displayFormats: {
-                        millisecond: "yyyy-MM-dd HH:mm",
-                        second: "yyyy-MM-dd HH:mm",
-                        minute: "yyyy-MM-dd HH:mm",
-                        hour: "yyyy-MM-dd HH:mm",
-                        date: "yyyy-MM-dd HH:mm",
-                        week: "yyyy-MM-dd HH:mm",
-                        month: "yyyy-MM-dd HH:mm",
-                        quarter: "yyyy-MM-dd HH:mm",
-                        year: "yyyy-MM-dd HH:mm",
-                      },
-                    },
                   },
                   y: {
-                    beginAtZero: true,
+                    beginAtZero: false,
                     ticks: {
                       callback: function (value) {
                         return formatNumber(value);
@@ -725,21 +714,7 @@ async function showAppDetail(appId) {
                   scales: {
                     x: {
                       type: "time",
-                      display: true,
                       title: { display: true, text: "日期" },
-                      time: {
-                        displayFormats: {
-                          millisecond: "yyyy-MM-dd HH:mm",
-                          second: "yyyy-MM-dd HH:mm",
-                          minute: "yyyy-MM-dd HH:mm",
-                          hour: "yyyy-MM-dd HH:mm",
-                          date: "yyyy-MM-dd HH:mm",
-                          week: "yyyy-MM-dd HH:mm",
-                          month: "yyyy-MM-dd HH:mm",
-                          quarter: "yyyy-MM-dd HH:mm",
-                          year: "yyyy-MM-dd HH:mm",
-                        },
-                      },
                     },
                     y: {
                       beginAtZero: true,
@@ -863,6 +838,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Refresh button
   document.getElementById("refreshBtn").addEventListener("click", refreshData);
-
-  // Modal close (already handled in HTML onclick)
 });
