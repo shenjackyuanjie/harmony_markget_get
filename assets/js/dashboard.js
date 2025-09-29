@@ -646,7 +646,6 @@ async function showAppDetail(appId) {
     }
 
     modal.classList.remove("hidden");
-
     // Load download history chart asynchronously
     if (app_info && app_info.pkg_name) {
       const pkgName = app_info.pkg_name;
@@ -685,41 +684,61 @@ async function showAppDetail(appId) {
               x: new Date(item.created_at),
               y: item.download_count,
             }));
-            // 新增：计算增量数据（从第二个点开始），并在下载量的第一个时间点添加一个0数据点
+
+            // 计算增量数据和每小时增量数据
             const increments = [];
+            const hourlyIncrements = [];
+
             if (history.length > 0) {
               // 添加第一个点，y为0，x为下载量的第一个时间
               increments.push({
                 x: new Date(history[0].created_at),
                 y: 0,
               });
+              hourlyIncrements.push({
+                x: new Date(history[0].created_at),
+                y: 0,
+              });
             }
+
             for (let i = 1; i < history.length; i++) {
-              const increment =
-                history[i].download_count - history[i - 1].download_count;
+              const increment = history[i].download_count - history[i - 1].download_count;
               increments.push({
                 x: new Date(history[i].created_at),
                 y: increment,
               });
+
+              // 计算每小时增量
+              const timeDiff = (new Date(history[i].created_at) - new Date(history[i - 1].created_at)) / (1000 * 60 * 60); // 转换为小时
+              const hourlyIncrement = timeDiff > 0 ? increment / timeDiff : 0;
+              hourlyIncrements.push({
+                x: new Date(history[i].created_at),
+                y: Math.round(hourlyIncrement), // 取整，避免小数过多
+              });
             }
+
             // 把增量的第一个点的y值设置为第二个点的y值
-            increments[0].y = increments[1].y;
+            if (increments.length > 1) {
+              increments[0].y = increments[1].y;
+              hourlyIncrements[0].y = hourlyIncrements[1].y;
+            }
 
             const chart_plugin = {
-                  legend: { display: true, position: "top" },
-                  tooltip: {
-                    callbacks: {
-                      // 顶部标题行（时间）
-                      title: function (contexts) {
-                        const date = new Date(contexts[0].parsed.x);
-                        return formatDate(date);
-                      },
-                      label: function (context) {
-                        return `下载量: ${formatNumber(context.parsed.y)}`;
-                      }
-                    }
+              legend: { display: true, position: "top" },
+              tooltip: {
+                callbacks: {
+                  // 顶部标题行（时间）
+                  title: function (contexts) {
+                    const date = new Date(contexts[0].parsed.x);
+                    return formatDate(date);
+                  },
+                  label: function (context) {
+                    return `下载量: ${formatNumber(context.parsed.y)}`;
                   }
+                }
+              }
             };
+
             // 创建下载量图表（原有）
             const ctx = chartCanvas.getContext("2d");
             window.downloadHistoryChart = new Chart(ctx, {
@@ -770,9 +789,32 @@ async function showAppDetail(appId) {
               },
             });
 
-            // 新增：创建增量图表
+            // 修改：创建增量图表，包含总增量和每小时增量
             if (increments.length > 0) {
               const incrementCtx = incrementCanvas.getContext("2d");
+
+              // 修改tooltip以区分两个数据集
+              const incrementChartPlugin = {
+                legend: { display: true, position: "top" },
+                tooltip: {
+                  callbacks: {
+                    title: function (contexts) {
+                      const date = new Date(contexts[0].parsed.x);
+                      return formatDate(date);
+                    },
+                    label: function (context) {
+                      const datasetLabel = context.dataset.label || '';
+                      if (datasetLabel === '下载增量') {
+                        return `下载增量: ${formatNumber(context.parsed.y)}`;
+                      } else if (datasetLabel === '每小时增量') {
+                        return `每小时增量: ${formatNumber(context.parsed.y)}`;
+                      }
+                      return `${datasetLabel}: ${formatNumber(context.parsed.y)}`;
+                    }
+                  }
+                }
+              };
+
               window.downloadIncrementChart = new Chart(incrementCtx, {
                 type: "line",
                 data: {
@@ -785,6 +827,14 @@ async function showAppDetail(appId) {
                       fill: true,
                       tension: 0.1,
                     },
+                    {
+                      label: "每小时增量",
+                      data: hourlyIncrements,
+                      borderColor: "rgb(255, 99, 132)",
+                      backgroundColor: "rgba(255, 99, 132, 0.1)",
+                      fill: true,
+                      tension: 0.1,
+                    }
                   ],
                 },
                 options: {
@@ -810,6 +860,7 @@ async function showAppDetail(appId) {
                     },
                     y: {
                       beginAtZero: false,
+                      title: { display: true, text: "下载量" },
                       ticks: {
                         callback: function (value) {
                           return formatNumber(value);
@@ -817,7 +868,7 @@ async function showAppDetail(appId) {
                       },
                     },
                   },
-                  plugins: chart_plugin,
+                  plugins: incrementChartPlugin,
                 },
               });
               incrementCanvas.style.display = "block";
