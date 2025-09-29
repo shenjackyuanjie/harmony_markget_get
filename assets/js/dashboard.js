@@ -583,6 +583,13 @@ async function showAppDetail(appId) {
         </div>
         <div id="noHistoryMessage" class="text-center py-4 text-gray-500 hidden">暂无历史下载数据</div>
       </div>
+      <div class="mt-6">
+        <h5 class="text-lg font-semibold text-gray-900 mb-3">下载量增量趋势</h5>
+        <div class="chart-container" style="height: 300px;">
+          <canvas id="downloadIncrementChart"></canvas>
+        </div>
+        <div id="noIncrementMessage" class="text-center py-4 text-gray-500 hidden">暂无历史下载数据</div>
+      </div>
     `;
 
     modalContent.innerHTML = html;
@@ -600,9 +607,7 @@ async function showAppDetail(appId) {
         })
         .then((historyResult) => {
           let history = historyResult.data || [];
-          // 去重 download_count
-          // 保留其他字段
-          // 只保留 download_count 变化的点（相邻相同的去掉）
+          // 去重 download_count（原有逻辑）
           if (Array.isArray(history) && history.length > 1) {
             const deduped = [history[0]];
             for (let i = 1; i < history.length; i++) {
@@ -613,14 +618,40 @@ async function showAppDetail(appId) {
             history = deduped;
           }
           const chartCanvas = document.getElementById("downloadHistoryChart");
+          const incrementCanvas = document.getElementById(
+            "downloadIncrementChart",
+          );
           const noHistoryMsg = document.getElementById("noHistoryMessage");
+          const noIncrementMsg = document.getElementById("noIncrementMessage");
+
           if (history.length > 1) {
-            // 倒序
+            // 倒序（从新到旧，便于显示）
             history.reverse();
-            const data = history.map((item) => ({
+
+            // 原有下载量图表数据
+            const downloadData = history.map((item) => ({
               x: new Date(item.created_at),
-              y: item.download_count
+              y: item.download_count,
             }));
+            // 新增：计算增量数据（从第二个点开始），并在下载量的第一个时间点添加一个0数据点
+            const increments = [];
+            if (history.length > 0) {
+              // 添加第一个点，y为0，x为下载量的第一个时间
+              increments.push({
+                x: new Date(history[0].created_at),
+                y: 0,
+              });
+            }
+            for (let i = 1; i < history.length; i++) {
+              const increment =
+                history[i].download_count - history[i - 1].download_count;
+              increments.push({
+                x: new Date(history[i].created_at),
+                y: increment,
+              });
+            }
+
+            // 创建下载量图表（原有）
             const ctx = chartCanvas.getContext("2d");
             window.downloadHistoryChart = new Chart(ctx, {
               type: "line",
@@ -628,7 +659,7 @@ async function showAppDetail(appId) {
                 datasets: [
                   {
                     label: "下载量",
-                    data: data,
+                    data: downloadData,
                     borderColor: "rgb(59, 130, 246)",
                     backgroundColor: "rgba(59, 130, 246, 0.1)",
                     fill: true,
@@ -643,9 +674,19 @@ async function showAppDetail(appId) {
                   x: {
                     type: "time",
                     display: true,
-                    title: {
-                      display: true,
-                      text: "日期",
+                    title: { display: true, text: "日期" },
+                    time: {
+                      displayFormats: {
+                        millisecond: "yyyy-MM-dd HH:mm",
+                        second: "yyyy-MM-dd HH:mm",
+                        minute: "yyyy-MM-dd HH:mm",
+                        hour: "yyyy-MM-dd HH:mm",
+                        date: "yyyy-MM-dd HH:mm",
+                        week: "yyyy-MM-dd HH:mm",
+                        month: "yyyy-MM-dd HH:mm",
+                        quarter: "yyyy-MM-dd HH:mm",
+                        year: "yyyy-MM-dd HH:mm",
+                      },
                     },
                   },
                   y: {
@@ -657,29 +698,95 @@ async function showAppDetail(appId) {
                     },
                   },
                 },
-                plugins: {
-                  legend: {
-                    display: true,
-                    position: "top",
-                  },
-                },
+                plugins: { legend: { display: true, position: "top" } },
               },
             });
+
+            // 新增：创建增量图表
+            if (increments.length > 0) {
+              const incrementCtx = incrementCanvas.getContext("2d");
+              window.downloadIncrementChart = new Chart(incrementCtx, {
+                type: "line",
+                data: {
+                  datasets: [
+                    {
+                      label: "下载增量",
+                      data: increments,
+                      borderColor: "rgb(59, 130, 246)",
+                      backgroundColor: "rgba(59, 130, 246, 0.1)",
+                      fill: true,
+                      tension: 0.1,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: {
+                      type: "time",
+                      display: true,
+                      title: { display: true, text: "日期" },
+                      time: {
+                        displayFormats: {
+                          millisecond: "yyyy-MM-dd HH:mm",
+                          second: "yyyy-MM-dd HH:mm",
+                          minute: "yyyy-MM-dd HH:mm",
+                          hour: "yyyy-MM-dd HH:mm",
+                          date: "yyyy-MM-dd HH:mm",
+                          week: "yyyy-MM-dd HH:mm",
+                          month: "yyyy-MM-dd HH:mm",
+                          quarter: "yyyy-MM-dd HH:mm",
+                          year: "yyyy-MM-dd HH:mm",
+                        },
+                      },
+                    },
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        callback: function (value) {
+                          return formatNumber(value);
+                        },
+                      },
+                    },
+                  },
+                  plugins: { legend: { display: true, position: "top" } },
+                },
+              });
+              incrementCanvas.style.display = "block";
+              noIncrementMsg.classList.add("hidden");
+            } else {
+              incrementCanvas.style.display = "none";
+              noIncrementMsg.classList.remove("hidden");
+            }
+
+            // 显示原有图表
             chartCanvas.style.display = "block";
             noHistoryMsg.classList.add("hidden");
           } else {
+            // 无数据：隐藏两个图表
             chartCanvas.style.display = "none";
+            incrementCanvas.style.display = "none";
             noHistoryMsg.classList.remove("hidden");
+            noIncrementMsg.classList.remove("hidden");
           }
         })
         .catch((historyError) => {
+          // 错误处理（原有，扩展到两个图表）
           console.error("Failed to load download history:", historyError);
           document.getElementById("downloadHistoryChart").style.display =
             "none";
+          document.getElementById("downloadIncrementChart").style.display =
+            "none";
           document.getElementById("noHistoryMessage").innerHTML =
+            "加载历史数据失败";
+          document.getElementById("noIncrementMessage").innerHTML =
             "加载历史数据失败";
           document
             .getElementById("noHistoryMessage")
+            .classList.remove("hidden");
+          document
+            .getElementById("noIncrementMessage")
             .classList.remove("hidden");
         });
     } else {
