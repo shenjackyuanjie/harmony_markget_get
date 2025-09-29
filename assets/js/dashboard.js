@@ -687,6 +687,8 @@ async function showAppDetail(appId) {
                 y: increment,
               });
             }
+            // 把增量的第一个点的y值设置为第二个点的y值
+            increments[0].y = increments[1].y;
 
             // 创建下载量图表（原有）
             const ctx = chartCanvas.getContext("2d");
@@ -751,7 +753,7 @@ async function showAppDetail(appId) {
                       title: { display: true, text: "日期" },
                     },
                     y: {
-                      beginAtZero: true,
+                      beginAtZero: false,
                       ticks: {
                         callback: function (value) {
                           return formatNumber(value);
