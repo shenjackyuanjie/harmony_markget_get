@@ -15,11 +15,14 @@ locale = "zh_CN"
 
 [api]
 # 华为应用市场 API 基础 URL
-base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+info_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+# 用于获取评分信息的 api
+detail_url = "https://web-drcn.hispace.dbankcloud.com/edge/harmony/page-detail"
 # API 请求超时时间（秒）
 timeout_seconds = 30
 # 数据更新间隔 (秒)
 interval_seconds = 1800
+
 
 [serve]
 url = "localhost"
