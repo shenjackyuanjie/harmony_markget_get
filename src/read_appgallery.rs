@@ -8,6 +8,8 @@ pub mod utils;
 use chrono::{DateTime, FixedOffset};
 use tracing::{Level, event};
 
+use crate::sync::code::GLOBAL_CODE_MANAGER;
+
 fn main() -> anyhow::Result<()> {
     utils::init_log();
 
@@ -25,6 +27,9 @@ async fn async_main() -> anyhow::Result<()> {
     event!(Level::INFO, "connecting to db");
     let _db = db::Database::new(config.database_url(), config.db_max_connect()).await?;
     event!(Level::INFO, "connected to db");
+
+    let _token = GLOBAL_CODE_MANAGER.update_token().await;
+
     let git_ver = get_log_time();
     event!(Level::INFO, "git version: {}", git_ver);
 

@@ -51,7 +51,7 @@ impl Database {
             println!(
                 "{}",
                 format!(
-                    "数据与最后一条记录相同，跳过插入: {} ({})",
+                    "基本数据与最后一条记录相同，跳过插入: {} ({})",
                     raw_data.app_id, raw_data.name
                 )
                 .bright_black()

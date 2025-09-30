@@ -26,6 +26,7 @@ pub async fn sync_all(
     let mut packages = config.packages().to_vec();
     let locale = config.locale();
 
+    #[cfg(not(feature = "no_db_sync"))]
     for pkg in db.get_all_pkg_names().await?.iter() {
         if !packages.contains(pkg) {
             packages.push(pkg.to_string());
@@ -120,11 +121,6 @@ pub async fn sync_all(
                 continue;
             }
         }
-
-        // // 添加短暂延迟，避免请求过于频繁
-        // if index < packages.len() - 1 {
-        //     tokio::time::sleep(Duration::from_millis(50)).await;
-        // }
     }
 
     println!("{}", "所有包处理完成！".green());

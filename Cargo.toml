@@ -28,8 +28,13 @@ path = "src/get_nextmax.rs"
 name = "read_appgallery"
 path = "src/read_appgallery.rs"
 
+[[bin]]
+name = "read_pkg_name"
+path = "src/read_pkg_name.rs"
+
 [features]
 no_sync = []
+no_db_sync = []
 
 [dependencies]
 anyhow = "1.0"
