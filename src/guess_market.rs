@@ -19,6 +19,18 @@ fn main() -> anyhow::Result<()> {
     rt.block_on(async_main())
 }
 
+#[allow(unused)]
+fn i32_to_letters(mut n: i32) -> String {
+    // 假设 n >= 0
+    let mut s = String::new();
+    while n >= 0 {
+        let c = (b'a' + (n % 26) as u8) as char;
+        s.insert(0, c);
+        n = n / 26 - 1;
+    }
+    s
+}
+
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
     let config = config::Config::load()?;
@@ -32,6 +44,7 @@ async fn async_main() -> anyhow::Result<()> {
     // let range = 0..=6366961;
     // let range = 2000000..=6390000;
     let range = 0000000..=9999999;
+    // let range = 0..=475254;
     let start = "C576588020785";
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
@@ -48,7 +61,6 @@ async fn async_main() -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
-
     let range_vec: Vec<u64> = range.collect();
     for bunch_id in range_vec.chunks(batch) {
         let mut join_set = tokio::task::JoinSet::new();
@@ -59,6 +71,10 @@ async fn async_main() -> anyhow::Result<()> {
             let star_url = config.api_detail_url().to_string();
             let locale = config.locale().to_string();
             let app_id = format!("{start}{id:07}");
+            // let app_id = format!("com.chinasoft.app.api12.{}", i32_to_letters(*id as i32));
+            // let app_id = format!("com.fkccc.{}", i32_to_letters(*id as i32));
+            // let app_id = format!("xkkj.uni.UNI{:X}", id);
+            // let app_id = format!("com.fengyun.app{id}");
             join_set.spawn(async move {
                 if let Ok(data) = crate::sync::get_app_info(
                     &client,
