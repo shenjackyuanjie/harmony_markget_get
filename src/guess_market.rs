@@ -30,8 +30,8 @@ async fn async_main() -> anyhow::Result<()> {
 
     // let range = 2915863..=6366961;
     // let range = 0..=6366961;
-    let range = 2860000..=6390000;
-    // let range = 0000000..=9999999;
+    // let range = 2000000..=6390000;
+    let range = 0000000..=9999999;
     let start = "C576588020785";
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
@@ -39,13 +39,18 @@ async fn async_main() -> anyhow::Result<()> {
     let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
 
     let batch = 1000;
-    let wait_time = std::time::Duration::from_millis(50);
+    let wait_time = std::time::Duration::from_millis(25);
+    let mut batch_count = 0;
+    let total_batches = ((*range.end() - *range.start()) / batch as u64) + 1;
+    let total_batches_u32 = total_batches as u32;
+    let start_time = std::time::Instant::now();
 
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()?;
 
-    for bunch_id in range.collect::<Vec<_>>().chunks(batch) {
+    let range_vec: Vec<u64> = range.collect();
+    for bunch_id in range_vec.chunks(batch) {
         let mut join_set = tokio::task::JoinSet::new();
         for id in bunch_id.iter() {
             let client = client.clone();
@@ -90,12 +95,23 @@ async fn async_main() -> anyhow::Result<()> {
             });
         }
         join_set.join_all().await;
-        println!(
-            "id {} - {} 的包处理完成，等待 {:?}",
+        batch_count += 1;
+        let total_elapsed = start_time.elapsed();
+        let avg_time_per_batch = total_elapsed / batch_count;
+        let estimated_total_time = avg_time_per_batch * total_batches_u32;
+        let remaining_time = estimated_total_time.saturating_sub(total_elapsed);
+
+        print!(
+            "\r[批次 {}/{}] id {} - {} 处理完成，总耗时 {:?}，预计剩余 {:?}，等待 {:?}",
+            batch_count,
+            total_batches,
             bunch_id[0],
             bunch_id[bunch_id.len() - 1],
+            total_elapsed,
+            remaining_time,
             wait_time
         );
+        std::io::Write::flush(&mut std::io::stdout()).unwrap();
         tokio::time::sleep(wait_time).await;
     }
 

@@ -43,7 +43,7 @@ async fn async_main() -> anyhow::Result<()> {
     println!("从数据库获取到 {} 个 app_id", existing_app_ids.len());
 
     if existing_app_ids.is_empty() {
-        println!("数据库中没有找到任何 app_id，无法进行猜测");
+        println!("数据库中没有找到任何 app_id, 无法进行猜测");
         return Ok(());
     }
 

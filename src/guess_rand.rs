@@ -123,7 +123,10 @@ async fn async_main() -> anyhow::Result<()> {
         }
         join_set.join_all().await;
         batch_count += 1;
-        print!("\r[批次 {}] 已处理 {} 个随机 ID，等待 {:?}", batch_count, batch, wait_time);
+        print!(
+            "\r[批次 {}] 已处理 {} 个随机 ID，等待 {:?}",
+            batch_count, batch, wait_time
+        );
         std::io::Write::flush(&mut std::io::stdout()).unwrap();
         tokio::time::sleep(wait_time).await;
     }

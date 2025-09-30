@@ -36,7 +36,7 @@ async fn async_main() -> anyhow::Result<()> {
     // let start = "C576588020785";
     let scan_range = 1000_0000;
     let middle = 6917584511757810835_u64;
-    let range = middle-scan_range..middle+scan_range;
+    let range = middle - scan_range..middle + scan_range;
 
     let _token = GLOBAL_CODE_MANAGER.update_token().await;
 
