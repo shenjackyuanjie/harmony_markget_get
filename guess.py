@@ -1016,4 +1016,5 @@ print(deltas)
 
 deltas.sort()
 
-print(deltas)
+for x in [(ids[i], ids[i + 1] - ids[i]) for i in range(len(ids) - 1)]:
+    print(x)

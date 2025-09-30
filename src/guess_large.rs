@@ -116,7 +116,7 @@ async fn async_main() -> anyhow::Result<()> {
             wait_time
         );
         std::io::Write::flush(&mut std::io::stdout()).unwrap();
-        tokio::time::sleep(wait_time).await;
+        // tokio::time::sleep(wait_time).await;
     }
 
     Ok(())
