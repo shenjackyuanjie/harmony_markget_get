@@ -38,7 +38,7 @@ var DashboardAppDetails = (function() {
                         </div>
                         <div class="space-y-2 mb-2">
                             <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
-                            <p><strong>上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? new Date(app_metric.created_at).toLocaleDateString("zh-CN") : "未知"}</span></p>
+                            <p><strong>上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</span></p>
                             <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
                             <p><strong>App ID:</strong> <span class="text-gray-600">${app_info.app_id}</span></p>
                             <p><strong>Package Name:</strong> <span class="text-gray-600">${app_info.pkg_name}</span></p>
