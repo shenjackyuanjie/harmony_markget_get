@@ -193,30 +193,68 @@ impl Database {
         sort_desc: bool,
         search: Option<DbSearch>,
     ) -> Result<Vec<FullAppInfo>> {
-        let query = format!(
-            r#"
-            SELECT {}, {}, {}
-            FROM app_latest_info
-            ORDER BY {} {}
-            LIMIT $1 OFFSET $2
-        "#,
-            SELECT_APP_INFO_FIELDS,
-            SELECT_APP_METRIC_FIELDS
-                .replace("created_at AS metrics_created_at", "metrics_created_at"),
-            SELECT_APP_RATING_FIELDS
-                .replace("created_at AS rating_created_at", "rating_created_at"),
-            sort_key,
-            if sort_desc { "DESC" } else { "ASC" }
-        );
-
         let limit = (range.end - range.start) as i64;
         let offset = range.start as i64;
 
-        let rows = sqlx::query(&query)
-            .bind(limit) // LIMIT
-            .bind(offset) // OFFSET - 修正了参数顺序
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = match search {
+            Some(DbSearch {
+                key,
+                value,
+                is_exact,
+            }) => {
+                let query = format!(
+                    r#"
+                    SELECT {}, {}, {}
+                    FROM app_latest_info
+                    WHERE {} ILIKE $1
+                    ORDER BY {} {}
+                    LIMIT $2 OFFSET $3
+                "#,
+                    SELECT_APP_INFO_FIELDS,
+                    SELECT_APP_METRIC_FIELDS
+                        .replace("created_at AS metrics_created_at", "metrics_created_at"),
+                    SELECT_APP_RATING_FIELDS
+                        .replace("created_at AS rating_created_at", "rating_created_at"),
+                    key,
+                    sort_key,
+                    if sort_desc { "DESC" } else { "ASC" }
+                );
+
+                sqlx::query(&query)
+                    .bind(if is_exact {
+                        value
+                    } else {
+                        format!("%{value}%")
+                    })
+                    .bind(limit) // LIMIT
+                    .bind(offset) // OFFSET - 修正了参数顺序
+                    .fetch_all(&self.pool)
+                    .await?
+            }
+            None => {
+                let query = format!(
+                    r#"
+                    SELECT {}, {}, {}
+                    FROM app_latest_info
+                    ORDER BY {} {}
+                    LIMIT $1 OFFSET $2
+                "#,
+                    SELECT_APP_INFO_FIELDS,
+                    SELECT_APP_METRIC_FIELDS
+                        .replace("created_at AS metrics_created_at", "metrics_created_at"),
+                    SELECT_APP_RATING_FIELDS
+                        .replace("created_at AS rating_created_at", "rating_created_at"),
+                    sort_key,
+                    if sort_desc { "DESC" } else { "ASC" }
+                );
+
+                sqlx::query(&query)
+                    .bind(limit) // LIMIT
+                    .bind(offset) // OFFSET - 修正了参数顺序
+                    .fetch_all(&self.pool)
+                    .await?
+            }
+        };
 
         let app_infos = rows.iter().map(Self::read_full_app_data_from_row).collect();
         Ok(app_infos)
