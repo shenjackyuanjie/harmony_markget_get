@@ -28,14 +28,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        @keyframes animate-pulse-slow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .animate-pulse-slow {
-            animation: animate-pulse-slow 3s ease-in-out infinite;
-        }
         .chart-container {
             height: 300px;
             position: relative;
@@ -121,7 +113,7 @@
                 <div class="py-3">
                     <h5 class="text-rose-600 text-sm font-medium">已爬取总数</h5>
                     <h3 id="totalCount" class="text-2xl font-bold text-rose-800 transition-all duration-500 hover:text-rose-600">
-                        <span id="loadingTotalCount" class="inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></span>
+                        <span id="loadingTotalCount" class="inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
@@ -129,7 +121,7 @@
                 <div class="py-3">
                     <h5 class="text-amber-600 text-sm font-medium">应用总数</h5>
                     <h3 id="appCount" class="text-2xl font-bold text-amber-800 transition-all duration-500 hover:text-amber-600">
-                        <span id="loadingOverview" class="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></span>
+                        <span id="loadingOverview" class="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
@@ -137,7 +129,7 @@
                 <div class="py-3">
                     <h5 class="text-emerald-600 text-sm font-medium">元服务总数</h5>
                     <h3 id="atomicServiceCount" class="text-2xl font-bold text-emerald-800 transition-all duration-500 hover:text-emerald-600">
-                        <span id="loadingAtomicServiceCount" class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></span>
+                        <span id="loadingAtomicServiceCount" class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
@@ -145,7 +137,7 @@
                 <div class="py-3">
                     <h5 class="text-indigo-600 text-sm font-medium">开发者总数</h5>
                     <h3 id="developerCount" class="text-2xl font-bold text-indigo-800 transition-all duration-500 hover:text-indigo-600">
-                        <span id="loadingDeveloperCount" class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                        <span id="loadingDeveloperCount" class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
