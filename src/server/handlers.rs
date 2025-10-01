@@ -196,6 +196,34 @@ pub async fn app_list_paged(
     }
 }
 
+/// 获取下载量排行
+pub async fn get_download_ranking(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<RankingQuery>,
+) -> impl IntoResponse {
+    let limit = query.limit.unwrap_or(10);
+    event!(
+        Level::INFO,
+        "获取下载量排行，限制: {} exclude 模式: {:?}",
+        limit,
+        query.exclude_pattern
+    );
+    match state
+        .db
+        .get_top_downloads(limit, query.exclude_pattern)
+        .await
+    {
+        Ok(apps) => {
+            let total_count = apps.len() as u32;
+            Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
+        }
+        Err(e) => {
+            event!(Level::WARN, "获取下载量排行失败: {e}");
+            Json(ApiResponse::error("Database error".to_string()))
+        }
+    }
+}
+
 /// 获取评分排行
 pub async fn get_rating_ranking(
     State(state): State<Arc<AppState>>,

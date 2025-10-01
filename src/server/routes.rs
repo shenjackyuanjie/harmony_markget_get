@@ -16,6 +16,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         // 获取分页的应用信息
         .route("/apps/list/{page_count}", get(handlers::app_list_paged))
         // 新增排行API路由
+        // 获取下载量排行榜
+        .route(
+            "/rankings/top-downloads",
+            get(handlers::get_download_ranking),
+        )
         // 获取评分排行榜
         .route("/rankings/ratings", get(handlers::get_rating_ranking))
         // 获取最新应用排行榜

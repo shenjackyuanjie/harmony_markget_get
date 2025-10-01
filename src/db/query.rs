@@ -708,4 +708,106 @@ impl Database {
 
         Ok(developers)
     }
+
+    /// 获取下载量最高的应用
+    ///
+    /// # 参数
+    /// - `limit`: 返回的应用数量
+    /// - `exclude_keywords`: 可选的排除关键词，用于过滤开发者名称
+    ///
+    /// # 示例
+    /// ```rust
+    /// let db = Database::new("postgres://...", 5).await?;
+    /// let top_downloads = db.get_top_downloads(10, None).await?;
+    /// println!("下载量最高的应用: {:?}", top_downloads);
+    ///
+    /// let top_downloads_filtered = db.get_top_downloads(10, Some("huawei")).await?;
+    /// println!("排除华为的下载量最高的应用: {:?}", top_downloads_filtered);
+    /// ```
+    pub async fn get_top_downloads(
+        &self,
+        limit: u32,
+        exclude_keywords: Option<impl ToString>,
+    ) -> Result<Vec<(AppInfo, AppMetric)>> {
+        let (query, bind_exclude) = match exclude_keywords {
+            Some(_) => (
+                r#"
+                SELECT
+                    app_id, alliance_app_id, name, pkg_name,
+                    dev_id, developer_name, dev_en_name,
+                    supplier, kind_id, kind_name,
+                    tag_name, kind_type_id, kind_type_name, icon_url,
+                    brief_desc, description, privacy_url, ctype,
+                    detail_id, app_level, jocat_id, iap, hms,
+                    tariff_type, packing_type, order_app, denpend_gms,
+                    denpend_hms, force_update, img_tag, is_pay,
+                    is_disciplined, is_shelves, submit_type, delete_archive,
+                    charging, button_grey, app_gift, free_days,
+                    pay_install_type, created_at,
+                    version, version_code, size_bytes,
+                    sha256, info_score::text, info_rate_count,
+                    download_count, price, release_date,
+                    new_features, upgrade_msg, target_sdk,
+                    minsdk, compile_sdk_version, min_hmos_api_level,
+                    api_release_type, metrics_created_at
+                FROM app_latest_info
+                WHERE download_count IS NOT NULL
+                  AND dev_en_name !~* $2
+                ORDER BY download_count DESC
+                LIMIT $1
+                "#,
+                true,
+            ),
+            None => (
+                r#"
+                SELECT
+                    app_id, alliance_app_id, name, pkg_name,
+                    dev_id, developer_name, dev_en_name,
+                    supplier, kind_id, kind_name,
+                    tag_name, kind_type_id, kind_type_name, icon_url,
+                    brief_desc, description, privacy_url, ctype,
+                    detail_id, app_level, jocat_id, iap, hms,
+                    tariff_type, packing_type, order_app, denpend_gms,
+                    denpend_hms, force_update, img_tag, is_pay,
+                    is_disciplined, is_shelves, submit_type, delete_archive,
+                    charging, button_grey, app_gift, free_days,
+                    pay_install_type, created_at,
+                    version, version_code, size_bytes,
+                    sha256, info_score::text, info_rate_count,
+                    download_count, price, release_date,
+                    new_features, upgrade_msg, target_sdk,
+                    minsdk, compile_sdk_version, min_hmos_api_level,
+                    api_release_type, metrics_created_at
+                FROM app_latest_info
+                WHERE download_count IS NOT NULL
+                ORDER BY download_count DESC
+                LIMIT $1
+                "#,
+                false,
+            ),
+        };
+
+        let rows = if bind_exclude {
+            sqlx::query(query)
+                .bind(limit as i64)
+                .bind(exclude_keywords.unwrap().to_string())
+                .fetch_all(&self.pool)
+                .await?
+        } else {
+            sqlx::query(query)
+                .bind(limit as i64)
+                .fetch_all(&self.pool)
+                .await?
+        };
+
+        let mut apps = Vec::new();
+        for row in rows {
+            let app_info = Self::read_app_info_from_row(&row);
+            let app_metric = Self::read_app_metric_from_row(&row);
+
+            apps.push((app_info, app_metric));
+        }
+
+        Ok(apps)
+    }
 }
