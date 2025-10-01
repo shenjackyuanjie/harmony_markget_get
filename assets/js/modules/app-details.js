@@ -70,10 +70,22 @@ var DashboardAppDetails = (function() {
             const description = plainDesc.replace(/\n/g, "<br>");
             const descContainer = document.getElementById("descriptionContainer");
             const MAX_LENGTH = 200;
+            const MAX_LINES = 7;
             let isExpanded = false;
 
-            if (plainDesc.length > MAX_LENGTH) {
-                const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+            // 计算行数
+            const lineCount = plainDesc.split('\n').length;
+            
+            if (plainDesc.length > MAX_LENGTH || lineCount > MAX_LINES) {
+                let truncated = "";
+                // 如果行数超过限制，按行数截断
+                if (lineCount > MAX_LINES) {
+                    const lines = plainDesc.split('\n');
+                    truncated = lines.slice(0, MAX_LINES).join('\n') + "...";
+                } else {
+                    // 否则按字符数截断
+                    truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+                }
                 const truncatedHtml = truncated.replace(/\n/g, "<br>");
                 descContainer.innerHTML = `
                     <p id="descriptionText" class="text-gray-700">${truncatedHtml}</p>
@@ -87,7 +99,14 @@ var DashboardAppDetails = (function() {
                             this.textContent = "收起";
                             isExpanded = true;
                         } else {
-                            const truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+                            // 收起时也要根据条件显示不同的截断内容
+                            let truncated = "";
+                            if (lineCount > MAX_LINES) {
+                                const lines = plainDesc.split('\n');
+                                truncated = lines.slice(0, MAX_LINES).join('\n') + "...";
+                            } else {
+                                truncated = plainDesc.substring(0, MAX_LENGTH) + "...";
+                            }
                             document.getElementById("descriptionText").innerHTML =
                                 truncated.replace(/\n/g, "<br>");
                             this.textContent = "展开更多";
