@@ -62,9 +62,13 @@ function updateLastUpdate() {
 // ESC键关闭详情弹窗
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-        const modal = document.getElementById("appDetailModal");
-        if (!modal.classList.contains("hidden")) {
-            modal.classList.add("hidden");
+        const appModal = document.getElementById("appDetailModal");
+        const helpModal = document.getElementById("helpModal");
+        if (!appModal.classList.contains("hidden")) {
+            appModal.classList.add("hidden");
+        }
+        if (!helpModal.classList.contains("hidden")) {
+            helpModal.classList.add("hidden");
         }
     }
 });
@@ -116,4 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Refresh button
     document.getElementById("refreshBtn").addEventListener("click", DashboardDataLoaders.refreshData);
+
+    // Help button
+    document.getElementById("helpBtn").addEventListener("click", () => {
+        document.getElementById("helpModal").classList.remove("hidden");
+    });
 });

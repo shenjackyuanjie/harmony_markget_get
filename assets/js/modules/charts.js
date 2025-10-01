@@ -24,6 +24,8 @@ var DashboardCharts = (function() {
                     name: item[0].name,
                     download_count: item[1].download_count,
                     icon_url: item[0].icon_url,
+                    app_id: item[0].app_id,
+                    pkg_name: item[0].pkg_name,
                 }));
             }
 
@@ -106,6 +108,35 @@ var DashboardCharts = (function() {
             },
         };
 
+        // 点击事件处理插件
+        const clickPlugin = {
+            id: "clickPlugin",
+            afterEvent(chart, args) {
+                const { event } = args;
+                if (event.type === 'click') {
+                    const elements = chart.getElementsAtEventForMode(
+                        event,
+                        'nearest',
+                        { intersect: true },
+                        false
+                    );
+                    
+                    if (elements.length > 0) {
+                        const elementIndex = elements[0].index;
+                        const app = apps[elementIndex];
+                        if (app && app.app_id) {
+                            // 打开应用详情页面
+                            if (typeof DashboardAppDetails !== 'undefined' && typeof DashboardAppDetails.showAppDetail === 'function') {
+                                DashboardAppDetails.showAppDetail(app.app_id);
+                            } else {
+                                console.warn('应用详情模块未加载或showAppDetail函数不存在');
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
         window[ctx_id + "_chart"] = new Chart(ctx, {
             type: "bar",
             data: {
@@ -158,8 +189,9 @@ var DashboardCharts = (function() {
                         },
                     },
                 },
+
             },
-            plugins: [ChartDataLabels, iconPlugin], // 假设 ChartDataLabels 已引入
+            plugins: [ChartDataLabels, iconPlugin, clickPlugin],
         });
     }
 
