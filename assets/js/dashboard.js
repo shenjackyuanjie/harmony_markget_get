@@ -125,4 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("helpBtn").addEventListener("click", () => {
         document.getElementById("helpModal").classList.remove("hidden");
     });
+
+    // 联系方式 button
+    document.getElementById("contactBtn").addEventListener("click", () => {
+        document.getElementById("contactModal").classList.remove("hidden");
+    });
 });
