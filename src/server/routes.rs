@@ -79,6 +79,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(handle_static::serve_app_details_js),
         )
         .route("/favicon.ico", get(handle_static::serve_favicon))
+        .route("/tencent6875095490394109723.txt", get(handle_static::serve_腾讯))
         .nest("/api", api_router)
         .fallback(handle_static::serve_not_found)
         .with_state(app_state)

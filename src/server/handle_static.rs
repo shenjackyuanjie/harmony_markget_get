@@ -145,6 +145,11 @@ pub async fn serve_app_details_js() -> impl IntoResponse {
         .into_response()
 }
 
+pub async fn serve_腾讯() -> impl IntoResponse {
+    // 返回 "17913049139162949225"
+    "17913049139162949225".into_response()
+}
+
 /// Serve 404 Not Found page
 const NOT_FOUND_HTML: &str = r#"<!DOCTYPE html>
 <html lang="zh-CN">
