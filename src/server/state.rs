@@ -139,8 +139,6 @@ impl AppListQuery {
                     | "app_id"
                     | "developer_name"
                     | "developer_en_name"
-                    | "category"
-                    | "tag"
             )
         } else {
             false

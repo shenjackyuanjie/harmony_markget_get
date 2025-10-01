@@ -65,8 +65,9 @@ var DashboardDataLoaders = (function() {
         page = 1,
         sortField = currentSort.field,
         sort_desc = currentSort.desc,
-        search = searchTerm,
-        category = categoryFilter,
+        search_value = searchTerm,
+        search_key = searchKey,
+        search_exact = searchExact,
     ) {
         try {
             const tableBody = document.getElementById("appTableBody");
@@ -75,9 +76,9 @@ var DashboardDataLoaders = (function() {
 
             // 构建API请求URL
             let url = `${API_BASE}/apps/list/${page}?sort=${sortField}&desc=${sort_desc}&page_size=${PAGE_SIZE}`;
-            if (search) url += `&search=${encodeURIComponent(search)}`;
-            if (category && category !== "all")
-                url += `&category=${encodeURIComponent(category)}`;
+            if (search_value) {
+                url += `&search_key=${encodeURIComponent(search_key)}&search_value=${encodeURIComponent(search_value)}&search_exact=${search_exact}`;
+            }
 
             const response = await fetch(url);
             const data = await response.json();
@@ -89,17 +90,6 @@ var DashboardDataLoaders = (function() {
             }
 
             let apps = data.data.data || [];
-            // 客户端额外过滤（如果需要）
-            if (search) {
-                apps = apps.filter((app) =>
-                    app.name.toLowerCase().includes(search.toLowerCase()),
-                );
-            }
-            if (category && category !== "all") {
-                apps = apps.filter(
-                    (app) => app.category.toLowerCase() === category.toLowerCase(),
-                );
-            }
 
             DashboardRenderers.renderApps(apps.slice(0, PAGE_SIZE)); // 客户端分页（如果需要）
             DashboardRenderers.renderPagination();
@@ -116,28 +106,27 @@ var DashboardDataLoaders = (function() {
      */
     async function loadCategories() {
         try {
-            const categorySelect = document.getElementById("categoryFilter");
-            categorySelect.innerHTML = '<option value="all">所有分类</option>';
+            const searchKeySelect = document.getElementById("categoryFilter");
+            searchKeySelect.innerHTML = '';
 
-            // 硬编码分类列表（可从API获取）
-            const categories = [
-                { value: "games", label: "游戏" },
-                { value: "social", label: "社交" },
-                { value: "productivity", label: "生产力" },
-                { value: "entertainment", label: "娱乐" },
-                { value: "education", label: "教育" },
-                { value: "lifestyle", label: "生活" },
-                { value: "utilities", label: "工具" },
+            // 硬编码搜索字段列表
+            const fields = [
+                { value: "name", label: "应用名称" },
+                { value: "pkg_name", label: "包名" },
+                { value: "app_id", label: "应用 ID" },
+                { value: "developer_name", label: "开发者名称" },
+                { value: "developer_en_name", label: "开发者英文名称" }
             ];
 
-            categories.forEach((cat) => {
+            fields.forEach((field) => {
                 const option = document.createElement("option");
-                option.value = cat.value;
-                option.textContent = cat.label;
-                categorySelect.appendChild(option);
+                option.value = field.value;
+                option.textContent = field.label;
+                searchKeySelect.appendChild(option);
             });
+            searchKeySelect.value = "name";
         } catch (error) {
-            console.error("加载分类列表失败:", error);
+            console.error("加载搜索字段列表失败:", error);
         }
     }
 

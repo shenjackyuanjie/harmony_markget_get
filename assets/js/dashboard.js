@@ -27,10 +27,8 @@ let currentSort = { field: "download_count", desc: true };
  */
 let searchTerm = "";
 
-/**
- * @type {string} 分类过滤器，'all'表示所有分类
- */
-let categoryFilter = "all";
+let searchKey = "name";
+let searchExact = false;
 
 /**
  * 解析链接提取包名
@@ -220,14 +218,13 @@ function updateLastUpdate() {
 // ESC键关闭详情弹窗
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-        const appModal = document.getElementById("appDetailModal");
-        const helpModal = document.getElementById("helpModal");
-        if (!appModal.classList.contains("hidden")) {
-            appModal.classList.add("hidden");
-        }
-        if (!helpModal.classList.contains("hidden")) {
-            helpModal.classList.add("hidden");
-        }
+      const modalsToClose = ["appDetailModal", "helpModal", "submitModal", "contactModal"];
+      modalsToClose.forEach(modalId => {
+          const modal = document.getElementById(modalId);
+          if (!modal.classList.contains("hidden")) {
+              modal.classList.add("hidden");
+          }
+      });
     }
 });
 
@@ -236,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     DashboardDataLoaders.loadOverview();
     DashboardDataLoaders.loadApps();
     DashboardDataLoaders.loadCategories();
+    document.getElementById("searchKeySelect").value = "name";
     DashboardCharts.loadCharts();
     updateLastUpdate();
 
@@ -255,25 +253,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Search button
     document.getElementById("searchBtn").addEventListener("click", () => {
-        searchTerm = document.getElementById("searchInput").value.trim();
-        categoryFilter = document.getElementById("categoryFilter").value;
+        const searchValue = document.getElementById("searchInput").value.trim();
+        if (!searchValue) {
+            alert("请输入搜索关键词");
+            return;
+        }
+        searchKey = document.getElementById("searchKeySelect").value;
+        if (!searchKey) {
+            alert("请选择搜索类别");
+            return;
+        }
+        searchExact = document.getElementById("searchExact").checked;
+        searchTerm = searchValue;
         DashboardDataLoaders.loadApps(1);
     });
 
     // Search input enter key
     document.getElementById("searchInput").addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
-            searchTerm = e.target.value.trim();
-            categoryFilter = document.getElementById("categoryFilter").value;
+            const searchValue = e.target.value.trim();
+            if (!searchValue) {
+                alert("请输入搜索关键词");
+                return;
+            }
+            searchKey = document.getElementById("searchKeySelect").value;
+            if (!searchKey) {
+                alert("请选择搜索类别");
+                return;
+            }
+            searchExact = document.getElementById("searchExact").checked;
+            searchTerm = searchValue;
             DashboardDataLoaders.loadApps(1);
         }
-    });
-
-    // Category filter change
-    document.getElementById("categoryFilter").addEventListener("change", (e) => {
-        categoryFilter = e.target.value;
-        searchTerm = document.getElementById("searchInput").value.trim();
-        DashboardDataLoaders.loadApps(1);
     });
 
     // Refresh button

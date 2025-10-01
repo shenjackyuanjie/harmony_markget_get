@@ -98,7 +98,7 @@
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                 </svg>
-                                联系方式
+                                问题反馈&交流
                             </button>
                             <button id="submitBtn" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-600 text-white text-sm font-medium rounded-md hover:from-orange-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,9 +192,18 @@
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                         <input type="text" id="searchInput" class="flex-1 min-w-0 px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 placeholder-amber-400" placeholder="搜索应用">
-                        <select id="categoryFilter" class="px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 text-amber-700">
-                            <option value="all">所有分类</option>
+                        <select id="searchKeySelect" class="px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 text-amber-700">
+                            <option value="name" selected>应用名称</option>
+                            <option value="pkg_name">包名</option>
+                            <option value="app_id">应用 ID</option>
+                            <option value="developer_name">开发者名称</option>
+                            <option value="developer_en_name">开发者英文名称</option>
                         </select>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="searchExact" class="sr-only peer">
+                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                            <span class="ml-3 text-sm font-medium text-amber-700">精确匹配</span>
+                        </label>
                         <button id="searchBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">搜索</button>
                     </div>
                 </div>
@@ -318,12 +327,12 @@
     <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
       <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto animate-fade-in-up">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold text-gray-900">联系方式</h3>
+          <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
           <button id="closeContactModalBtn" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
         </div>
         <div class="text-gray-700 space-y-2">
           <p><strong>QQ群:</strong> 757273833</p>
-          <!--<p><strong>邮箱:</strong> placeholder@example.com</p>-->
+          <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
         </div>
         <div class="flex justify-end pt-2">
             <button onclick="document.getElementById('contactModal').classList.add('hidden')" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
@@ -351,46 +360,47 @@
         </div>
     </div>
 
+    <!-- 投稿模态框 -->
+    <div id="submitModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+      <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <h2 class="text-xl font-bold mb-4 text-center">投稿</h2>
+
+        <!-- 应用详情页链接（可选） -->
+        <div class="mb-4">
+          <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
+          <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
+          <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
+        </div>
+
+        <!-- 包名 -->
+        <div class="mb-4">
+          <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
+          <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
+          <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
+        </div>
+
+        <!-- app_id -->
+        <div class="mb-4">
+          <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
+          <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
+          <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
+        </div>
+
+        <!-- 查询按钮 -->
+        <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-4">查询</button>
+
+        <!-- 查询结果展示区域 -->
+        <div id="resultArea" class="hidden mb-4">
+          <h3 class="text-lg font-semibold mb-2">查询结果</h3>
+          <div id="resultContent" class="bg-gray-50 p-3 rounded-md"></div>
+        </div>
+
+        <!-- 关闭按钮 -->
+        <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
+      </div>
+
     <!-- Custom JavaScript -->
     <script src="/js/dashboard.js"></script>
-<!-- 投稿模态框 -->
-<div id="submitModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-  <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-    <h2 class="text-xl font-bold mb-4 text-center">投稿</h2>
-
-    <!-- 应用详情页链接（可选） -->
-    <div class="mb-4">
-      <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
-      <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
-      <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
-    </div>
-
-    <!-- 包名 -->
-    <div class="mb-4">
-      <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
-      <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
-      <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
-    </div>
-
-    <!-- app_id -->
-    <div class="mb-4">
-      <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
-      <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
-      <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
-    </div>
-
-    <!-- 查询按钮 -->
-    <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-4">查询</button>
-
-    <!-- 查询结果展示区域 -->
-    <div id="resultArea" class="hidden mb-4">
-      <h3 class="text-lg font-semibold mb-2">查询结果</h3>
-      <div id="resultContent" class="bg-gray-50 p-3 rounded-md"></div>
-    </div>
-
-    <!-- 关闭按钮 -->
-    <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
-  </div>
 </div>
 </body>
 </html>
