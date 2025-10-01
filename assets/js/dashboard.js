@@ -232,7 +232,6 @@ document.addEventListener("keydown", function (event) {
 document.addEventListener("DOMContentLoaded", () => {
     DashboardDataLoaders.loadOverview();
     DashboardDataLoaders.loadApps();
-    DashboardDataLoaders.loadCategories();
     document.getElementById("searchKeySelect").value = "name";
     DashboardCharts.loadCharts();
     updateLastUpdate();

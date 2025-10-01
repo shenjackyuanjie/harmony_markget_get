@@ -101,36 +101,6 @@ var DashboardDataLoaders = (function() {
     }
 
     /**
-     * 加载应用分类列表
-     * @async
-     */
-    async function loadCategories() {
-        try {
-            const searchKeySelect = document.getElementById("categoryFilter");
-            searchKeySelect.innerHTML = '';
-
-            // 硬编码搜索字段列表
-            const fields = [
-                { value: "name", label: "应用名称" },
-                { value: "pkg_name", label: "包名" },
-                { value: "app_id", label: "应用 ID" },
-                { value: "developer_name", label: "开发者名称" },
-                { value: "developer_en_name", label: "开发者英文名称" }
-            ];
-
-            fields.forEach((field) => {
-                const option = document.createElement("option");
-                option.value = field.value;
-                option.textContent = field.label;
-                searchKeySelect.appendChild(option);
-            });
-            searchKeySelect.value = "name";
-        } catch (error) {
-            console.error("加载搜索字段列表失败:", error);
-        }
-    }
-
-    /**
      * 刷新所有数据
      * @async
      */
