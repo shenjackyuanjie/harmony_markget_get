@@ -114,7 +114,6 @@ var DashboardDataLoaders = (function() {
     return {
         loadOverview: loadOverview,
         loadApps: loadApps,
-        loadCategories: loadCategories,
         refreshData: refreshData
     };
 })();
