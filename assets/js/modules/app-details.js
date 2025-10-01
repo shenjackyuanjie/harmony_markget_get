@@ -27,11 +27,11 @@ var DashboardAppDetails = (function() {
                         <p class="text-gray-500">${app_rating.total_star_rating_count || "无"} 评分</p>
                     </div>
                     <div class="md:w-4/5">
-                        <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "Unknown App"}</h4>
-                        <p class="text-gray-600 mb-4">${app_info.developer_name || "Unknown Developer"}</p>
+                        <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "未知应用"}</h4>
+                        <p class="text-gray-600 mb-4">${app_info.developer_name || "未知开发者"}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
                             <span ${same_css} bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
-                            <span ${same_css} bg-indigo-100 text-indigo-800">${app_metric.version || "Unknown Version"}</span>
+                            <span ${same_css} bg-indigo-100 text-indigo-800">${app_metric.version || "未知版本"}</span>
                             <span ${same_css} bg-gray-100 text-green-800">目标 api 版本${app_metric.target_sdk || "未知"}</span>
                             <span ${same_css} bg-gray-100 text-green-800">最小 api 版本${app_metric.minsdk || "未知"}</span>
                             <span ${same_css} bg-gray-100 text-green-800">编译 api 版本${app_metric.compile_sdk_version || "未知"}</span>

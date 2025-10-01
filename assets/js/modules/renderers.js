@@ -26,18 +26,18 @@ var DashboardRenderers = (function() {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app_info.name}">
-                        <span class="font-medium text-gray-900">${app_info.name || "Unknown"}</span>
+                        <span class="font-medium text-gray-900">${app_info.name || "未知"}</span>
                     </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_info.developer_name || "Unknown"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_info.developer_name || "未知"}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${DashboardUtils.renderStars(app_rating.average_rating)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "Unknown"}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_info.created_at ? new Date(app_info.created_at).toLocaleDateString("zh-CN") : "Unknown"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_info.created_at ? new Date(app_info.created_at).toLocaleDateString("zh-CN") : "未知"}</td>
             `;
 
             tableBody.appendChild(tr);

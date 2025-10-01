@@ -145,7 +145,7 @@ var DashboardCharts = (function() {
                         ? item.name.length > 10
                             ? item.name.slice(0, 10) + "..."
                             : item.name
-                        : "Unknown",
+                        : "未知",
                 ),
                 datasets: [
                     {
