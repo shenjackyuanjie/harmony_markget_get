@@ -1,5 +1,13 @@
 # 更新日志
 
+## 0.5.0
+
+在
+- Grok 4 Fast (free)
+- Micrsoft Copilot Think Deeper
+- Micrsoft Copilot Smart (GPT-5)
+的帮助下, 搜索功能现以更完善的方式归来
+
 ## 0.4.0
 
 - 添加了详细信息页面

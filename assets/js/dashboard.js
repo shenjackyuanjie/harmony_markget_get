@@ -218,7 +218,7 @@ function updateLastUpdate() {
 // ESC键关闭详情弹窗
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-      const modalsToClose = ["appDetailModal", "helpModal", "submitModal", "contactModal"];
+      const modalsToClose = ["appDetailModal", "helpModal", "submitModal", "contactModal", "searchHelpModal"];
       modalsToClose.forEach(modalId => {
           const modal = document.getElementById(modalId);
           if (!modal.classList.contains("hidden")) {
@@ -293,6 +293,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // Help button
     document.getElementById("helpBtn").addEventListener("click", () => {
         document.getElementById("helpModal").classList.remove("hidden");
+    });
+
+    // Search help button
+    document.getElementById("searchHelpBtn").addEventListener("click", () => {
+        document.getElementById("searchHelpModal").classList.remove("hidden");
+    });
+
+    // Close search help modal
+    // Help button
+    document.getElementById("helpBtn").addEventListener("click", () => {
+        document.getElementById("helpModal").classList.remove("hidden");
+    });
+
+    // Search help button
+    document.getElementById("searchHelpBtn").addEventListener("click", () => {
+        document.getElementById("searchHelpModal").classList.remove("hidden");
+    });
+
+    // Close search help X button
+    document.getElementById("closeSearchHelpModal").addEventListener("click", () => {
+        document.getElementById("searchHelpModal").classList.add("hidden");
+    });
+
+    // Close search help bottom button
+    document.getElementById("closeSearchHelpBtn").addEventListener("click", () => {
+        document.getElementById("searchHelpModal").classList.add("hidden");
     });
 
     // 联系方式 button

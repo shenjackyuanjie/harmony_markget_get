@@ -192,6 +192,7 @@
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                         <input type="text" id="searchInput" class="flex-1 min-w-0 px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 placeholder-amber-400" placeholder="搜索应用">
+                        <button id="searchHelpBtn" class="ml-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-sm font-medium flex items-center justify-center w-8 h-8 transition-all duration-300 hover:scale-105 hover:shadow-md" title="搜索帮助"><span class="text-lg">?</span></button>
                         <select id="searchKeySelect" class="px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 text-amber-700">
                             <option value="name" selected>应用名称</option>
                             <option value="pkg_name">包名</option>
@@ -319,6 +320,52 @@
             </div>
             <div class="flex justify-end pt-2">
                 <button onclick="document.getElementById('helpModal').classList.add('hidden')" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchHelpModal" class="fixed inset-0 bg-black bg-opacity-60 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="relative top-8 mx-auto p-5 border border-amber-200 w-11/12 md:w-11/12 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-amber-50 to-yellow-50 max-h-[90vh] overflow-y-auto transition-transform duration-300 transform">
+            <div class="mt-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">搜索功能帮助</h5>
+                    <button type="button" id="closeSearchHelpModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="my-4 space-y-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg shadow-sm border border-blue-100">
+                        <h6 class="text-md font-semibold text-blue-800 mb-2">🔍 搜索类别说明</h6>
+                        <ul class="text-blue-700 text-sm space-y-2">
+                            <li><strong>应用名称</strong> (name): 搜索应用的显示名称，如 "微信"。</li>
+                            <li><strong>包名</strong> (pkg_name): 搜索应用的唯一包标识符，如 "com.tencent.mm"。</li>
+                            <li><strong>应用 ID</strong> (app_id): 搜索华为应用市场的应用唯一 ID。</li>
+                            <li><strong>开发者名称</strong> (developer_name): 搜索中文开发者名称。</li>
+                            <li><strong>开发者英文名称</strong> (developer_en_name): 搜索英文开发者名称。</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg shadow-sm border border-green-100">
+                        <h6 class="text-md font-semibold text-emerald-800 mb-2">⚡ 精确匹配开关</h6>
+                        <p class="text-emerald-700 text-sm">
+                            <strong>开启 (勾选)</strong>: 进行精确匹配，只返回完全匹配关键词的结果。<br>
+                            <strong>关闭 (未勾选)</strong>: 进行模糊搜索，支持部分匹配，提高搜索灵活性。<br>
+                            默认关闭（模糊搜索）。
+                        </p>
+                    </div>
+                    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-lg shadow-sm border border-amber-100">
+                        <h6 class="text-md font-semibold text-amber-800 mb-2">📝 使用提示</h6>
+                        <ul class="text-amber-700 text-sm space-y-2">
+                            <li>点击“搜索”按钮或按 Enter 键执行搜索。</li>
+                            <li>搜索仅在输入关键词和选择类别后生效。</li>
+                            <li>支持排序和分页，与搜索结果结合使用。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button id="closeSearchHelpBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-base font-medium rounded-md shadow-sm hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
             </div>
         </div>
     </div>
