@@ -105,7 +105,7 @@ impl AppListQuery {
                     | "price"
                     | "size_bytes"
                     | "rating_count"
-                    | "last_update"
+                    | "metrics_created_at"
                     | "created_at"
                     | "total_star_rating_count"
             )

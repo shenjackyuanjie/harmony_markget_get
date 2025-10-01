@@ -23,7 +23,7 @@
             animation: backgroundGradient 20s ease infinite alternate;
             background-size: 400% 400%;
         }
-        
+
         @keyframes backgroundGradient {
             0% {
                 background-position: 0% 50%;
@@ -35,7 +35,7 @@
                 background-position: 0% 50%;
             }
         }
-        
+
         .chart-container {
             height: 300px;
             position: relative;
@@ -44,34 +44,34 @@
             border-radius: 8px;
             padding: 8px;
         }
-        
+
         .chart-container:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .table th {
             cursor: pointer;
             transition: all 0.2s ease;
             background: linear-gradient(to right, #f8f9fa, #e9f2ff);
             color: #3a6ea5;
         }
-        
+
         .table th:hover {
             background: linear-gradient(to right, #e2f0fd, #d1e5ff);
             transform: translateY(-2px);
         }
-        
+
         .loading {
             text-align: center;
             padding: 50px;
         }
-        
+
         .star-rating {
             color: #ffcc00;
             text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
         }
-        
+
         .app-icon {
             width: 32px;
             height: 32px;
@@ -250,7 +250,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer transition-all duration-200 hover:bg-amber-200" data-sort="size_bytes">
                                     大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer transition-all duration-200 hover:bg-amber-200" data-sort="last_update">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer transition-all duration-200 hover:bg-amber-200" data-sort="metrics_created_at">
                                     上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer transition-all duration-200 hover:bg-amber-200" data-sort="create_at">
