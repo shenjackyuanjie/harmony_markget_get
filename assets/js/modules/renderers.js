@@ -10,11 +10,11 @@ var DashboardRenderers = (function() {
 
         if (!apps || apps.length === 0) {
             tableBody.innerHTML =
-                '<tr><td colspan="8" class="text-center py-4 text-gray-500">未找到应用</td></tr>';
+                '<tr><td colspan="9" class="text-center py-4 text-gray-500">未找到应用</td></tr>';
             return;
         }
 
-        apps.forEach((app) => {
+        apps.forEach((app, index) => {
             const app_info = app.info;
             const app_metric = app.metric;
             const app_rating = app.rating || {};
@@ -23,6 +23,7 @@ var DashboardRenderers = (function() {
             tr.className = "hover:bg-gray-50 cursor-pointer transition-colors";
             tr.onclick = () => DashboardAppDetails.showAppDetail(app_info.app_id);
             tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="app-icon mr-3" alt="${app_info.name}">

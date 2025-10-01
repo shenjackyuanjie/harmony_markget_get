@@ -96,7 +96,7 @@ impl AppListQuery {
             matches!(
                 sort_field.as_str(),
                 "download_count"
-                    | "ratings"
+                    | "average_rating"
                     | "price"
                     | "size_bytes"
                     | "rating_count"
