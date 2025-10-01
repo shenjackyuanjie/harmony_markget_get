@@ -42,8 +42,8 @@ async fn async_main() -> anyhow::Result<()> {
 
     // let range = 2915863..=6366961;
     // let range = 0..=6366961;
-    // let range = 2000000..=6390000;
-    let range = 0000000..=9999999;
+    let range = 2000000..=6390000;
+    // let range = 0000000..=9999999;
     // let range = 0..=475254;
     let start = "C576588020785";
 
