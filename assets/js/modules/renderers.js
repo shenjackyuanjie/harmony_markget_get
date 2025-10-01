@@ -82,9 +82,12 @@ var DashboardRenderers = (function() {
         const firstLi = document.createElement("li");
         firstLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
         const firstA = document.createElement("a");
-        firstA.className =
-            "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
         firstA.textContent = "1";
+        if (currentPage === 1) {
+            firstA.className = "px-3 py-2 text-sm font-medium rounded-md border-blue-500 bg-blue-100 text-blue-800";
+        } else {
+            firstA.className = "px-3 py-2 text-sm font-medium rounded-md border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100";
+        }
         if (currentPage > 1) {
             firstA.onclick = (e) => {
                 e.preventDefault();
@@ -99,7 +102,7 @@ var DashboardRenderers = (function() {
         prevLi.className = `flex ${currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
         const prevA = document.createElement("a");
         prevA.className =
-            "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+            "px-3 py-2 text-sm font-medium rounded-md border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100";
         prevA.textContent = "上一页";
         if (currentPage > 1) {
             prevA.onclick = (e) => {
@@ -119,8 +122,8 @@ var DashboardRenderers = (function() {
             const a = document.createElement("a");
             a.className = `px-3 py-2 text-sm font-medium rounded-md border ${
                 i === currentPage
-                    ? "border-blue-500 bg-blue-50 text-blue-600"
-                    : "border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+                    ? "border-blue-500 bg-blue-100 text-blue-800"
+                    : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
             }`;
             a.textContent = i;
             a.onclick = (e) => {
@@ -136,7 +139,7 @@ var DashboardRenderers = (function() {
         nextLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
         const nextA = document.createElement("a");
         nextA.className =
-            "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+            "px-3 py-2 text-sm font-medium rounded-md border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100";
         nextA.textContent = "下一页";
         if (currentPage < totalPages) {
             nextA.onclick = (e) => {
@@ -151,9 +154,12 @@ var DashboardRenderers = (function() {
         const lastLi = document.createElement("li");
         lastLi.className = `flex ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
         const lastA = document.createElement("a");
-        lastA.className =
-            "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
         lastA.textContent = totalPages.toString();
+        if (currentPage === totalPages) {
+            lastA.className = "px-3 py-2 text-sm font-medium rounded-md border-blue-500 bg-blue-100 text-blue-800";
+        } else {
+            lastA.className = "px-3 py-2 text-sm font-medium rounded-md border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100";
+        }
         if (currentPage < totalPages) {
             lastA.onclick = (e) => {
                 e.preventDefault();
@@ -171,10 +177,10 @@ var DashboardRenderers = (function() {
         input.min = 1;
         input.max = totalPages;
         input.value = currentPage;
-        input.className = "px-2 py-2 text-sm border border-gray-300 rounded-md w-16 text-center";
+        input.className = "px-2 py-2 text-sm border-blue-300 bg-blue-50 text-blue-900 rounded-md w-16 text-center";
         const jumpBtn = document.createElement("button");
         jumpBtn.textContent = "跳转";
-        jumpBtn.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+        jumpBtn.className = "px-3 py-2 text-sm font-medium rounded-md bg-blue-500 text-white border-blue-500 hover:bg-blue-600";
         jumpBtn.onclick = (e) => {
             e.preventDefault();
             const page = parseInt(input.value);
