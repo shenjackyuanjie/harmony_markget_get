@@ -49,7 +49,7 @@ var DashboardUtils = (function() {
      * @returns {string|null} 星级字符串，如果无评分返回null
      */
     function renderStars(rating) {
-        if (rating === undefined || rating === null) return null;
+        if (rating === undefined || rating === null) return "无评分";
         const fullStars = Math.floor(rating);
         const hasHalf = rating % 1 >= 0.5;
         let stars = "";
