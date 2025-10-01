@@ -61,13 +61,6 @@
         .app-icon {
             width: 32px;
             height: 32px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .app-icon:hover {
-            transform: scale(1.2);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
     </style>
 </head>
@@ -191,8 +184,8 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                        <button id="searchHelpBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md" title="搜索帮助">搜索功能帮助</button>
                         <input type="text" id="searchInput" class="flex-1 min-w-0 px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 placeholder-amber-400" placeholder="搜索应用">
-                        <button id="searchHelpBtn" class="ml-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-sm font-medium flex items-center justify-center w-8 h-8 transition-all duration-300 hover:scale-105 hover:shadow-md" title="搜索帮助"><span class="text-lg">?</span></button>
                         <select id="searchKeySelect" class="px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 text-amber-700">
                             <option value="name" selected>应用名称</option>
                             <option value="pkg_name">包名</option>
@@ -202,8 +195,8 @@
                         </select>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="searchExact" class="sr-only peer">
-                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                            <span class="ml-3 text-sm font-medium text-amber-700">精确匹配</span>
+                            <span class="ml-1 text-sm font-medium text-amber-700">精确匹配</span>
+                            <div class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
                         </label>
                         <button id="searchBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">搜索</button>
                     </div>
@@ -212,7 +205,7 @@
                     <table class="min-w-full divide-y divide-amber-200">
                         <thead class="bg-gradient-to-r from-amber-100 to-yellow-100">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider rounded-tl-md">序号</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">序号</th>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">应用名称</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">开发者</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">分类</th>
@@ -351,7 +344,13 @@
                         <p class="text-emerald-700 text-sm">
                             <strong>开启 (勾选)</strong>: 进行精确匹配，只返回完全匹配关键词的结果。<br>
                             <strong>关闭 (未勾选)</strong>: 进行模糊搜索，支持部分匹配，提高搜索灵活性。<br>
-                            默认关闭（模糊搜索）。
+                            默认关闭（模糊搜索）。<br>
+                            <br>
+                            <br>
+                            <strong>高级说明</strong><br>
+                            搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br>
+                            因此你可以使用 % 来做通配符 _ 来做单个通配符<br>
+                            或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
                         </p>
                     </div>
                     <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-lg shadow-sm border border-amber-100">

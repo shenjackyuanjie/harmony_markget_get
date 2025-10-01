@@ -21,12 +21,15 @@ var DashboardAppDetails = (function() {
             const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let html = `
                 <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/5 text-center md:text-left">
-                        <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 mx-auto md:mx-0 app-icon rounded-lg mb-3" alt="${app_info.name}">
+                    <div class="md:w-1/6 text-center md:text-left">
+                        <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 app-icon" alt="${app_info.name}">
                         <p class="mb-1 text-lg">${DashboardUtils.renderStars(app_rating.average_rating) || "无评分"}</p>
                         <p class="text-gray-500">${app_rating.total_star_rating_count || "无"} 评分</p>
+                        <a href="https://appgallery.huawei.com/app/detail?id=${app_info.pkg_name}" target="_blank" class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            在华为应用市场查看
+                        </a>
                     </div>
-                    <div class="md:w-4/5">
+                    <div class="md:w-5/6">
                         <h4 class="text-2xl font-bold text-gray-900 mb-2">${app_info.name || "未知应用"}</h4>
                         <p class="text-gray-600 mb-4">${app_info.developer_name || "未知开发者"}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
@@ -75,7 +78,7 @@ var DashboardAppDetails = (function() {
 
             // 计算行数
             const lineCount = plainDesc.split('\n').length;
-            
+
             if (plainDesc.length > MAX_LENGTH || lineCount > MAX_LINES) {
                 let truncated = "";
                 // 如果行数超过限制，按行数截断

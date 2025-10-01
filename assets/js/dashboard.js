@@ -255,14 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("searchBtn").addEventListener("click", () => {
         const searchValue = document.getElementById("searchInput").value.trim();
         if (!searchValue) {
-            alert("请输入搜索关键词");
+            searchTerm = "";
+            DashboardDataLoaders.loadApps(1);
             return;
         }
         searchKey = document.getElementById("searchKeySelect").value;
-        if (!searchKey) {
-            alert("请选择搜索类别");
-            return;
-        }
         searchExact = document.getElementById("searchExact").checked;
         searchTerm = searchValue;
         DashboardDataLoaders.loadApps(1);
@@ -273,14 +270,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.key === "Enter") {
             const searchValue = e.target.value.trim();
             if (!searchValue) {
-                alert("请输入搜索关键词");
+                searchTerm = "";
+                DashboardDataLoaders.loadApps(1);
                 return;
             }
             searchKey = document.getElementById("searchKeySelect").value;
-            if (!searchKey) {
-                alert("请选择搜索类别");
-                return;
-            }
             searchExact = document.getElementById("searchExact").checked;
             searchTerm = searchValue;
             DashboardDataLoaders.loadApps(1);
