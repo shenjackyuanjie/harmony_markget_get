@@ -7,7 +7,7 @@ use std::ops::Range;
 use crate::db::read_data::{
     SELECT_APP_INFO_FIELDS, SELECT_APP_METRIC_FIELDS, SELECT_APP_RATING_FIELDS,
 };
-use crate::db::{Database, PaginatedAppInfo};
+use crate::db::{Database, DbSearch, PaginatedAppInfo};
 use crate::model::{AppInfo, AppMetric, FullAppInfo, ShortAppRating};
 
 impl Database {
@@ -191,6 +191,7 @@ impl Database {
         range: Range<u32>,
         sort_key: &str,
         sort_desc: bool,
+        search: Option<DbSearch>,
     ) -> Result<Vec<FullAppInfo>> {
         let query = format!(
             r#"
@@ -271,6 +272,7 @@ impl Database {
         page_size: u32,
         sort_key: &str,
         sort_desc: bool,
+        search: Option<DbSearch>,
     ) -> Result<PaginatedAppInfo<D>> {
         let total_count = self.get_app_info_count().await?;
         let total_pages = if page_size == 0 {
@@ -281,7 +283,7 @@ impl Database {
         let offset = (page.saturating_sub(1)) * page_size;
 
         let data = self
-            .get_app_info_paginated(offset..(offset + page_size), sort_key, sort_desc)
+            .get_app_info_paginated(offset..(offset + page_size), sort_key, sort_desc, search)
             .await?
             .into_iter()
             .map(D::from)
@@ -511,58 +513,6 @@ impl Database {
         Ok(app_metrics)
     }
 
-    /// 获取评分人数最多的应用排行
-    ///
-    /// # 参数
-    /// - `limit`: 返回的应用数量
-    ///
-    /// # 示例
-    /// ```rust
-    /// let db = Database::new("postgres://...", 5).await?;
-    /// let top_rated_count_apps = db.get_top_rated_count_apps(10).await?;
-    /// println!("评分人数最多的应用: {:?}", top_rated_count_apps);
-    /// ```
-    pub async fn get_top_rated_count_apps(&self, limit: u32) -> Result<Vec<ShortAppRating>> {
-        const QUERY: &str = r#"
-            SELECT
-                ai.app_id,
-                ai.name,
-                ai.pkg_name,
-                ai.developer_name,
-                ai.icon_url,
-                ar.average_rating::text,
-                ar.total_star_rating_count
-            FROM app_info ai
-            JOIN app_rating ar ON ai.app_id = ar.app_id
-            ORDER BY ar.total_star_rating_count DESC, ar.average_rating DESC
-            LIMIT $1
-        "#;
-
-        let rows = sqlx::query(QUERY)
-            .bind(limit as i64)
-            .fetch_all(&self.pool)
-            .await?;
-
-        let mut app_ratings = Vec::new();
-        for row in rows {
-            let app_rating = ShortAppRating {
-                app_id: row.get("app_id"),
-                name: row.get("name"),
-                pkg_name: row.get("pkg_name"),
-                developer_name: row.get("developer_name"),
-                icon_url: row.get("icon_url"),
-                average_rating: {
-                    let raw: String = row.get("average_rating");
-                    raw.parse().unwrap_or_default()
-                },
-                total_star_rating_count: row.get("total_star_rating_count"),
-            };
-            app_ratings.push(app_rating);
-        }
-
-        Ok(app_ratings)
-    }
-
     /// 获取下载量增长最快的应用排行
     ///
     /// # 参数
@@ -719,165 +669,5 @@ impl Database {
         }
 
         Ok(developers)
-    }
-
-    /// 获取应用大小排行
-    ///
-    /// # 参数
-    /// - `limit`: 返回的应用数量
-    ///
-    /// # 示例
-    /// ```rust
-    /// let db = Database::new("postgres://...", 5).await?;
-    /// let largest_apps = db.get_largest_apps(10).await?;
-    /// println!("应用大小最大的应用: {:?}", largest_apps);
-    /// ```
-    pub async fn get_largest_apps(&self, limit: u32) -> Result<Vec<AppMetric>> {
-        const QUERY: &str = r#"
-            SELECT DISTINCT ON (am.app_id)
-                am.*
-            FROM app_metrics am
-            ORDER BY am.app_id, am.size_bytes DESC
-            LIMIT $1
-        "#;
-
-        let rows = sqlx::query(QUERY)
-            .bind(limit as i64)
-            .fetch_all(&self.pool)
-            .await?;
-
-        let mut app_metrics = Vec::new();
-        for row in rows {
-            let app_metric = AppMetric {
-                id: row.get("id"),
-                app_id: row.get("app_id"),
-                version: row.get("version"),
-                version_code: row.get("version_code"),
-                size_bytes: row.get("size_bytes"),
-                sha256: row.get("sha256"),
-                info_score: row.get("info_score"),
-                info_rate_count: row.get("info_rate_count"),
-                download_count: row.get("download_count"),
-                price: row.get("price"),
-                release_date: row.get("release_date"),
-                new_features: row.get("new_features"),
-                upgrade_msg: row.get("upgrade_msg"),
-                target_sdk: row.get("target_sdk"),
-                minsdk: row.get("minsdk"),
-                compile_sdk_version: row.get("compile_sdk_version"),
-                min_hmos_api_level: row.get("min_hmos_api_level"),
-                api_release_type: row.get("api_release_type"),
-                created_at: row.get("created_at"),
-            };
-            app_metrics.push(app_metric);
-        }
-
-        // 按应用大小排序
-        app_metrics.sort_by(|a, b| b.size_bytes.cmp(&a.size_bytes));
-        app_metrics.truncate(limit as usize);
-
-        Ok(app_metrics)
-    }
-
-    /// 获取下载量最高的应用
-    ///
-    /// # 参数
-    /// - `limit`: 返回的应用数量
-    /// - `exclude_keywords`: 可选的排除关键词，用于过滤开发者名称
-    ///
-    /// # 示例
-    /// ```rust
-    /// let db = Database::new("postgres://...", 5).await?;
-    /// let top_downloads = db.get_top_downloads(10, None).await?;
-    /// println!("下载量最高的应用: {:?}", top_downloads);
-    ///
-    /// let top_downloads_filtered = db.get_top_downloads(10, Some("huawei")).await?;
-    /// println!("排除华为的下载量最高的应用: {:?}", top_downloads_filtered);
-    /// ```
-    pub async fn get_top_downloads(
-        &self,
-        limit: u32,
-        exclude_keywords: Option<impl ToString>,
-    ) -> Result<Vec<(AppInfo, AppMetric)>> {
-        let (query, bind_exclude) = match exclude_keywords {
-            Some(_) => (
-                r#"
-                SELECT
-                    app_id, alliance_app_id, name, pkg_name,
-                    dev_id, developer_name, dev_en_name,
-                    supplier, kind_id, kind_name,
-                    tag_name, kind_type_id, kind_type_name, icon_url,
-                    brief_desc, description, privacy_url, ctype,
-                    detail_id, app_level, jocat_id, iap, hms,
-                    tariff_type, packing_type, order_app, denpend_gms,
-                    denpend_hms, force_update, img_tag, is_pay,
-                    is_disciplined, is_shelves, submit_type, delete_archive,
-                    charging, button_grey, app_gift, free_days,
-                    pay_install_type, created_at,
-                    version, version_code, size_bytes,
-                    sha256, info_score::text, info_rate_count,
-                    download_count, price, release_date,
-                    new_features, upgrade_msg, target_sdk,
-                    minsdk, compile_sdk_version, min_hmos_api_level,
-                    api_release_type, metrics_created_at
-                FROM app_latest_info
-                WHERE download_count IS NOT NULL
-                  AND dev_en_name !~* $2
-                ORDER BY download_count DESC
-                LIMIT $1
-                "#,
-                true,
-            ),
-            None => (
-                r#"
-                SELECT
-                    app_id, alliance_app_id, name, pkg_name,
-                    dev_id, developer_name, dev_en_name,
-                    supplier, kind_id, kind_name,
-                    tag_name, kind_type_id, kind_type_name, icon_url,
-                    brief_desc, description, privacy_url, ctype,
-                    detail_id, app_level, jocat_id, iap, hms,
-                    tariff_type, packing_type, order_app, denpend_gms,
-                    denpend_hms, force_update, img_tag, is_pay,
-                    is_disciplined, is_shelves, submit_type, delete_archive,
-                    charging, button_grey, app_gift, free_days,
-                    pay_install_type, created_at,
-                    version, version_code, size_bytes,
-                    sha256, info_score::text, info_rate_count,
-                    download_count, price, release_date,
-                    new_features, upgrade_msg, target_sdk,
-                    minsdk, compile_sdk_version, min_hmos_api_level,
-                    api_release_type, metrics_created_at
-                FROM app_latest_info
-                WHERE download_count IS NOT NULL
-                ORDER BY download_count DESC
-                LIMIT $1
-                "#,
-                false,
-            ),
-        };
-
-        let rows = if bind_exclude {
-            sqlx::query(query)
-                .bind(limit as i64)
-                .bind(exclude_keywords.unwrap().to_string())
-                .fetch_all(&self.pool)
-                .await?
-        } else {
-            sqlx::query(query)
-                .bind(limit as i64)
-                .fetch_all(&self.pool)
-                .await?
-        };
-
-        let mut apps = Vec::new();
-        for row in rows {
-            let app_info = Self::read_app_info_from_row(&row);
-            let app_metric = Self::read_app_metric_from_row(&row);
-
-            apps.push((app_info, app_metric));
-        }
-
-        Ok(apps)
     }
 }

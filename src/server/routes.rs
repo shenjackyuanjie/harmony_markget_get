@@ -16,22 +16,10 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         // 获取分页的应用信息
         .route("/apps/list/{page_count}", get(handlers::app_list_paged))
         // 新增排行API路由
-        // 获取下载量排行榜
-        .route(
-            "/rankings/top-downloads",
-            get(handlers::get_download_ranking),
-        )
         // 获取评分排行榜
         .route("/rankings/ratings", get(handlers::get_rating_ranking))
         // 获取最新应用排行榜
         .route("/rankings/recent", get(handlers::get_recent_ranking))
-        // 获取价格排行榜
-        .route("/rankings/prices", get(handlers::get_price_ranking))
-        // 获取评分数量排行榜
-        .route(
-            "/rankings/rating-counts",
-            get(handlers::get_rating_count_ranking),
-        )
         // 获取下载量增长率排行榜
         .route(
             "/rankings/download-growth",
@@ -44,8 +32,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         // 获取开发者排行榜
         .route("/rankings/developers", get(handlers::get_developer_ranking))
-        // 获取应用大小排行榜
-        .route("/rankings/sizes", get(handlers::get_size_ranking))
         // 获取星级分布
         .route(
             "/charts/star-distribution",

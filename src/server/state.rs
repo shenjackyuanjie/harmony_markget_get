@@ -1,7 +1,10 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::{config::Config, db::Database};
+use crate::{
+    config::Config,
+    db::{Database, DbSearch},
+};
 
 /// 应用状态，包含数据库连接、HTTP客户端和配置
 #[derive(Clone)]
@@ -85,7 +88,9 @@ impl Default for RankingQuery {
 pub struct AppListQuery {
     pub sort: Option<String>,
     pub desc: Option<bool>,
-    pub search: Option<String>,
+    pub search_key: Option<String>,
+    pub search_value: Option<String>,
+    pub search_exact: Option<bool>,
     pub page_size: Option<u32>,
     pub detail: Option<bool>,
 }
@@ -123,5 +128,36 @@ impl AppListQuery {
 
     pub fn detail(&self) -> bool {
         self.detail.unwrap_or(true)
+    }
+
+    fn is_valid_search(&self) -> bool {
+        if let Some(key) = &self.search_key {
+            matches!(
+                key.as_str(),
+                "name"
+                    | "pkg_name"
+                    | "app_id"
+                    | "developer_name"
+                    | "developer_en_name"
+                    | "category"
+                    | "tag"
+            )
+        } else {
+            false
+        }
+    }
+
+    pub fn search_option(&self) -> Option<DbSearch> {
+        if !self.is_valid_search() {
+            return None;
+        }
+        match (&self.search_key, &self.search_value) {
+            (Some(key), Some(value)) => Some(DbSearch::new(
+                key.clone(),
+                value.clone(),
+                self.search_exact.unwrap_or(false),
+            )),
+            _ => None,
+        }
     }
 }

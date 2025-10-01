@@ -25,6 +25,46 @@ pub struct Database {
     pub pool: PgPool,
 }
 
+#[derive(Debug, Clone)]
+pub struct DbSearch {
+    pub key: String,
+    pub value: String,
+    pub is_exact: bool,
+}
+
+impl DbSearch {
+    pub fn new(key: String, value: String, is_exact: bool) -> Self {
+        Self {
+            key,
+            value,
+            is_exact,
+        }
+    }
+    pub fn exact(key: String, value: String) -> Self {
+        Self {
+            key,
+            value,
+            is_exact: true,
+        }
+    }
+    pub fn fuzzy(key: String, value: String) -> Self {
+        Self {
+            key,
+            value,
+            is_exact: false,
+        }
+    }
+    /// exact: 不动
+    /// not exact: %value%
+    pub fn search_value(&self) -> String {
+        if self.is_exact {
+            self.value.clone()
+        } else {
+            format!("%{}%", self.value)
+        }
+    }
+}
+
 impl Database {
     /// 创建数据库连接池
     pub async fn new(database_url: &str, max_connect: u32) -> Result<Self> {

@@ -148,6 +148,7 @@ pub async fn app_list_paged(
                         query.page_size(),
                         &query.sort_key(),
                         query.desc.unwrap_or_default(),
+                        query.search_option(),
                     )
                     .await
                 {
@@ -172,6 +173,7 @@ pub async fn app_list_paged(
                         query.page_size(),
                         &query.sort_key(),
                         query.desc.unwrap_or_default(),
+                        query.search_option(),
                     )
                     .await
                 {
@@ -191,34 +193,6 @@ pub async fn app_list_paged(
             }
         }
         Err(e) => Json(ApiResponse::error(format!("Failed to parse page: {}", e))),
-    }
-}
-
-/// 获取下载量排行
-pub async fn get_download_ranking(
-    State(state): State<Arc<AppState>>,
-    Query(query): Query<RankingQuery>,
-) -> impl IntoResponse {
-    let limit = query.limit.unwrap_or(10);
-    event!(
-        Level::INFO,
-        "获取下载量排行，限制: {} exclude 模式: {:?}",
-        limit,
-        query.exclude_pattern
-    );
-    match state
-        .db
-        .get_top_downloads(limit, query.exclude_pattern)
-        .await
-    {
-        Ok(apps) => {
-            let total_count = apps.len() as u32;
-            Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
-        }
-        Err(e) => {
-            event!(Level::WARN, "获取下载量排行失败: {e}");
-            Json(ApiResponse::error("Database error".to_string()))
-        }
     }
 }
 
@@ -257,46 +231,6 @@ pub async fn get_recent_ranking(
         }
         Err(e) => {
             event!(Level::WARN, "获取最近更新排行失败: {e}");
-            Json(ApiResponse::error("Database error".to_string()))
-        }
-    }
-}
-
-/// 获取价格排行
-pub async fn get_price_ranking(
-    State(state): State<Arc<AppState>>,
-    Query(query): Query<RankingQuery>,
-) -> impl IntoResponse {
-    let limit = query.limit.unwrap_or(10);
-    event!(Level::INFO, "获取价格排行，限制: {}", limit);
-
-    match state.db.get_top_priced_apps(limit).await {
-        Ok(apps) => {
-            let total_count = apps.len() as u32;
-            Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
-        }
-        Err(e) => {
-            event!(Level::WARN, "获取价格排行失败: {e}");
-            Json(ApiResponse::error("Database error".to_string()))
-        }
-    }
-}
-
-/// 获取评分人数排行
-pub async fn get_rating_count_ranking(
-    State(state): State<Arc<AppState>>,
-    Query(query): Query<RankingQuery>,
-) -> impl IntoResponse {
-    let limit = query.limit.unwrap_or(10);
-    event!(Level::INFO, "获取评分人数排行，限制: {}", limit);
-
-    match state.db.get_top_rated_count_apps(limit).await {
-        Ok(apps) => {
-            let total_count = apps.len() as u32;
-            Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
-        }
-        Err(e) => {
-            event!(Level::WARN, "获取评分人数排行失败: {e}");
             Json(ApiResponse::error("Database error".to_string()))
         }
     }
@@ -373,26 +307,6 @@ pub async fn get_developer_ranking(
         }
         Err(e) => {
             event!(Level::WARN, "获取开发者排行失败: {e}");
-            Json(ApiResponse::error("Database error".to_string()))
-        }
-    }
-}
-
-/// 获取应用大小排行
-pub async fn get_size_ranking(
-    State(state): State<Arc<AppState>>,
-    Query(query): Query<RankingQuery>,
-) -> impl IntoResponse {
-    let limit = query.limit.unwrap_or(10);
-    event!(Level::INFO, "获取应用大小排行，限制: {}", limit);
-
-    match state.db.get_largest_apps(limit).await {
-        Ok(apps) => {
-            let total_count = apps.len() as u32;
-            Json(ApiResponse::success(apps, Some(total_count), Some(limit)))
-        }
-        Err(e) => {
-            event!(Level::WARN, "获取应用大小排行失败: {e}");
             Json(ApiResponse::error("Database error".to_string()))
         }
     }
