@@ -15,6 +15,13 @@ const CHARTJS_PLUGIN_DATALABELS_JS: &str =
 const CHARTJS_ADAPTER_DATE_FNS_JS: &str =
     include_str!("../../assets/js/chartjs-adapter-date-fns.js");
 
+// 模块文件
+const UTILS_JS: &str = include_str!("../../assets/js/modules/utils.js");
+const DATA_LOADERS_JS: &str = include_str!("../../assets/js/modules/data-loaders.js");
+const RENDERERS_JS: &str = include_str!("../../assets/js/modules/renderers.js");
+const CHARTS_JS: &str = include_str!("../../assets/js/modules/charts.js");
+const APP_DETAILS_JS: &str = include_str!("../../assets/js/modules/app-details.js");
+
 const FAVICON_ICO: &[u8] = include_bytes!("../../assets/icon/favicon.ico");
 
 /// Serve dashboard HTML
@@ -74,6 +81,66 @@ pub async fn serve_chartjs_adapter_date_fns_js() -> impl IntoResponse {
             axum::http::HeaderValue::from_static("application/javascript"),
         )],
         CHARTJS_ADAPTER_DATE_FNS_JS,
+    )
+        .into_response()
+}
+
+/// Serve utils.js module
+pub async fn serve_utils_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        UTILS_JS,
+    )
+        .into_response()
+}
+
+/// Serve data-loaders.js module
+pub async fn serve_data_loaders_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        DATA_LOADERS_JS,
+    )
+        .into_response()
+}
+
+/// Serve renderers.js module
+pub async fn serve_renderers_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        RENDERERS_JS,
+    )
+        .into_response()
+}
+
+/// Serve charts.js module
+pub async fn serve_charts_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        CHARTS_JS,
+    )
+        .into_response()
+}
+
+/// Serve app-details.js module
+pub async fn serve_app_details_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderValue::from_static("application/javascript"),
+        )],
+        APP_DETAILS_JS,
     )
         .into_response()
 }

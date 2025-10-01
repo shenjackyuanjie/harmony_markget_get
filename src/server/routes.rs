@@ -73,6 +73,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             "/js/chartjs-adapter-date-fns.js",
             get(handle_static::serve_chartjs_adapter_date_fns_js),
         )
+        .route("/js/modules/utils.js", get(handle_static::serve_utils_js))
+        .route("/js/modules/data-loaders.js", get(handle_static::serve_data_loaders_js))
+        .route("/js/modules/renderers.js", get(handle_static::serve_renderers_js))
+        .route("/js/modules/charts.js", get(handle_static::serve_charts_js))
+        .route("/js/modules/app-details.js", get(handle_static::serve_app_details_js))
         .route("/favicon.ico", get(handle_static::serve_favicon))
         .nest("/api", api_router)
         .fallback(handle_static::serve_not_found)
