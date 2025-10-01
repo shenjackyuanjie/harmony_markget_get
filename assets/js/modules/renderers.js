@@ -120,11 +120,10 @@ var DashboardRenderers = (function() {
             const li = document.createElement("li");
             li.className = `flex ${i === currentPage ? "z-10" : ""}`;
             const a = document.createElement("a");
-            a.className = `px-3 py-2 text-sm font-medium rounded-md border ${
-                i === currentPage
+            a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
                     ? "border-blue-500 bg-blue-100 text-blue-800"
                     : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
-            }`;
+                }`;
             a.textContent = i;
             a.onclick = (e) => {
                 e.preventDefault();

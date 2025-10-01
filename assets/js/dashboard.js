@@ -218,13 +218,13 @@ function updateLastUpdate() {
 // ESC键关闭详情弹窗
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-      const modalsToClose = ["appDetailModal", "helpModal", "submitModal", "contactModal", "searchHelpModal"];
-      modalsToClose.forEach(modalId => {
-          const modal = document.getElementById(modalId);
-          if (!modal.classList.contains("hidden")) {
-              modal.classList.add("hidden");
-          }
-      });
+        const modalsToClose = ["appDetailModal", "helpModal", "submitModal", "contactModal", "searchHelpModal"];
+        modalsToClose.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (!modal.classList.contains("hidden")) {
+                modal.classList.add("hidden");
+            }
+        });
     }
 });
 

@@ -96,7 +96,7 @@ var DashboardAppDetails = (function() {
                 `;
                 document
                     .getElementById("toggleDescription")
-                    .addEventListener("click", function () {
+                    .addEventListener("click", function() {
                         if (!isExpanded) {
                             document.getElementById("descriptionText").innerHTML = description;
                             this.textContent = "收起";
@@ -218,11 +218,11 @@ var DashboardAppDetails = (function() {
                                 tooltip: {
                                     callbacks: {
                                         // 顶部标题行（时间）
-                                        title: function (contexts) {
+                                        title: function(contexts) {
                                             const date = new Date(contexts[0].parsed.x);
                                             return DashboardUtils.formatDate(date);
                                         },
-                                        label: function (context) {
+                                        label: function(context) {
                                             return `下载量: ${DashboardUtils.formatNumber(context.parsed.y)}`;
                                         },
                                     },
@@ -234,16 +234,14 @@ var DashboardAppDetails = (function() {
                             window.downloadHistoryChart = new Chart(ctx, {
                                 type: "line",
                                 data: {
-                                    datasets: [
-                                        {
-                                            label: "下载量",
-                                            data: downloadData,
-                                            borderColor: "rgb(59, 130, 246)",
-                                            backgroundColor: "rgba(59, 130, 246, 0.1)",
-                                            fill: true,
-                                            tension: 0.1,
-                                        },
-                                    ],
+                                    datasets: [{
+                                        label: "下载量",
+                                        data: downloadData,
+                                        borderColor: "rgb(59, 130, 246)",
+                                        backgroundColor: "rgba(59, 130, 246, 0.1)",
+                                        fill: true,
+                                        tension: 0.1,
+                                    }, ],
                                 },
                                 options: {
                                     responsive: true,
@@ -260,7 +258,7 @@ var DashboardAppDetails = (function() {
                                                 },
                                             },
                                             ticks: {
-                                                callback: function (value) {
+                                                callback: function(value) {
                                                     const date = new Date(value);
                                                     return DashboardUtils.formatDate(date);
                                                 },
@@ -269,7 +267,7 @@ var DashboardAppDetails = (function() {
                                         y: {
                                             beginAtZero: false,
                                             ticks: {
-                                                callback: function (value) {
+                                                callback: function(value) {
                                                     return DashboardUtils.formatNumber(value);
                                                 },
                                             },
@@ -291,11 +289,11 @@ var DashboardAppDetails = (function() {
                                     legend: { display: true, position: "top" },
                                     tooltip: {
                                         callbacks: {
-                                            title: function (contexts) {
+                                            title: function(contexts) {
                                                 const date = new Date(contexts[0].parsed.x);
                                                 return DashboardUtils.formatDate(date);
                                             },
-                                            label: function (context) {
+                                            label: function(context) {
                                                 const datasetLabel = context.dataset.label || "";
                                                 if (datasetLabel === "下载增量") {
                                                     return `下载增量: ${DashboardUtils.formatNumber(context.parsed.y)}`;
@@ -311,8 +309,7 @@ var DashboardAppDetails = (function() {
                                 window.downloadIncrementChart = new Chart(incrementCtx, {
                                     type: "line",
                                     data: {
-                                        datasets: [
-                                            {
+                                        datasets: [{
                                                 label: "下载增量",
                                                 data: increments,
                                                 borderColor: "rgb(59, 130, 246)",
@@ -345,7 +342,7 @@ var DashboardAppDetails = (function() {
                                                     },
                                                 },
                                                 ticks: {
-                                                    callback: function (value) {
+                                                    callback: function(value) {
                                                         const date = new Date(value);
                                                         return DashboardUtils.formatDate(date);
                                                     },
@@ -355,7 +352,7 @@ var DashboardAppDetails = (function() {
                                                 beginAtZero: false,
                                                 title: { display: true, text: "下载量" },
                                                 ticks: {
-                                                    callback: function (value) {
+                                                    callback: function(value) {
                                                         return DashboardUtils.formatNumber(value);
                                                     },
                                                 },

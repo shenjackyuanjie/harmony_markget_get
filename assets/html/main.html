@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,12 +23,19 @@
             animation: backgroundGradient 20s ease infinite alternate;
             background-size: 400% 400%;
         }
+        
         @keyframes backgroundGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
-
+        
         .chart-container {
             height: 300px;
             position: relative;
@@ -36,34 +44,41 @@
             border-radius: 8px;
             padding: 8px;
         }
+        
         .chart-container:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
+        
         .table th {
             cursor: pointer;
             transition: all 0.2s ease;
             background: linear-gradient(to right, #f8f9fa, #e9f2ff);
             color: #3a6ea5;
         }
+        
         .table th:hover {
             background: linear-gradient(to right, #e2f0fd, #d1e5ff);
             transform: translateY(-2px);
         }
+        
         .loading {
             text-align: center;
             padding: 50px;
         }
+        
         .star-rating {
             color: #ffcc00;
-            text-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+            text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);
         }
+        
         .app-icon {
             width: 32px;
             height: 32px;
         }
     </style>
 </head>
+
 <body class="bg-gradient-to-br">
     <div class="px-4 py-6">
         <!-- Header -->
@@ -77,25 +92,33 @@
                         <div class="flex items-center gap-3">
                             <button id="refreshBtn" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-medium rounded-md hover:from-cyan-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    </path>
                                 </svg>
                                 刷新数据
                             </button>
                             <button id="helpBtn" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-medium rounded-md hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
                                 </svg>
                                 帮助信息
                             </button>
                             <button id="contactBtn" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium rounded-md hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
                                 </svg>
                                 问题反馈&交流
                             </button>
                             <button id="submitBtn" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-600 text-white text-sm font-medium rounded-md hover:from-orange-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
                                 投稿
                             </button>
@@ -184,7 +207,8 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                        <button id="searchHelpBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md" title="搜索帮助">搜索功能帮助</button>
+                        <button id="searchHelpBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md"
+                            title="搜索帮助">搜索功能帮助</button>
                         <input type="text" id="searchInput" class="flex-1 min-w-0 px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 placeholder-amber-400" placeholder="搜索应用">
                         <select id="searchKeySelect" class="px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 text-sm bg-amber-50 text-amber-700">
                             <option value="name" selected>应用名称</option>
@@ -196,7 +220,9 @@
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="searchExact" class="sr-only peer">
                             <span class="ml-1 text-sm font-medium text-amber-700">精确匹配</span>
-                            <div class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                            <div
+                                class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600">
+                            </div>
                         </label>
                         <button id="searchBtn" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-sm font-medium rounded-md hover:from-amber-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">搜索</button>
                     </div>
@@ -205,11 +231,16 @@
                     <table class="min-w-full divide-y divide-amber-200">
                         <thead class="bg-gradient-to-r from-amber-100 to-yellow-100">
                             <tr>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">序号</th>
-                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">应用名称</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">开发者</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">分类</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">评分</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                    序号</th>
+                                <th class="px-6 py-4 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                    应用名称</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                    开发者</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                    分类</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                    评分</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer transition-all duration-200 hover:bg-amber-200" data-sort="total_star_rating_count">
                                     评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
                                 </th>
@@ -230,7 +261,8 @@
                         <tbody id="appTableBody" class="bg-gradient-to-r from-amber-50 to-yellow-50 divide-y divide-amber-100">
                             <tr>
                                 <td colspan="8" class="text-center py-12">
-                                    <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -250,10 +282,12 @@
         <div class="relative top-8 mx-auto p-5 border border-indigo-200 w-11/12 md:w-11/12 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-indigo-50 to-purple-50 max-h-[90vh] overflow-y-auto transition-transform duration-300 transform">
             <div class="mt-3">
                 <div class="flex justify-between items-center">
-                    <h5 class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">帮助信息 - 华为应用市场看板使用说明</h5>
+                    <h5 class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">
+                        帮助信息 - 华为应用市场看板使用说明</h5>
                     <button type="button" class="text-purple-400 hover:text-purple-600 transition-all duration-300 transform hover:rotate-180" onclick="document.getElementById('helpModal').classList.add('hidden')">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -321,10 +355,12 @@
         <div class="relative top-8 mx-auto p-5 border border-amber-200 w-11/12 md:w-11/12 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-amber-50 to-yellow-50 max-h-[90vh] overflow-y-auto transition-transform duration-300 transform">
             <div class="mt-3">
                 <div class="flex justify-between items-center">
-                    <h5 class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">搜索功能帮助</h5>
+                    <h5 class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">
+                        搜索功能帮助</h5>
                     <button type="button" id="closeSearchHelpModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -343,14 +379,11 @@
                         <h6 class="text-md font-semibold text-emerald-800 mb-2">⚡ 精确匹配开关</h6>
                         <p class="text-emerald-700 text-sm">
                             <strong>开启 (勾选)</strong>: 进行精确匹配，只返回完全匹配关键词的结果。<br>
-                            <strong>关闭 (未勾选)</strong>: 进行模糊搜索，支持部分匹配，提高搜索灵活性。<br>
-                            默认关闭（模糊搜索）。<br>
+                            <strong>关闭 (未勾选)</strong>: 进行模糊搜索，支持部分匹配，提高搜索灵活性。<br> 默认关闭（模糊搜索）。
                             <br>
                             <br>
-                            <strong>高级说明</strong><br>
-                            搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br>
-                            因此你可以使用 % 来做通配符 _ 来做单个通配符<br>
-                            或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
+                            <br>
+                            <strong>高级说明</strong><br> 搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br> 因此你可以使用 % 来做通配符 _ 来做单个通配符<br> 或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
                         </p>
                     </div>
                     <div class="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-lg shadow-sm border border-amber-100">
@@ -371,19 +404,19 @@
 
     <!-- Contact Modal -->
     <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto animate-fade-in-up">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
-          <button id="closeContactModalBtn" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto animate-fade-in-up">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
+                <button id="closeContactModalBtn" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="text-gray-700 space-y-2">
+                <p><strong>QQ群:</strong> 757273833</p>
+                <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="document.getElementById('contactModal').classList.add('hidden')" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+            </div>
         </div>
-        <div class="text-gray-700 space-y-2">
-          <p><strong>QQ群:</strong> 757273833</p>
-          <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
-        </div>
-        <div class="flex justify-end pt-2">
-            <button onclick="document.getElementById('contactModal').classList.add('hidden')" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
-        </div>
-      </div>
     </div>
 
     <!-- App Detail Modal -->
@@ -391,10 +424,12 @@
         <div class="relative top-8 mx-auto p-5 border border-cyan-200 w-11/12 md:w-10/12 lg:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-cyan-50 to-blue-50 transition-transform duration-300 transform">
             <div class="mt-3">
                 <div class="flex justify-between items-center">
-                    <h5 id="appDetailTitle" class="text-lg font-semibold text-cyan-900 bg-gradient-to-r from-cyan-200 to-blue-200 px-4 py-2 rounded-lg shadow-sm">应用详情</h5>
+                    <h5 id="appDetailTitle" class="text-lg font-semibold text-cyan-900 bg-gradient-to-r from-cyan-200 to-blue-200 px-4 py-2 rounded-lg shadow-sm">
+                        应用详情</h5>
                     <button type="button" class="text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180" onclick="document.getElementById('appDetailModal').classList.add('hidden')">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -408,45 +443,46 @@
 
     <!-- 投稿模态框 -->
     <div id="submitModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-      <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <h2 class="text-xl font-bold mb-4 text-center">投稿</h2>
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-center">投稿</h2>
 
-        <!-- 应用详情页链接（可选） -->
-        <div class="mb-4">
-          <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
-          <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
-          <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
+            <!-- 应用详情页链接（可选） -->
+            <div class="mb-4">
+                <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
+                <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
+                <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
+            </div>
+
+            <!-- 包名 -->
+            <div class="mb-4">
+                <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
+                <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
+                <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
+            </div>
+
+            <!-- app_id -->
+            <div class="mb-4">
+                <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
+                <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
+                <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
+            </div>
+
+            <!-- 查询按钮 -->
+            <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-4">查询</button>
+
+            <!-- 查询结果展示区域 -->
+            <div id="resultArea" class="hidden mb-4">
+                <h3 class="text-lg font-semibold mb-2">查询结果</h3>
+                <div id="resultContent" class="bg-gray-50 p-3 rounded-md"></div>
+            </div>
+
+            <!-- 关闭按钮 -->
+            <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
         </div>
 
-        <!-- 包名 -->
-        <div class="mb-4">
-          <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
-          <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
-          <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
-        </div>
-
-        <!-- app_id -->
-        <div class="mb-4">
-          <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
-          <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
-          <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
-        </div>
-
-        <!-- 查询按钮 -->
-        <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-4">查询</button>
-
-        <!-- 查询结果展示区域 -->
-        <div id="resultArea" class="hidden mb-4">
-          <h3 class="text-lg font-semibold mb-2">查询结果</h3>
-          <div id="resultContent" class="bg-gray-50 p-3 rounded-md"></div>
-        </div>
-
-        <!-- 关闭按钮 -->
-        <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
-      </div>
-
-    <!-- Custom JavaScript -->
-    <script src="/js/dashboard.js"></script>
-</div>
+        <!-- Custom JavaScript -->
+        <script src="/js/dashboard.js"></script>
+    </div>
 </body>
+
 </html>
