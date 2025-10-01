@@ -35,6 +35,7 @@ var DashboardRenderers = (function() {
                     <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${DashboardUtils.renderStars(app_rating.average_rating)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${DashboardUtils.formatNumber(app_rating.total_star_rating_count || -1)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</td>
@@ -83,7 +84,7 @@ var DashboardRenderers = (function() {
         const firstA = document.createElement("a");
         firstA.className =
             "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
-        firstA.textContent = "第一页";
+        firstA.textContent = "1";
         if (currentPage > 1) {
             firstA.onclick = (e) => {
                 e.preventDefault();
@@ -152,7 +153,7 @@ var DashboardRenderers = (function() {
         const lastA = document.createElement("a");
         lastA.className =
             "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
-        lastA.textContent = "最后一页";
+        lastA.textContent = totalPages.toString();
         if (currentPage < totalPages) {
             lastA.onclick = (e) => {
                 e.preventDefault();
@@ -161,6 +162,31 @@ var DashboardRenderers = (function() {
         }
         lastLi.appendChild(lastA);
         ul.appendChild(lastLi);
+
+        // 页码输入和跳转按钮
+        const inputLi = document.createElement("li");
+        inputLi.className = "flex items-center space-x-1";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = 1;
+        input.max = totalPages;
+        input.value = currentPage;
+        input.className = "px-2 py-2 text-sm border border-gray-300 rounded-md w-16 text-center";
+        const jumpBtn = document.createElement("button");
+        jumpBtn.textContent = "跳转";
+        jumpBtn.className = "px-3 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50";
+        jumpBtn.onclick = (e) => {
+            e.preventDefault();
+            const page = parseInt(input.value);
+            if (!isNaN(page) && page >= 1 && page <= totalPages) {
+                DashboardDataLoaders.loadApps(page);
+            } else {
+                input.value = currentPage; // 重置无效输入
+            }
+        };
+        inputLi.appendChild(input);
+        inputLi.appendChild(jumpBtn);
+        ul.appendChild(inputLi);
 
         paginationEl.appendChild(ul);
     }

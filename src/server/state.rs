@@ -100,8 +100,9 @@ impl AppListQuery {
                     | "price"
                     | "size_bytes"
                     | "rating_count"
-                    | "last_updated"
+                    | "last_update"
                     | "created_at"
+                    | "total_star_rating_count"
             )
         } else {
             false
