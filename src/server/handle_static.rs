@@ -147,7 +147,7 @@ pub async fn serve_app_details_js() -> impl IntoResponse {
 
 pub async fn serve_腾讯() -> impl IntoResponse {
     // 返回 "17913049139162949225"
-    "17913049139162949225".into_response()
+    Html("17913049139162949225")
 }
 
 /// Serve 404 Not Found page
