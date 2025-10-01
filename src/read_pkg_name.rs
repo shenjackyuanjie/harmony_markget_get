@@ -46,7 +46,10 @@ async fn async_main() -> anyhow::Result<()> {
             pkg_names.push(line.trim().to_string());
             line.clear();
         }
-        pkg_names.into_iter().map(|l| l.trim_matches('\"').to_string()).collect()
+        pkg_names
+            .into_iter()
+            .map(|l| l.trim_matches('\"').to_string())
+            .collect()
     };
 
     let mut cfg = config.clone();

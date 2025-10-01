@@ -8,6 +8,7 @@ use sqlx::postgres::{PgPool, PgPoolOptions};
 
 pub mod insert;
 pub mod query;
+pub mod read_data;
 
 /// 分页查询结果
 #[derive(Debug, Deserialize, Serialize)]
