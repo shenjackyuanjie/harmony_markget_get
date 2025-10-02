@@ -208,4 +208,4 @@ CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);
 CREATE INDEX idx_app_metrics_download_count ON app_metrics(download_count);
 CREATE INDEX idx_app_rating_app_id ON app_rating(app_id);
-CREATE INDEX idx_app_rating_version ON app_rating(version);
+-- CREATE INDEX idx_app_rating_version ON app_rating(version);
