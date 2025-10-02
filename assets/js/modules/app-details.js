@@ -21,11 +21,11 @@ var DashboardAppDetails = (function() {
             const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let html = `
                 <div class="flex flex-col md:flex-row gap-2">
-                    <div class="md:w-1/6 text-center md:text-left">
-                        <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 app-icon" alt="${app_info.name}">
+                    <div class="md:w-1/6 text-center md:text-center">
+                        <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 app-icon mx-auto item-center" alt="${app_info.name}">
                         <p class="mb-1 text-lg">${DashboardUtils.renderStars(app_rating.average_rating) || "无评分"}</p>
-                        <p class="text-gray-500">${app_rating.total_star_rating_count || "无"} 评分</p>
-                        <a href="https://appgallery.huawei.com/app/detail?id=${app_info.pkg_name}" target="_blank" class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <p class="text-gray-500 mb-2">${app_rating.total_star_rating_count || "无"} 评分</p>
+                        <a href="https://appgallery.huawei.com/app/detail?id=${app_info.pkg_name}" target="_blank" class="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             在华为应用市场查看
                         </a>
                     </div>
@@ -40,8 +40,9 @@ var DashboardAppDetails = (function() {
                             <span ${same_css} bg-gray-100 text-green-800">编译 api 版本${app_metric.compile_sdk_version || "未知"}</span>
                         </div>
                         <div class="space-y-2 mb-2">
+                            <p><strong>数据更新时间:</strong> <span class="text-gray-600">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</span></p>
+                            <p><strong>应用更新时间:</strong> <span class="text-gray-600">${app_metric.release_date ? DashboardUtils.formatDate(app_metric.release_date) : "未知"}</span></p>
                             <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
-                            <p><strong>上次更新:</strong> <span class="text-gray-600">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</span></p>
                             <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
                             <p><strong>App ID:</strong> <span class="text-gray-600">${app_info.app_id}</span></p>
                             <p><strong>Package Name:</strong> <span class="text-gray-600">${app_info.pkg_name}</span></p>

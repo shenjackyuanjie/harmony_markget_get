@@ -2,11 +2,13 @@
 
 ## 0.5.0
 
-在
-- Grok 4 Fast (free)
-- Micrsoft Copilot Think Deeper
-- Micrsoft Copilot Smart (GPT-5)
-的帮助下, 搜索功能现以更完善的方式归来
+> 在
+> - Grok 4 Fast (free)
+> - Micrsoft Copilot Think Deeper
+> - Micrsoft Copilot Smart (GPT-5)
+> 的帮助下, 搜索功能现以更完善的方式归来
+- 修复了手机端排版不正确的问题
+- 微调了一些布局
 
 ## 0.4.0
 
