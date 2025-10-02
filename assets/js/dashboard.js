@@ -284,35 +284,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Refresh button
     document.getElementById("refreshBtn").addEventListener("click", DashboardDataLoaders.refreshData);
 
-    // Help button
-    document.getElementById("helpBtn").addEventListener("click", () => {
-        document.getElementById("helpModal").classList.remove("hidden");
+    // Modal event handlers
+    const modalHandlers = [
+        { id: 'helpBtn', modal: 'helpModal', action: 'show' },
+        { id: 'searchHelpBtn', modal: 'searchHelpModal', action: 'show' },
+        { id: 'closeSearchHelpModal', modal: 'searchHelpModal', action: 'hide' },
+        { id: 'closeSearchHelpBtn', modal: 'searchHelpModal', action: 'hide' },
+        { id: 'contactBtn', modal: 'contactModal', action: 'show' },
+        { id: 'closeSubmitModal', modal: 'submitModal', action: 'hide' }
+    ];
+
+    modalHandlers.forEach(handler => {
+        const element = document.getElementById(handler.id);
+        const modal = document.getElementById(handler.modal);
+
+        if (element && modal) {
+            element.addEventListener('click', () => {
+                if (handler.action === 'show') {
+                    modal.classList.remove('hidden');
+                } else {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
     });
-    // Search help button
-    document.getElementById("searchHelpBtn").addEventListener("click", () => {
-        document.getElementById("searchHelpModal").classList.remove("hidden");
-    });
-    // Close search help modal
-    // Help button
-    document.getElementById("helpBtn").addEventListener("click", () => {
-        document.getElementById("helpModal").classList.remove("hidden");
-    });
-    // Search help button
-    document.getElementById("searchHelpBtn").addEventListener("click", () => {
-        document.getElementById("searchHelpModal").classList.remove("hidden");
-    });
-    // Close search help X button
-    document.getElementById("closeSearchHelpModal").addEventListener("click", () => {
-        document.getElementById("searchHelpModal").classList.add("hidden");
-    });
-    // Close search help bottom button
-    document.getElementById("closeSearchHelpBtn").addEventListener("click", () => {
-        document.getElementById("searchHelpModal").classList.add("hidden");
-    });
-    // 联系方式 button
-    document.getElementById("contactBtn").addEventListener("click", () => {
-        document.getElementById("contactModal").classList.remove("hidden");
-    });
+
     // 清空表单函数
     function clearForm() {
         document.getElementById("linkInput").value = "";
@@ -331,12 +327,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // 清空输入和错误
         clearForm();
     });
-    // 关闭投稿模态框
-    document.getElementById("closeSubmitModal").addEventListener("click", () => {
-        document.getElementById("submitModal").classList.add("hidden");
-    });
-    // 链接输入事件
-    document.getElementById("linkInput").addEventListener("input", parseLink);
     // 包名输入事件，隐藏错误
     document.getElementById("pkgInput").addEventListener("input", () => {
         document.getElementById("pkgError").classList.add("hidden");
@@ -345,6 +335,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("appIdInput").addEventListener("input", () => {
         document.getElementById("appIdError").classList.add("hidden");
     });
+    // 链接输入事件
+    document.getElementById("linkInput").addEventListener("input", parseLink);
     // 查询按钮
     document.getElementById("queryBtn").addEventListener("click", () => {
         if (validateInputs()) {
