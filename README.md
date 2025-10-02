@@ -76,6 +76,11 @@ cargo build
 CREATE DATABASE market_db;
 ```
 
+#### 然后初始化表格
+```bash
+psql -d market_db -f assets/sql/main.sql
+```
+
 #### 创建数据库用户（可选）
 ```sql
 CREATE USER market_user WITH PASSWORD 'your_password';
