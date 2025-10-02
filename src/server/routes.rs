@@ -15,6 +15,11 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route("/market_info", get(handlers::app_list_info))
         // 获取分页的应用信息
         .route("/apps/list/{page_count}", get(handlers::app_list_paged))
+        // 获取应用下载量历史数据
+        .route(
+            "/apps/metrics/{pkg_id}",
+            get(handlers::get_app_download_history),
+        )
         // 新增排行API路由
         // 获取下载量排行榜
         .route(
@@ -41,11 +46,6 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         .route(
             "/charts/star-distribution",
             get(handlers::get_star_distribution),
-        )
-        // 获取应用下载量历史数据
-        .route(
-            "/apps/metrics/{pkg_id}",
-            get(handlers::get_app_download_history),
         )
         .fallback(api_not_found)
         .with_state(app_state.clone());
