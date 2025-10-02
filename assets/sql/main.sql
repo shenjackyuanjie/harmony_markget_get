@@ -62,7 +62,7 @@ CREATE TABLE app_metrics (
     info_score          NUMERIC(3,1) NOT NULL,            -- 信息评分（重命名自 hot_score）
     info_rate_count     BIGINT NOT NULL,                  -- 信息评分人数（重命名自 rate_num）
     download_count      BIGINT NOT NULL,                  -- 下载次数（如 14443706）
-    price               NUMERIC(10,2) NOT NULL,           -- 价格（如 0 表示免费）
+    price               TEXT NOT NULL,           -- 价格（如 0 表示免费）
     release_date        BIGINT NOT NULL,                  -- 发布时间（时间戳毫秒）
     new_features        TEXT NOT NULL,                    -- 新功能描述
     upgrade_msg         TEXT NOT NULL,                    -- 升级提示
