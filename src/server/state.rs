@@ -2,7 +2,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    config::Config,
+    config::{Config, get_config},
     db::{Database, DbSearch},
 };
 
@@ -123,7 +123,13 @@ impl AppListQuery {
     }
 
     pub fn page_size(&self) -> u32 {
-        self.page_size.unwrap_or(100)
+        let page = self.page_size.unwrap_or(100);
+        let limit = get_config().api.page_limit.unwrap_or(page);
+        if page > limit {
+            limit
+        } else {
+            page
+        }
     }
 
     pub fn detail(&self) -> bool {

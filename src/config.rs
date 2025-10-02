@@ -30,6 +30,8 @@ pub struct ApiConfig {
     pub timeout_seconds: u64,
     /// 数据更新间隔 (秒)
     pub interval_seconds: u64,
+    /// API 分页查询限制，默认不限制
+    pub page_limit: Option<u32>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
