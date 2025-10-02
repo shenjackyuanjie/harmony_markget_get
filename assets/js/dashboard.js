@@ -120,7 +120,8 @@ async function queryApp() {
     if (pkgName) {
         url = `/api/apps/pkg_name/${encodeURIComponent(pkgName)}`;
     } else if (appId) {
-        url = `/api/apps/app_id/${encodeURIComponent(appId)}`;
+        const modifiedAppId = appId.startsWith('C') ? appId : 'C' + appId;
+        url = `/api/apps/app_id/${encodeURIComponent(modifiedAppId)}`;
     } else {
         alert("请输入包名或 app_id");
         return;
@@ -287,42 +288,33 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("helpBtn").addEventListener("click", () => {
         document.getElementById("helpModal").classList.remove("hidden");
     });
-
     // Search help button
     document.getElementById("searchHelpBtn").addEventListener("click", () => {
         document.getElementById("searchHelpModal").classList.remove("hidden");
     });
-
     // Close search help modal
     // Help button
     document.getElementById("helpBtn").addEventListener("click", () => {
         document.getElementById("helpModal").classList.remove("hidden");
     });
-
     // Search help button
     document.getElementById("searchHelpBtn").addEventListener("click", () => {
         document.getElementById("searchHelpModal").classList.remove("hidden");
     });
-
     // Close search help X button
     document.getElementById("closeSearchHelpModal").addEventListener("click", () => {
         document.getElementById("searchHelpModal").classList.add("hidden");
     });
-
     // Close search help bottom button
     document.getElementById("closeSearchHelpBtn").addEventListener("click", () => {
         document.getElementById("searchHelpModal").classList.add("hidden");
     });
-
     // 联系方式 button
     document.getElementById("contactBtn").addEventListener("click", () => {
         document.getElementById("contactModal").classList.remove("hidden");
     });
-
-    // 投稿按钮
-    document.getElementById("submitBtn").addEventListener("click", () => {
-        document.getElementById("submitModal").classList.remove("hidden");
-        // 清空输入和错误
+    // 清空表单函数
+    function clearForm() {
         document.getElementById("linkInput").value = "";
         document.getElementById("pkgInput").value = "";
         document.getElementById("appIdInput").value = "";
@@ -330,26 +322,29 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("pkgError").classList.add("hidden");
         document.getElementById("appIdError").classList.add("hidden");
         document.getElementById("resultArea").classList.add("hidden");
+    }
+    // 清空按钮
+    document.getElementById("clearBtn").addEventListener("click", clearForm);
+    // 投稿按钮
+    document.getElementById("submitBtn").addEventListener("click", () => {
+        document.getElementById("submitModal").classList.remove("hidden");
+        // 清空输入和错误
+        clearForm();
     });
-
     // 关闭投稿模态框
     document.getElementById("closeSubmitModal").addEventListener("click", () => {
         document.getElementById("submitModal").classList.add("hidden");
     });
-
     // 链接输入事件
     document.getElementById("linkInput").addEventListener("input", parseLink);
-
     // 包名输入事件，隐藏错误
     document.getElementById("pkgInput").addEventListener("input", () => {
         document.getElementById("pkgError").classList.add("hidden");
     });
-
     // app_id 输入事件，隐藏错误
     document.getElementById("appIdInput").addEventListener("input", () => {
         document.getElementById("appIdError").classList.add("hidden");
     });
-
     // 查询按钮
     document.getElementById("queryBtn").addEventListener("click", () => {
         if (validateInputs()) {
