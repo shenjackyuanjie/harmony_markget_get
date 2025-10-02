@@ -34,14 +34,14 @@ var DashboardAppDetails = (function() {
                         <p class="text-gray-600 mb-4">${app_info.developer_name || "未知开发者"}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
                             <span ${same_css} bg-blue-100 text-blue-800">${app_info.kind_type_name || "未知"}-${app_info.kind_name || "未知"}</span>
-                            <span ${same_css} bg-indigo-100 text-indigo-800">${app_metric.version || "未知版本"}</span>
-                            <span ${same_css} bg-gray-100 text-green-800">目标 api 版本${app_metric.target_sdk || "未知"}</span>
-                            <span ${same_css} bg-gray-100 text-green-800">最小 api 版本${app_metric.minsdk || "未知"}</span>
-                            <span ${same_css} bg-gray-100 text-green-800">编译 api 版本${app_metric.compile_sdk_version || "未知"}</span>
+                            <span ${same_css} bg-purple-100 text-purple-800">${app_metric.version} (${app_metric.version_code})</span>
+                            <span ${same_css} bg-cyan-100 text-cyan-800">目标 api 版本 ${app_metric.target_sdk}</span>
+                            <span ${same_css} bg-emerald-100 text-emerald-800">最小 api 版本 ${app_metric.minsdk}</span>
+                            <span ${same_css} bg-amber-100 text-amber-800">编译 api 版本 ${app_metric.compile_sdk_version}</span>
                         </div>
                         <div class="space-y-2 mb-2">
-                            <p><strong>数据更新时间:</strong> <span class="text-gray-600">${app_metric.created_at ? DashboardUtils.formatDate(app_metric.created_at) : "未知"}</span></p>
-                            <p><strong>应用更新时间:</strong> <span class="text-gray-600">${app_metric.release_date ? DashboardUtils.formatDate(app_metric.release_date) : "未知"}</span></p>
+                            <p><strong>数据更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.created_at)}</span></p>
+                            <p><strong>应用更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.release_date)}</span></p>
                             <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
                             <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
                             <p><strong>App ID:</strong> <span class="text-gray-600">${app_info.app_id}</span></p>
