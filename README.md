@@ -12,10 +12,12 @@
 - ✅ 配置化管理数据库连接、API 参数和服务器设置
 - ✅ 集成 tracing 日志系统和字符串清理工具
 - ✅ 错误处理机制，单个包失败不影响整体流程
-- ✅ Web 服务器提供 REST API 接口查询数据
+- ✅ Web 服务器提供丰富的 REST API 接口查询数据
 - ✅ 多二进制工具支持数据同步、爬取和猜测应用ID
 - ✅ API token 自动管理和刷新机制
 - ✅ 数据库迁移脚本支持表结构演进
+- ✅ 完整的排行榜系统，支持多维度应用排行
+- ✅ 分页查询系统，支持大规模数据浏览
 
 ## 📋 数据库表结构
 
@@ -106,6 +108,7 @@ cp config.example.toml config.toml
 # PostgreSQL 数据库连接字符串
 # 格式: postgresql://用户名:密码@主机:端口/数据库名
 url = "postgresql://market_user:password@localhost:5432/market_db"
+max_connect = 3
 
 [app]
 # 要查询的应用包名列表
@@ -120,18 +123,18 @@ locale = "zh_CN"
 
 [api]
 # 华为应用市场 API 基础 URL
-base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+info_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+# 用于获取评分信息的 api
+detail_url = "https://web-drcn.hispace.dbankcloud.com/edge/harmony/page-detail"
 # API 请求超时时间（秒）
 timeout_seconds = 30
+# 数据更新间隔 (秒)
+interval_seconds = 1800
 
-[logging]
-# 日志级别: debug, info, warn, error
-level = "info"
-
-[server]
+[serve]
 # Web 服务器配置
-host = "0.0.0.0"
-port = 8080
+url = "localhost"
+port = 3000
 ```
 
 ## 🎯 使用方法
@@ -176,24 +179,48 @@ cargo run --bin get_market server
 ./target/release/get_market server
 ```
 
-服务器默认监听 http://localhost:8080，支持端点如：
-- GET /query/pkg_name/{pkg} - 查询指定包名应用信息
-- GET /query/app_id/{id} - 查询指定应用ID信息
-- GET /top100 - 获取 Top 100 热门应用
+服务器默认监听 http://localhost:3000，提供丰富的API接口：
+
+#### 应用查询API
+- `GET /api/apps/by-pkg-name/{pkg}` - 查询指定包名应用信息
+- `GET /api/apps/by-app-id/{id}` - 查询指定应用ID信息
+- `GET /api/apps/list/{page}` - 分页获取应用列表
+- `GET /api/apps/list/{page}/detail` - 分页获取应用详细信息
+- `GET /api/apps/list/info` - 获取应用总数统计
+
+#### 排行榜API
+- `GET /api/rankings/downloads` - 下载量排行
+- `GET /api/rankings/ratings` - 评分排行
+- `GET /api/rankings/recent` - 最近更新排行
+- `GET /api/rankings/prices` - 价格排行
+- `GET /api/rankings/rating-counts` - 评分人数排行
+- `GET /api/rankings/download-growth?time_range=7d` - 下载量增长排行
+- `GET /api/rankings/rating-growth?time_range=7d` - 评分增长排行
+- `GET /api/rankings/developers` - 开发者排行
+- `GET /api/rankings/sizes` - 应用大小排行
 
 ### 其他二进制工具
 ```bash
 # 猜测应用ID
 cargo run --bin guess_market
 
+# 随机猜测应用ID
+cargo run --bin guess_rand
+
 # 从数据库猜测应用ID
 cargo run --bin guess_from_db
+
+# 大规模猜测应用ID
+cargo run --bin guess_large
 
 # 从 nextmax.cn 爬取应用ID并保存为 apps.json
 cargo run --bin get_nextmax
 
 # 读取华为应用市场数据
 cargo run --bin read_appgallery
+
+# 读取包名数据
+cargo run --bin read_pkg_name
 ```
 
 ## 📊 数据采集流程
@@ -212,13 +239,14 @@ cargo run --bin read_appgallery
 ```toml
 [database]
 url = "postgresql://username:password@localhost:5432/market_db"
+max_connect = 3
 ```
 
 ### 服务器配置
 ```toml
-[server]
-host = "0.0.0.0"
-port = 8080
+[serve]
+url = "localhost"
+port = 3000
 ```
 
 ### 应用配置
@@ -231,14 +259,10 @@ locale = "zh_CN"  # 支持: zh_CN, en_US 等
 ### API 配置
 ```toml
 [api]
-base_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+info_url = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/appinfo"
+detail_url = "https://web-drcn.hispace.dbankcloud.com/edge/harmony/page-detail"
 timeout_seconds = 30
-```
-
-### 日志配置
-```toml
-[logging]
-level = "info"  # debug, info, warn, error
+interval_seconds = 1800
 ```
 
 ## 🗃️ 数据结构示例
@@ -298,9 +322,35 @@ cargo build
 ## 📈 性能优化
 
 - 使用 `--release` 标志构建以获得最佳性能
-- 调整数据库连接池大小
-- 合理设置请求超时时间
+- 调整数据库连接池大小（max_connect 配置）
+- 合理设置请求超时时间和更新间隔
 - 批量处理应用包时适当添加延迟
+
+## 🌐 Web API 详细文档
+
+完整的 API 文档请参考 [API.md](API.md)，包含以下内容：
+
+### 响应格式
+所有API返回统一的JSON格式：
+```json
+{
+  "data": {实际数据},
+  "total_count": 数字 (可选，分页或排行时),
+  "page_size": 数字 (可选，分页或排行时)
+}
+```
+
+### 使用示例
+```bash
+# 查询应用信息
+curl "http://localhost:3000/api/apps/by-pkg-name/com.huawei.hmsapp.appgallery"
+
+# 获取下载量排行榜
+curl "http://localhost:3000/api/rankings/downloads?limit=20"
+
+# 分页获取应用列表
+curl "http://localhost:3000/api/apps/list/1"
+```
 
 ## 🤝 贡献指南
 
@@ -310,23 +360,48 @@ cargo build
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开 Pull Request
 
-<!--## 📄 许可证
+## 📄 项目结构
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情-->
+```
+get_market/
+├── src/
+│   ├── main.rs              # 主程序入口
+│   ├── config.rs            # 配置管理
+│   ├── utils.rs             # 工具函数
+│   ├── guess_*.rs           # 各种猜测应用ID的工具
+│   ├── get_nextmax.rs       # 爬取nextmax.cn数据
+│   ├── read_*.rs            # 数据读取工具
+│   ├── db/                  # 数据库相关模块
+│   ├── model/               # 数据模型
+│   ├── server/              # Web服务器模块
+│   └── sync/                # 数据同步模块
+├── assets/
+│   ├── sql/                 # 数据库脚本
+│   ├── html/                # 前端页面
+│   ├── js/                  # JavaScript文件
+│   └── icon/                # 图标资源
+├── config.example.toml      # 配置文件示例
+├── API.md                   # API文档
+└── README.md                # 项目说明
+```
 
 ## 🙏 致谢
 
 - 华为应用市场提供的开放API
 - Rust 生态系统和相关库开发者
 - PostgreSQL 数据库团队
+- Axum Web 框架开发者
 
 ## 📞 支持
 
 如果您遇到问题或有建议，请：
 1. 查看现有的 [Issues](../../issues)
-2. 创建新的 Issue 并描述详细问题
-3. 提供相关的错误日志和配置信息
+2. 查看 [API.md](API.md) 了解详细的API使用方法
+3. 创建新的 Issue 并描述详细问题
+4. 提供相关的错误日志和配置信息
 
 ---
 
 **注意**: 请确保遵守华为应用市场的使用条款和隐私政策，合理使用API接口。
+
+**版本**: v0.5.0 | **最后更新**: 2024年
