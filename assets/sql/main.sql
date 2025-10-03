@@ -207,6 +207,9 @@ SELECT ai.app_id,
 
 -- 创建索引以提高查询性能
 CREATE INDEX idx_app_info_app_id ON app_info(app_id);
+CREATE INDEX idx_app_info_pkg_name ON app_info(pkg_name);
+CREATE INDEX idx_app_info_name ON app_info(name);
+CREATE INDEX idx_app_info_developer_name ON app_info(developer_name);
 CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
 CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
 CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);

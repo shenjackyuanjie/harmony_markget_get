@@ -21,6 +21,9 @@ ALTER COLUMN listed_at SET NOT NULL;
 
 -- 为 listed_at 字段创建索引以提高查询性能
 CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
+CREATE INDEX idx_app_info_pkg_name ON app_info(pkg_name);
+CREATE INDEX idx_app_info_name ON app_info(name);
+CREATE INDEX idx_app_info_developer_name ON app_info(developer_name);
 
 -- 删除现有视图
 DROP VIEW IF EXISTS app_latest_info;
