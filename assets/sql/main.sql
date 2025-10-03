@@ -41,6 +41,7 @@ CREATE TABLE app_info (
     app_gift                BOOLEAN NOT NULL,   -- 是否有礼包（false=否）
     free_days               INTEGER NOT NULL,   -- 免费天数（0）
     pay_install_type        INTEGER NOT NULL,   -- 付费安装类型（0）
+    comment                 JSONB,              -- 评论或注释数据（JSON格式）
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now() -- 创建时间
 );
 
@@ -132,6 +133,7 @@ SELECT ai.app_id,
    ai.app_gift,
    ai.free_days,
    ai.pay_install_type,
+   ai.comment,  -- 评论或注释数据
    ai.created_at,  -- 创建时间
    am.version,
    am.version_code,
@@ -208,4 +210,3 @@ CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);
 CREATE INDEX idx_app_metrics_download_count ON app_metrics(download_count);
 CREATE INDEX idx_app_rating_app_id ON app_rating(app_id);
-CREATE INDEX idx_app_rating_version ON app_rating(version);
