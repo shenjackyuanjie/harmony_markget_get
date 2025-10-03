@@ -21,7 +21,11 @@ var DashboardRenderers = (function () {
 
             const tr = document.createElement("tr");
             tr.className = "hover:bg-gray-50 cursor-pointer transition-colors";
-            tr.onclick = () => DashboardAppDetails.showAppDetail(app_info.app_id);
+            tr.onclick = () => {
+                DashboardAppDetails.showAppDetail(app_info.app_id);
+                // 更新URL参数
+                window.updateUrlParam('app_id', app_info.app_id);
+            };
             tr.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                 <td class="px-6 py-4 whitespace-nowrap">

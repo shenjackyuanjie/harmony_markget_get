@@ -16,6 +16,13 @@ let currentPage = 1;
 let totalPages = 1;
 
 /**
+ * @type {Object} 当前打开的应用详情
+ * @property {string} appId - 应用ID
+ * @property {string} pkgName - 包名
+ */
+let currentApp = {};
+
+/**
  * @type {Object} 当前排序配置
  * @property {string} field - 排序字段名
  * @property {boolean} desc - 是否降序排列
@@ -255,18 +262,168 @@ document.addEventListener("keydown", function (event) {
             const modal = document.getElementById(modalId);
             if (!modal.classList.contains("hidden")) {
                 modal.classList.add("hidden");
+
+                // 如果关闭的是应用详情模态框，移除URL参数
+                if (modalId === "appDetailModal") {
+                    window.updateUrlParam('app_id', '');
+                    window.updateUrlParam('pkg_name', '');
+                    window.currentApp = null;
+                }
             }
         });
     }
 });
 
+/**
+ * 获取当前URL参数
+ * @returns {Object} URL参数对象
+ */
+window.getUrlParams = function() {
+    const params = {};
+    new URLSearchParams(window.location.search).forEach((value, key) => {
+        params[key] = value;
+    });
+    return params;
+}
+
+/**
+ * 更新URL参数，不刷新页面
+ * @param {string} key - 参数名
+ * @param {string} value - 参数值
+ */
+window.updateUrlParam = function(key, value) {
+    const url = new URL(window.location);
+    if (value) {
+        url.searchParams.set(key, value);
+    } else {
+        url.searchParams.delete(key);
+    }
+    window.history.pushState({}, '', url);
+}
+
+/**
+ * 复制文本到剪贴板
+ * @param {string} text - 要复制的文本
+ * @param {HTMLElement} [button] - 触发复制的按钮元素
+ */
+window.copyToClipboard = function(text, button) {
+    navigator.clipboard.writeText(text).then(() => {
+        // 显示临时成功提示
+        if (button) {
+            const originalText = button.textContent;
+            const originalBg = button.style.background;
+            button.textContent = '复制成功！';
+            button.style.background = 'linear-gradient(to right, #10B981, #059669)';
+
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = originalBg;
+            }, 2000);
+        } else {
+            // 创建一个浮动提示
+            const toast = document.createElement('div');
+            toast.textContent = '链接已复制到剪贴板！';
+            toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(16,185,129,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
+            document.body.appendChild(toast);
+
+            // 2秒后移除提示
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
+        }
+    }).catch(err => {
+        console.error('复制失败:', err);
+
+        // 显示临时失败提示
+        if (button) {
+            const originalText = button.textContent;
+            const originalBg = button.style.background;
+            button.textContent = '复制失败！';
+            button.style.background = 'linear-gradient(to right, #EF4444, #DC2626)';
+
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = originalBg;
+            }, 2000);
+        } else {
+            const toast = document.createElement('div');
+            toast.textContent = '复制失败，请手动复制。';
+            toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(239,68,68,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
+        }
+    });
+}
+
+/**
+ * 使用系统分享API分享链接
+ * @param {string} title - 分享标题
+ * @param {string} text - 分享文本
+ * @param {string} url - 分享链接
+ */
+window.shareLink = function(title, text, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: url
+        }).catch(err => {
+            console.error('分享失败:', err);
+            alert('分享失败，请手动分享。');
+        });
+    } else {
+        const toast = document.createElement('div');
+        toast.textContent = '您的浏览器不支持系统分享功能，已复制链接到剪贴板。';
+        toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(79,70,229,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 2000);
+
+        window.copyToClipboard(url);
+    }
+}
+
 // DOM加载完成后初始化
 document.addEventListener("DOMContentLoaded", () => {
+    // 检查URL参数，如果有app_id或pkg_name参数，自动打开应用详情
+    const params = window.getUrlParams();
+    const appId = params.app_id;
+    const pkgName = params.pkg_name;
+
     DashboardDataLoaders.loadOverview();
     DashboardDataLoaders.loadApps();
     document.getElementById("searchKeySelect").value = "name";
     DashboardCharts.loadCharts();
     updateLastUpdate();
+
+    // 如果有app_id参数，打开应用详情
+    if (appId) {
+        setTimeout(() => {
+            DashboardAppDetails.showAppDetail(appId);
+        }, 1000);
+    }
+    // 如果有pkg_name参数，通过API查询后打开详情
+    else if (pkgName) {
+        setTimeout(async () => {
+            try {
+                const response = await fetch(`${API_BASE}/apps/pkg_name/${pkgName}`);
+                const data = await response.json();
+                if (data.data && data.data.info && data.data.info.app_id) {
+                    DashboardAppDetails.showAppDetail(data.data.info.app_id);
+                }
+            } catch (error) {
+                console.error('根据包名查询应用失败:', error);
+            }
+        }, 1000);
+    }
 
     // Sorting event listeners
     document.querySelectorAll("th[data-sort]").forEach((header) => {
@@ -335,9 +492,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     modal.classList.remove('hidden');
                 } else {
                     modal.classList.add('hidden');
+
+                    // 如果关闭的是应用详情模态框，移除URL参数
+                    if (handler.modal === 'appDetailModal') {
+                        window.updateUrlParam('app_id', '');
+                        window.updateUrlParam('pkg_name', '');
+                        window.currentApp = null;
+                    }
                 }
             });
         }
+    });
+
+    // 为应用详情的关闭按钮添加事件，移除URL参数
+    document.querySelectorAll("[onclick*='appDetailModal'].classList.add('hidden')").forEach(btn => {
+        const originalOnClick = btn.getAttribute('onclick');
+        btn.setAttribute('onclick', `${originalOnClick}; window.updateUrlParam('app_id', ''); window.updateUrlParam('pkg_name', ''); window.currentApp = null;`);
     });
 
     // 清空表单函数

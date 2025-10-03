@@ -127,6 +127,10 @@ var DashboardCharts = (function () {
                             // 打开应用详情页面
                             if (typeof DashboardAppDetails !== 'undefined' && typeof DashboardAppDetails.showAppDetail === 'function') {
                                 DashboardAppDetails.showAppDetail(app.app_id);
+                                // 更新URL参数
+                                if (typeof window.updateUrlParam === 'function') {
+                                    window.updateUrlParam('app_id', app.app_id);
+                                }
                             } else {
                                 console.warn('应用详情模块未加载或showAppDetail函数不存在');
                             }
