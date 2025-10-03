@@ -7,8 +7,8 @@ use std::ops::Range;
 use crate::db::read_data::{
     SELECT_APP_INFO_FIELDS, SELECT_APP_METRIC_FIELDS, SELECT_APP_RATING_FIELDS,
 };
-use crate::db::{Database, DbSearch, PaginatedAppInfo};
-use crate::model::{AppInfo, AppMetric, FullAppInfo, ShortAppRating};
+use crate::db::{AppCounts, Database, DbSearch, PaginatedAppInfo};
+use crate::model::{AppInfo, AppMetric, AppQuery, FullAppInfo, ShortAppRating};
 
 impl Database {
     fn read_full_app_data_from_row(row: &PgRow) -> FullAppInfo {
@@ -33,10 +33,13 @@ impl Database {
     }
 
     /// 检查应用是否已存在
-    pub async fn app_exists(&self, app_id: &str) -> Result<bool> {
-        const QUERY: &str = "SELECT COUNT(*) FROM app_info WHERE app_id = $1";
-        let count: i64 = sqlx::query(QUERY)
-            .bind(app_id)
+    pub async fn app_exists(&self, app_query: &AppQuery) -> Result<bool> {
+        let query = format!(
+            "SELECT COUNT(*) FROM app_info WHERE {} = $1",
+            app_query.app_db_name()
+        );
+        let count: i64 = sqlx::query(&query)
+            .bind(app_query.name())
             .fetch_one(&self.pool)
             .await?
             .get(0);
@@ -336,33 +339,18 @@ impl Database {
         })
     }
 
-    /// 获取数据库内所有应用数量
-    pub async fn count_all_apps(&self) -> Result<u32> {
-        const QUERY: &str = "SELECT COUNT(*) FROM app_info";
-
-        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
-
-        Ok(count as u32)
-    }
-
     /// 获取数据库内应用数量
-    pub async fn count_apps(&self) -> Result<u32> {
-        const QUERY: &str = "SELECT COUNT(*) FROM app_info
-        WHERE pkg_name NOT LIKE 'com.atomicservice.%';";
+    pub async fn count_apps(&self) -> Result<AppCounts> {
+        const QUERY: &str = r#"
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN pkg_name NOT LIKE 'com.atomicservice.%' THEN 1 ELSE 0 END) AS apps,
+            SUM(CASE WHEN pkg_name LIKE 'com.atomicservice.%' THEN 1 ELSE 0 END) AS atomic_services
+        FROM
+            app_info
+        "#;
 
-        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
-
-        Ok(count as u32)
-    }
-
-    /// 获取数据库内元应用数量
-    pub async fn count_atomic_services(&self) -> Result<u32> {
-        const QUERY: &str = "SELECT count(*) FROM app_info
-        WHERE pkg_name LIKE 'com.atomicservice.%';";
-
-        let count: i64 = sqlx::query(QUERY).fetch_one(&self.pool).await?.get(0);
-
-        Ok(count as u32)
+        Ok(sqlx::query_as(QUERY).fetch_one(&self.pool).await?)
     }
 
     /// 获取 app_info 表中的总记录数

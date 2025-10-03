@@ -1,3 +1,4 @@
+use axum::routing::post;
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 use std::sync::Arc;
 
@@ -47,6 +48,8 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             "/charts/star-distribution",
             get(handlers::get_star_distribution),
         )
+        // 投稿
+        .route("/submit", post(handlers::submit_app))
         .fallback(api_not_found)
         .with_state(app_state.clone());
 
@@ -79,7 +82,10 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
             get(handle_static::serve_app_details_js),
         )
         .route("/favicon.ico", get(handle_static::serve_favicon))
-        .route("/tencent6875095490394109723.txt", get(handle_static::serve_腾讯))
+        .route(
+            "/tencent6875095490394109723.txt",
+            get(handle_static::serve_腾讯),
+        )
         .nest("/api", api_router)
         .fallback(handle_static::serve_not_found)
         .with_state(app_state)

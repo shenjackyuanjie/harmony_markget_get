@@ -3,15 +3,54 @@ use axum::{
     extract::{Path, Query, State},
     response::IntoResponse,
 };
-use serde_json::json;
+use serde_json::{Value as JsonValue, json};
 use tracing::{Level, event};
 
 use std::sync::Arc;
 
 use crate::{
+    db::AppCounts,
     model::{AppInfo, AppMetric, AppQuery, AppRating, FullAppInfo, ShortAppInfo},
     server::state::{ApiResponse, AppListQuery, AppState, RankingQuery},
 };
+
+pub async fn submit_app(
+    State(state): State<Arc<AppState>>,
+    Json(data): Json<JsonValue>,
+) -> impl IntoResponse {
+    // 获取 app_id 或者 pkg_name
+    let app_id = data.get("app_id").and_then(|v| v.as_str());
+    let pkg_name = data.get("pkg_name").and_then(|v| v.as_str());
+    if app_id.is_none() && pkg_name.is_none() {
+        return Json(ApiResponse::error(
+            "app_id 和 pkg_name 至少给一个, 总不能一个不给吧".to_string(),
+        ));
+    } else if app_id.is_some() && pkg_name.is_some() {
+        return Json(ApiResponse::error(
+            "app_id 和 pkg_name 至多给一个, 你两个都给是什么意思".to_string(),
+        ));
+    }
+    let query = match (app_id, pkg_name) {
+        (Some(id), None) => AppQuery::app_id(id),
+        (None, Some(name)) => AppQuery::pkg_name(name),
+        _ => unreachable!(),
+    };
+    #[derive(serde::Deserialize)]
+    struct SubmitResult {
+        pub is_new: bool,
+        pub full_info: FullAppInfo,
+    }
+
+    let exists = match state.db.app_exists(&query).await {
+        Ok(exists) => exists,
+        Err(e) => {
+            event!(Level::WARN, "检查应用是否存在时出错: {e}");
+            return Json(ApiResponse::error("数据库错误".to_string()));
+        }
+    };
+
+    todo!();
+}
 
 /// 查询应用包名信息
 pub async fn query_pkg(
@@ -97,31 +136,20 @@ pub async fn app_list_info(State(state): State<Arc<AppState>>) -> impl IntoRespo
     event!(Level::INFO, "http 服务正在尝试获取应用列表信息");
     #[derive(serde::Deserialize, serde::Serialize)]
     struct MarketInfo {
-        app_count: u32,
-        atomic_services_count: u32,
-        full_count: u32,
+        app_count: AppCounts,
         developer_count: i64,
     }
     match state.db.count_apps().await {
-        Ok(app_count) => match state.db.count_atomic_services().await {
-            Ok(atomic_services_count) => match state.db.count_developers().await {
-                Ok(developer_count) => {
-                    let data = MarketInfo {
-                        app_count,
-                        atomic_services_count,
-                        full_count: app_count + atomic_services_count,
-                        developer_count,
-                    };
-                    Json(ApiResponse::success(data, None, None))
-                }
-                Err(e) => {
-                    event!(Level::WARN, "http服务获取开发者数量失败: {e}");
-                    Json(ApiResponse::error(json!({"error": "Database error"})))
-                }
-            },
-
+        Ok(app_count) => match state.db.count_developers().await {
+            Ok(developer_count) => {
+                let data = MarketInfo {
+                    app_count,
+                    developer_count,
+                };
+                Json(ApiResponse::success(data, None, None))
+            }
             Err(e) => {
-                event!(Level::WARN, "http服务获取原子服务数量失败: {e}");
+                event!(Level::WARN, "http服务获取开发者数量失败: {e}");
                 Json(ApiResponse::error(json!({"error": "Database error"})))
             }
         },

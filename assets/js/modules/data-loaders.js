@@ -21,20 +21,20 @@ var DashboardDataLoaders = (function() {
             // 获取应用统计
             const appResponse = await fetch(`${API_BASE}/market_info`);
             const market_info = await appResponse.json();
+            const app_count = market_info.data.app_count;
 
             // 更新统计数据到页面
             document.getElementById("totalCount").textContent = DashboardUtils.formatNumber(
-                (market_info.data.app_count || 0) +
-                (market_info.data.atomic_services_count || 0),
+                app_count.total
             );
             document.getElementById("appCount").textContent = DashboardUtils.formatNumber(
-                market_info.data.app_count || 0,
+                app_count.apps
             );
             document.getElementById("atomicServiceCount").textContent = DashboardUtils.formatNumber(
-                market_info.data.atomic_services_count || 0,
+                app_count.atomic_services
             );
             document.getElementById("developerCount").textContent = DashboardUtils.formatNumber(
-                market_info.data.developer_count || 0,
+                market_info.data.developer_count
             );
 
             // 隐藏加载指示器

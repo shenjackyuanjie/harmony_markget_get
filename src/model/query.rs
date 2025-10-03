@@ -22,6 +22,13 @@ impl AppQuery {
         }
     }
 
+    pub fn app_db_name(&self) -> &str {
+        match self {
+            AppQuery::PkgName(_) => "pkg_name",
+            AppQuery::AppId(_) => "app_id",
+        }
+    }
+
     pub fn page_detail_fmt(&self) -> String {
         match self {
             AppQuery::PkgName(_) => unreachable!("不能吧, 不能用 pkg_name 请求 page-detail 吧"),

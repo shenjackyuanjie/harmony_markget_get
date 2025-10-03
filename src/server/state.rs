@@ -134,11 +134,7 @@ impl AppListQuery {
         if let Some(key) = &self.search_key {
             matches!(
                 key.as_str(),
-                "name"
-                    | "pkg_name"
-                    | "app_id"
-                    | "developer_name"
-                    | "developer_en_name"
+                "name" | "pkg_name" | "app_id" | "developer_name" | "developer_en_name"
             )
         } else {
             false

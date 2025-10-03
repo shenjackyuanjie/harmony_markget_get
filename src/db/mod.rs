@@ -4,7 +4,10 @@ use anyhow::Result;
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::{
+    FromRow,
+    postgres::{PgPool, PgPoolOptions},
+};
 
 pub mod insert;
 pub mod query;
@@ -30,6 +33,13 @@ pub struct DbSearch {
     pub key: String,
     pub value: String,
     pub is_exact: bool,
+}
+
+#[derive(Debug, FromRow, serde::Deserialize, serde::Serialize)]
+pub struct AppCounts {
+    pub total: i64,
+    pub apps: i64,
+    pub atomic_services: i64,
 }
 
 impl DbSearch {
