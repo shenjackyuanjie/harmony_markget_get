@@ -34,6 +34,10 @@ fn rate_num_default() -> String {
     "0".to_string()
 }
 
+fn api_release_type_default() -> String {
+    "Release".to_string()
+}
+
 /// 1. 原始 JSON 数据直接映射
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RawJsonData {
@@ -144,6 +148,6 @@ pub struct RawJsonData {
     pub compile_sdk_version: i32,
     #[serde(rename = "minHmosApiLevel", default)]
     pub min_hmos_api_level: i32,
-    #[serde(rename = "apiReleaseType")]
+    #[serde(rename = "apiReleaseType", default = "api_release_type_default")]
     pub api_release_type: String,
 }
