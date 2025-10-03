@@ -95,8 +95,26 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                 .as_ref()
                 .map(|star_data| AppRating::from_raw_star(&data, star_data));
             let info: AppInfo = (&data).into();
+            #[derive(Debug, serde::Serialize)]
+            struct Response {
+                info: AppInfo,
+                metric: AppMetric,
+                rating: Option<AppRating>,
+                new_app: bool,
+                new_info: bool,
+                new_metric: bool,
+                new_rating: bool,
+            }
             Json(ApiResponse::success(
-                json!({"info": info, "metric": metric, "rating": rating, "new_app": exists, "new_info": new_info, "new_metric": new_metric, "new_rating": new_rating}),
+                Response {
+                    info,
+                    metric,
+                    rating,
+                    new_app: exists,
+                    new_info,
+                    new_metric,
+                    new_rating,
+                },
                 None,
                 None,
             ))
