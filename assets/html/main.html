@@ -53,11 +53,6 @@
             padding: 8px;
         }
 
-        .chart-container:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-
         .table th {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -181,7 +176,7 @@
                         <h5 class="text-lg font-semibold text-blue-800 mb-0">总下载榜</h5>
                     </div>
                     <div class="overflow-x-auto">
-                        <div class="p-2 chart-container animate-pulse-slow" style="min-width: 1400px;">
+                        <div class="p-2 chart-container" style="min-width: 1400px;">
                             <canvas id="top_download_chart"></canvas>
                         </div>
                     </div>
@@ -192,7 +187,7 @@
                     <div class="p-4 border-b border-purple-100">
                         <h5 class="text-lg font-semibold text-purple-800 mb-0">总应用评分分布</h5>
                     </div>
-                    <div class="p-2 chart-container animate-pulse-slow">
+                    <div class="p-2 chart-container">
                         <canvas id="starChart"></canvas>
                     </div>
                 </div>
@@ -203,7 +198,7 @@
                 <h5 class="text-lg font-semibold text-teal-800 mb-0">非华为应用/内置应用下载榜</h5>
             </div>
             <div class="overflow-x-auto">
-                <div class="p-2 chart-container animate-pulse-slow" style="min-width: 2200px;">
+                <div class="p-2 chart-container" style="min-width: 2200px;">
                     <canvas id="top_download_chart_not_huawei"></canvas>
                 </div>
             </div>
