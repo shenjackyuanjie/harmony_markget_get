@@ -63,36 +63,31 @@ async fn async_main() -> anyhow::Result<()> {
             let locale = config.locale().to_string();
             let app_id = format!("C{id}");
             join_set.spawn(async move {
-                if let Ok(data) = crate::sync::get_app_info(
-                    &client,
-                    &api_url,
-                    &AppQuery::app_id(&app_id),
-                    &locale,
-                )
-                .await
+                if let Ok(data) =
+                    crate::sync::query_app(&client, &api_url, &AppQuery::app_id(&app_id), &locale)
+                        .await
                 {
-                    let star_result =
-                        crate::sync::get_star_by_app_id(&client, &api_url, &app_id).await;
-                    let star = match star_result {
-                        Ok(star_data) => Some(star_data),
-                        Err(e) => {
-                            eprintln!("获取应用 {} 的评分数据失败: {:#}", app_id, e);
-                            None
+                    match db.save_app_data(&data.0, data.1.as_ref(), None).await {
+                        Ok(inserted) => {
+                            if inserted.0 {
+                                println!(
+                                    "{}",
+                                    format!("已将 {app_id} 的数据插入数据库").on_green()
+                                );
+                            }
+                            if inserted.1 {
+                                println!(
+                                    "{}",
+                                    format!("已将 {app_id} 的评分数据插入数据库").on_green()
+                                );
+                            }
                         }
-                    };
-
-                    if let Ok(inserted) = db.save_app_data(&data, star.as_ref(), None).await {
-                        if inserted.0 {
-                            println!("{}", format!("已将 {app_id} 的数据插入数据库").on_green());
-                        }
-                        if inserted.1 {
+                        Err(err) => {
                             println!(
                                 "{}",
-                                format!("已将 {app_id} 的评分数据插入数据库").on_green()
+                                format!("保存 {app_id} 的数据时出错: {}", err).on_red()
                             );
                         }
-                    } else {
-                        println!("插入数据库时出错");
                     }
                 }
             });

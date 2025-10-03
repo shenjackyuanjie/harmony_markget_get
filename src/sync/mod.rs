@@ -19,6 +19,22 @@ pub mod code;
 pub static USER_AGENT: LazyLock<String> =
     LazyLock::new(|| format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")));
 
+/// 批量同步所有应用数据
+///
+/// # 参数
+/// - `client`: HTTP客户端
+/// - `db`: 数据库连接
+/// - `config`: 配置信息
+///
+/// # 返回值
+/// - `anyhow::Result<()>`: 同步结果
+///
+/// # 功能
+/// 1. 获取配置中的包名列表
+/// 2. 合并数据库中已存在的包名
+/// 3. 随机打乱顺序
+/// 4. 逐个同步每个包的数据
+/// 5. 统计并输出结果
 pub async fn sync_all(
     client: &Client,
     db: &crate::db::Database,
@@ -36,7 +52,8 @@ pub async fn sync_all(
 
     packages.sort();
     packages.dedup();
-    // 随机打乱 powered by grok 4 fast (free)
+
+    // 随机打乱顺序
     {
         let seed = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -72,12 +89,13 @@ pub async fn sync_all(
         );
 
         total_processed += 1;
-        match sync_app_data(
+        match sync_app(
             client,
             db,
             config.api_url(),
             &AppQuery::pkg_name(package),
             locale,
+            None,
         )
         .await
         {
@@ -144,24 +162,81 @@ pub async fn sync_all(
     Ok(())
 }
 
-/// 处理单个应用包
-pub async fn sync_app_data(
+/// 同步单个应用数据
+///
+/// # 参数
+/// - `client`: HTTP客户端
+/// - `db`: 数据库连接
+/// - `api_url`: API地址
+/// - `app_query`: 应用查询条件（包名或应用ID）
+/// - `locale`: 语言设置
+/// - `listed_at`: 上架时间（可选）
+///
+/// # 返回值
+/// - `anyhow::Result<(bool, bool)>`: (数据是否插入, 评分数据是否插入)
+///
+/// # 功能
+/// 1. 获取应用基本信息
+/// 2. 获取应用评分信息（如果是普通应用）
+/// 3. 保存数据到数据库
+/// 4. 返回插入状态
+pub async fn sync_app(
     client: &reqwest::Client,
     db: &Database,
     api_url: &str,
     app_query: &AppQuery,
     locale: &str,
+    listed_at: Option<DateTime<Local>>,
 ) -> anyhow::Result<(bool, bool)> {
-    let data = get_app_info(client, api_url, app_query, locale)
+    let app_data = query_app(client, api_url, app_query, locale).await?;
+
+    event!(
+        Level::INFO,
+        app_id = app_data.0.app_id,
+        "获取到包 {app_query} 的数据, 应用名称: {}",
+        app_data.0.name
+    );
+
+    // 保存数据到数据库（包含重复检查）
+    let inserted = db
+        .save_app_data(&app_data.0, app_data.1.as_ref(), listed_at)
+        .await
+        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
+
+    Ok(inserted)
+}
+
+/// 查询单个应用的完整数据
+///
+/// # 参数
+/// - `client`: HTTP客户端
+/// - `api_url`: API地址
+/// - `app_query`: 应用查询条件（包名或应用ID）
+/// - `locale`: 语言设置
+///
+/// # 返回值
+/// - `anyhow::Result<(RawJsonData, Option<RawRatingData>)>`: (基本信息, 评分信息)
+///
+/// # 功能
+/// 1. 获取应用基本信息
+/// 2. 获取应用评分信息
+/// 3. 返回完整数据但不保存到数据库
+pub async fn query_app(
+    client: &reqwest::Client,
+    api_url: &str,
+    app_query: &AppQuery,
+    locale: &str,
+) -> anyhow::Result<(RawJsonData, Option<RawRatingData>)> {
+    let data = get_app_data(client, api_url, app_query, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
     let star = if !app_query.name().starts_with("com.atomicservice") {
-        let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
+        let star_result = get_app_rating(client, api_url, &data.app_id).await;
         match star_result {
             Ok(star_data) => Some(star_data),
             Err(e) => {
-                event!(Level::WARN, "获取包 {} 的评分数据失败: {}", app_query, e,);
+                event!(Level::WARN, "获取包 {} 的评分数据失败: {}", app_query, e);
                 None
             }
         }
@@ -178,92 +253,85 @@ pub async fn sync_app_data(
         data.name
     );
 
-    // 保存数据到数据库（包含重复检查）
-    let inserted = db
-        .save_app_data(&data, star.as_ref(), None)
-        .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
-
-    Ok(inserted)
+    Ok((data, star))
 }
 
-/// 查询单个应用包
-pub async fn query_package(
-    client: &reqwest::Client,
-    db: &Database,
-    api_url: &str,
-    app_query: &AppQuery,
-    listed_at: Option<DateTime<Local>>,
-) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_app_info(client, api_url, app_query, "zh")
-        .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
-
-    let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
-    let star = match star_result {
-        Ok(star_data) => Some(star_data),
-        Err(e) => {
-            event!(Level::ERROR, "获取包 {app_query} 的评分数据失败: {e:#}",);
-            None
-        }
-    };
-
-    event!(
-        Level::INFO,
-        "获取到包 {app_query} 的数据,应用ID: {}，应用名称: {}",
-        data.app_id,
-        data.name
-    );
-
-    // 保存数据到数据库（包含重复检查）
-    let is_new = db
-        .save_app_data(&data, star.as_ref(), listed_at)
-        .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
-
-    Ok((data, star, is_new))
-}
-
-/// 查询单个应用包
+/// 获取应用基本信息
+///
+/// # 参数
+/// - `client`: HTTP客户端
+/// - `api_url`: API地址
+/// - `app_query`: 应用查询条件（包名或应用ID）
+/// - `locale`: 语言设置
+///
+/// # 返回值
+/// - `anyhow::Result<RawJsonData>`: 应用基本信息
+///
+/// # 功能
+/// 1. 构建请求体
+/// 2. 发送HTTP请求
+/// 3. 解析响应数据
+/// 4. 返回应用基本信息
 pub async fn get_app_data(
     client: &reqwest::Client,
-    db: &Database,
     api_url: &str,
     app_query: &AppQuery,
-    locale: &str,
-    listed_at: Option<DateTime<Local>>,
-) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_app_info(client, api_url, app_query, locale)
-        .await
-        .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
+    locale: impl ToString,
+) -> anyhow::Result<RawJsonData> {
+    let body = serde_json::json!({
+        app_query.app_info_type(): app_query.name(),
+        "locale": locale.to_string(),
+    });
 
-    let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
-    let star = match star_result {
-        Ok(star_data) => Some(star_data),
-        Err(e) => {
-            event!(Level::ERROR, "获取包 {} 的评分数据失败: {:#}", data.name, e);
-            None
-        }
-    };
+    let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
+    let response = client
+        .post(format!("{api_url}/webedge/appinfo"))
+        .header("Content-Type", "application/json")
+        .header("User-Agent", USER_AGENT.to_string())
+        .header("interface-code", token.interface_code)
+        .header("identity-id", token.identity_id)
+        .json(&body)
+        .send()
+        .await?;
 
-    event!(
-        Level::INFO,
-        "获取到包 {} 的数据,应用ID: {}，应用名称: {}",
-        data.name,
-        data.app_id,
-        data.name
-    );
+    // 检查响应状态码
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!(
+            "HTTP请求失败,状态码: {}",
+            response.status()
+        ));
+    }
 
-    // 保存数据到数据库（包含重复检查）
-    let is_new = db
-        .save_app_data(&data, star.as_ref(), listed_at)
-        .await
-        .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", data.name, e))?;
+    // 检查响应体是否为空
+    let content_length = response.content_length().unwrap_or(0);
+    if content_length == 0 {
+        return Err(anyhow::anyhow!("HTTP响应体为空"));
+    }
 
-    Ok((data, star, is_new))
+    let data = response.json::<serde_json::Value>().await?;
+
+    let parsed_data = serde_json::from_value(data.clone())
+        .map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
+
+    Ok(parsed_data)
 }
 
-pub async fn get_star_by_app_id(
+/// 获取应用评分数据
+///
+/// # 参数
+/// - `client`: HTTP客户端
+/// - `api_url`: API地址
+/// - `app_id`: 应用ID
+///
+/// # 返回值
+/// - `anyhow::Result<RawRatingData>`: 应用评分数据
+///
+/// # 功能
+/// 1. 构建评分查询请求体
+/// 2. 发送HTTP请求
+/// 3. 解析响应数据
+/// 4. 返回评分信息
+pub async fn get_app_rating(
     client: &reqwest::Client,
     api_url: &str,
     app_id: impl ToString,
@@ -326,48 +394,4 @@ pub async fn get_star_by_app_id(
     };
 
     Ok(data)
-}
-
-pub async fn get_app_info(
-    client: &reqwest::Client,
-    api_url: &str,
-    app_query: &AppQuery,
-    locale: impl ToString,
-) -> anyhow::Result<RawJsonData> {
-    let body = serde_json::json!({
-        app_query.app_info_type(): app_query.name(),
-        "locale": locale.to_string(),
-    });
-
-    let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
-    let response = client
-        .post(format!("{api_url}/webedge/appinfo"))
-        .header("Content-Type", "application/json")
-        .header("User-Agent", USER_AGENT.to_string())
-        .header("interface-code", token.interface_code)
-        .header("identity-id", token.identity_id)
-        .json(&body)
-        .send()
-        .await?;
-
-    // 检查响应状态码
-    if !response.status().is_success() {
-        return Err(anyhow::anyhow!(
-            "HTTP请求失败,状态码: {}",
-            response.status()
-        ));
-    }
-
-    // 检查响应体是否为空
-    let content_length = response.content_length().unwrap_or(0);
-    if content_length == 0 {
-        return Err(anyhow::anyhow!("HTTP响应体为空"));
-    }
-
-    let data = response.json::<serde_json::Value>().await?;
-
-    let parsed_data = serde_json::from_value(data.clone())
-        .map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
-
-    Ok(parsed_data)
 }

@@ -135,7 +135,7 @@ async fn async_main() -> anyhow::Result<()> {
                 let app_id = format!("{}{}", prefix, id);
 
                 join_set.spawn(async move {
-                    match crate::sync::get_app_info(
+                    if let Ok(data) = crate::sync::query_app(
                         &client,
                         &api_url,
                         &AppQuery::app_id(&app_id),
@@ -143,43 +143,27 @@ async fn async_main() -> anyhow::Result<()> {
                     )
                     .await
                     {
-                        Ok(data) => {
-                            let star =
-                                crate::sync::get_star_by_app_id(&client, &api_url, &data.app_id)
-                                    .await;
-                            let star = match star {
-                                Ok(star_data) => Some(star_data),
-                                Err(e) => {
-                                    eprintln!("获取应用 {} 的评分数据失败: {:#}", app_id, e);
-                                    None
+                        match db.save_app_data(&data.0, data.1.as_ref(), None).await {
+                            Ok(inserted) => {
+                                if inserted.0 {
+                                    println!(
+                                        "{}",
+                                        format!("已将 {app_id} 的数据插入数据库").on_green()
+                                    );
                                 }
-                            };
-
-                            match db.save_app_data(&data, star.as_ref(), None).await {
-                                Ok(inserted) => {
-                                    if inserted.0 || inserted.1 {
-                                        println!(
-                                            "{}",
-                                            format!(
-                                                "已将 {app_id} {} {} 的数据插入数据库",
-                                                data.name, data.pkg_name
-                                            )
-                                            .purple()
-                                        );
-                                    }
-                                }
-                                Err(e) => {
-                                    eprintln!("插入数据库时出错: {:#}", e);
+                                if inserted.1 {
+                                    println!(
+                                        "{}",
+                                        format!("已将 {app_id} 的评分数据插入数据库").on_green()
+                                    );
                                 }
                             }
-                        }
-                        Err(_) => {
-                            // 静默处理404等错误，只打印其他错误
-                            // if !e.to_string().contains("404")
-                            //     && !e.to_string().contains("not found")
-                            // {
-                            //     eprintln!("获取应用 {} 数据失败: {:#}", app_id, e);
-                            // }
+                            Err(err) => {
+                                println!(
+                                    "{}",
+                                    format!("保存 {app_id} 的数据时出错: {}", err).on_red()
+                                );
+                            }
                         }
                     }
                 });
