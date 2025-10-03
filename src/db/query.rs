@@ -51,12 +51,12 @@ impl Database {
     /// 获取指定应用的最后一条原始JSON数据
     pub async fn get_last_raw_json_data(&self, app_id: &str) -> Option<Value> {
         const QUERY: &str = r#"
-            SELECT raw_json_data
-            FROM app_raw
-            WHERE app_id = $1
-            ORDER BY created_at DESC
-            LIMIT 1
-        "#;
+                SELECT raw_json_data
+                FROM app_raw
+                WHERE app_id = $1
+                ORDER BY created_at DESC
+                LIMIT 1
+            "#;
 
         let result = sqlx::query(QUERY)
             .bind(app_id)
@@ -64,7 +64,7 @@ impl Database {
             .await
             .ok()?;
 
-        result.map(|r| r.try_get("raw_json_data").ok()).flatten()
+        result.and_then(|r| r.try_get("raw_json_data").ok())
     }
 
     /// 获取指定应用的 created_at 时间
