@@ -76,7 +76,7 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                 Err(e) => {
                     event!(Level::WARN, "数据库查询应用是否存在失败: {e}");
                     return Json(ApiResponse::error(
-                        json!({"error": "数据库查询应用是否存在失败"}),
+                        "数据库查询应用是否存在失败"
                     ));
                 }
             };
@@ -86,7 +86,7 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                     Err(e) => {
                         event!(Level::WARN, "数据库保存应用数据失败: {e}");
                         return Json(ApiResponse::error(
-                            json!({"error": "数据库保存应用数据失败"}),
+                            "数据库保存应用数据失败"
                         ));
                     }
                 };
@@ -121,7 +121,7 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
         }
         Err(e) => {
             event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}");
-            Json(ApiResponse::error(json!({"error": e.to_string()})))
+            Json(ApiResponse::error(e.to_string()))
         }
     }
 }
