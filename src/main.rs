@@ -1,3 +1,4 @@
+use anyhow::Context;
 use tracing::{Level, event};
 
 pub mod config;
@@ -12,14 +13,15 @@ fn main() -> anyhow::Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
         .enable_all()
-        .build()?;
+        .build()
+        .with_context(|| "Failed to create tokio runtime")?;
     event!(Level::INFO, "async rt built");
     rt.block_on(async_main())
 }
 
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
-    let _ = config::Config::load()?;
+    let _ = config::Config::load().with_context(|| "Failed to load config")?;
     let (worker_send, worker_recv) = tokio::sync::oneshot::channel::<()>();
 
     let worker = tokio::spawn(server::worker(worker_recv));

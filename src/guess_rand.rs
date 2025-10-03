@@ -1,3 +1,4 @@
+use anyhow::Context;
 use colored::Colorize;
 use serde_json::json;
 
@@ -39,14 +40,15 @@ fn main() -> anyhow::Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
         .enable_all()
-        .build()?;
+        .build()
+        .with_context(|| "Failed to create tokio runtime")?;
 
     rt.block_on(async_main())
 }
 
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
-    let config = config::Config::load()?;
+    let config = config::Config::load().with_context(|| "Failed to load config")?;
 
     // C69175 59067092904725
     // C69175 59057467250518
@@ -68,7 +70,8 @@ async fn async_main() -> anyhow::Result<()> {
 
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
-        .build()?;
+        .build()
+        .with_context(|| "Failed to create reqwest client")?;
 
     let mut rng = Random::new();
 
