@@ -538,12 +538,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
-
+    
     // 为应用详情的关闭按钮添加事件，移除URL参数
-    document.querySelectorAll("[onclick*='appDetailModal'].classList.add('hidden')").forEach(btn => {
+    document.querySelectorAll("button[onclick]").forEach(btn => {
         const originalOnClick = btn.getAttribute('onclick');
-        btn.setAttribute('onclick', `${originalOnClick}; window.updateUrlParam('app_id', ''); window.updateUrlParam('pkg_name', ''); window.currentApp = null;`);
+        if (originalOnClick.includes("appDetailModal") && originalOnClick.includes("classList.add('hidden')")) {
+            btn.setAttribute('onclick', `${originalOnClick}; window.updateUrlParam('app_id', ''); window.updateUrlParam('pkg_name', ''); window.currentApp = null;`);
+        }
     });
+
 
     // 清空表单函数
     function clearForm() {
