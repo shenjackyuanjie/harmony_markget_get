@@ -48,14 +48,7 @@ pub async fn submit_app(
     }
     let comment = data.get("comment");
 
-    let exists = match state.db.app_exists(&query).await {
-        Ok(false) => false,
-        Ok(true) => true,
-        Err(e) => {
-            event!(Level::WARN, "检查应用是否存在时出错: {e}");
-            return Json(ApiResponse::error("数据库错误".to_string()));
-        }
-    };
+    let exists = !state.db.app_exists(&query).await;
 
     todo!();
 }
@@ -71,23 +64,13 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
     {
         Ok((data, rating)) => {
             // 检查是否是新的
-            let exists = match state.db.app_exists(&query).await {
-                Ok(r) => r,
-                Err(e) => {
-                    event!(Level::WARN, "数据库查询应用是否存在失败: {e}");
-                    return Json(ApiResponse::error(
-                        "数据库查询应用是否存在失败"
-                    ));
-                }
-            };
+            let exists = state.db.app_exists(&query).await;
             let (new_info, new_metric, new_rating) =
                 match state.db.save_app_data(&data, rating.as_ref(), None).await {
                     Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
                     Err(e) => {
                         event!(Level::WARN, "数据库保存应用数据失败: {e}");
-                        return Json(ApiResponse::error(
-                            "数据库保存应用数据失败"
-                        ));
+                        return Json(ApiResponse::error("数据库保存应用数据失败"));
                     }
                 };
             let metric = AppMetric::from_raw_data(&data);

@@ -33,22 +33,23 @@ impl Database {
     }
 
     /// 检查应用是否已存在
-    pub async fn app_exists(&self, app_query: &AppQuery) -> Result<bool> {
+    pub async fn app_exists(&self, app_query: &AppQuery) -> bool {
         let query = format!(
             "SELECT COUNT(*) FROM app_info WHERE {} = $1",
             app_query.app_db_name()
         );
-        let count: i64 = sqlx::query(&query)
+        let count: Option<i64> = sqlx::query(&query)
             .bind(app_query.name())
             .fetch_one(&self.pool)
-            .await?
-            .get(0);
+            .await
+            .ok()
+            .map(|r| r.get(0));
 
-        Ok(count > 0)
+        count.map(|c| c > 0).unwrap_or(false)
     }
 
     /// 获取指定应用的最后一条原始JSON数据
-    pub async fn get_last_raw_json_data(&self, app_id: &str) -> Result<Option<Value>> {
+    pub async fn get_last_raw_json_data(&self, app_id: &str) -> Option<Value> {
         const QUERY: &str = r#"
             SELECT raw_json_data
             FROM app_raw
@@ -60,15 +61,10 @@ impl Database {
         let result = sqlx::query(QUERY)
             .bind(app_id)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .ok()?;
 
-        match result {
-            Some(row) => {
-                let raw_json: Value = row.get("raw_json_data");
-                Ok(Some(raw_json))
-            }
-            None => Ok(None),
-        }
+        result.map(|r| r.try_get("raw_json_data").ok()).flatten()
     }
 
     /// 获取指定应用的 created_at 时间
@@ -94,7 +90,7 @@ impl Database {
     }
 
     /// 获取指定应用的最后一条原始JSON数据
-    pub async fn get_last_raw_json_star(&self, app_id: &str) -> Result<Option<Value>> {
+    pub async fn get_last_raw_json_star(&self, app_id: &str) -> Option<Value> {
         const QUERY: &str = r#"
             SELECT raw_json_star
             FROM app_raw
@@ -106,41 +102,43 @@ impl Database {
         let result = sqlx::query(QUERY)
             .bind(app_id)
             .fetch_optional(&self.pool)
-            .await?;
+            .await
+            .ok()?;
 
         match result {
             Some(row) => {
                 let raw_json: Value = row.get("raw_json_star");
-                Ok(Some(raw_json))
+                Some(raw_json)
             }
-            None => Ok(None),
+            None => None,
         }
     }
 
     /// 检查新数据是否与最后一条数据相同
-    pub async fn is_same_data(&self, app_id: &str, new_data: &Value) -> Result<bool> {
-        if let Some(last_data) = self.get_last_raw_json_data(app_id).await? {
-            Ok(last_data == *new_data)
-        } else {
-            Ok(false)
-        }
+    pub async fn is_same_data(&self, app_id: &str, new_data: &Value) -> bool {
+        self.get_last_raw_json_data(app_id)
+            .await
+            .map(|last_data| last_data == *new_data)
+            .unwrap_or(false)
     }
 
     /// 检查评分是否相同
-    pub async fn is_same_rating(&self, app_id: &str, new_rating: &Value) -> Result<bool> {
-        if let Some(last_rating) = self.get_last_raw_json_star(app_id).await? {
-            Ok(last_rating == *new_rating)
-        } else {
-            Ok(false)
-        }
+    pub async fn is_same_rating(&self, app_id: &str, new_rating: &Value) -> bool {
+        self.get_last_raw_json_star(app_id)
+            .await
+            .map(|last_rating| last_rating == *new_rating)
+            .unwrap_or(false)
     }
 
     /// 实际检查 app info 是否相同
-    pub async fn is_same_app_info(&self, app_id: &str, app_info: &AppInfo) -> Result<bool> {
-        Ok(self.get_app_info(app_id).await? == *app_info)
+    pub async fn is_same_app_info(&self, app_id: &str, app_info: &AppInfo) -> bool {
+        self.get_app_info(app_id)
+            .await
+            .map(|d| d == *app_info)
+            .unwrap_or(false)
     }
 
-    pub async fn get_app_info(&self, app_id: &str) -> Result<AppInfo> {
+    pub async fn get_app_info(&self, app_id: &str) -> Option<AppInfo> {
         let query = format!(
             "SELECT {} FROM app_info WHERE app_id = $1",
             SELECT_APP_INFO_FIELDS
@@ -148,30 +146,39 @@ impl Database {
         let row = sqlx::query(&query)
             .bind(app_id)
             .fetch_one(&self.pool)
-            .await?;
+            .await
+            .ok()?;
         let data = Self::read_app_info_from_row(&row);
 
-        Ok(data)
+        Some(data)
     }
 
     /// 实际检查 app metric 是否相同
-    pub async fn is_same_app_metric(&self, app_id: &str, app_metric: &AppMetric) -> Result<bool> {
-        Ok(self.get_app_last_metric(app_id).await? == *app_metric)
+    pub async fn is_same_app_metric(&self, app_id: &str, app_metric: &AppMetric) -> bool {
+        self.get_app_last_metric(app_id)
+            .await
+            .map(|last_metric| last_metric == *app_metric)
+            .unwrap_or(false)
     }
 
     /// 获取 app 最后一次的 metric
-    pub async fn get_app_last_metric(&self, app_id: &str) -> Result<AppMetric> {
+    pub async fn get_app_last_metric(&self, app_id: &str) -> Option<AppMetric> {
         let query = format!(
             "SELECT {} FROM app_metrics WHERE app_id = $1",
             SELECT_APP_METRIC_FIELDS
         );
         let row = sqlx::query(&query)
             .bind(app_id)
-            .fetch_one(&self.pool)
-            .await?;
-        let data = Self::read_app_metric_from_row(&row);
-
-        Ok(data)
+            .fetch_optional(&self.pool)
+            .await
+            .ok()?;
+        match row {
+            Some(row) => {
+                let data = Self::read_app_metric_from_row(&row);
+                Some(data)
+            }
+            None => None,
+        }
     }
 
     /// 获取数据库中所有的 pkg_name

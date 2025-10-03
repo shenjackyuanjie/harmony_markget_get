@@ -1,4 +1,4 @@
-use crate::model::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
+use crate::model::{AppInfo, AppMetric, AppQuery, AppRating, AppRaw, RawJsonData, RawRatingData};
 
 use anyhow::Result;
 use chrono::{DateTime, Local};
@@ -97,9 +97,13 @@ impl Database {
     ) -> Result<(bool, bool, bool)> {
         // 转换原始JSON数据用于比较
         let raw_json = AppRaw::from_raw_datas(raw_data, raw_rating);
-        let insert_data = if self
-            .is_same_data(&raw_data.app_id, &raw_json.raw_json_data)
-            .await?
+        let exists = self
+            .app_exists(&AppQuery::pkg_name(&raw_data.pkg_name))
+            .await;
+        let insert_data = if exists
+            && self
+                .is_same_data(&raw_data.app_id, &raw_json.raw_json_data)
+                .await
         {
             (false, false)
         } else {
@@ -110,7 +114,7 @@ impl Database {
             }
 
             // 转换并保存应用信息
-            let info_new = if self.is_same_app_info(&raw_data.app_id, &app_info).await? {
+            let info_new = if self.is_same_app_info(&raw_data.app_id, &app_info).await {
                 false
             } else {
                 self.insert_app_info(&app_info).await?;
@@ -124,10 +128,7 @@ impl Database {
 
             // 保存指标信息
             let app_metric = AppMetric::from_raw_data(raw_data);
-            let metric_new = if self
-                .is_same_app_metric(&raw_data.app_id, &app_metric)
-                .await?
-            {
+            let metric_new = if self.is_same_app_metric(&raw_data.app_id, &app_metric).await {
                 false
             } else {
                 self.insert_app_metric(&app_metric).await?;
@@ -146,7 +147,7 @@ impl Database {
         // 保存评分信息（如果有）
         let insert_rate = if let Some(raw_star) = raw_rating {
             let value = serde_json::to_value(raw_star).unwrap();
-            if self.is_same_rating(&raw_data.app_id, &value).await? {
+            if self.is_same_rating(&raw_data.app_id, &value).await {
                 false
             } else {
                 let app_rating = AppRating::from_raw_star(raw_data, raw_star);
