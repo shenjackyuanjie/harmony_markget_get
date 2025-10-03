@@ -231,7 +231,7 @@ pub async fn query_app(
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
-    let star = if !app_query.name().starts_with("com.atomicservice") {
+    let star = if !data.pkg_name.starts_with("com.atomicservice") {
         let star_result = get_app_rating(client, api_url, &data.app_id).await;
         match star_result {
             Ok(star_data) => Some(star_data),

@@ -92,7 +92,7 @@ pub async fn query_app(
             {
                 Ok(true) => false,
                 Ok(false) => match state.db.insert_app_info(&info).await {
-                    Ok(_) => true,
+                    Ok(()) => true,
                     Err(e) => {
                         event!(Level::WARN, "数据库插入应用信息失败: {e} {:?}", info);
                         return Json(ApiResponse::error(
@@ -115,7 +115,7 @@ pub async fn query_app(
                 {
                     Ok(true) => false,
                     Ok(false) => match state.db.insert_app_rating(rating).await {
-                        Ok(_) => true,
+                        Ok(()) => true,
                         Err(e) => {
                             event!(Level::WARN, "数据库插入应用评分失败: {e}");
                             return Json(ApiResponse::error(
