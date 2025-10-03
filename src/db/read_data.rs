@@ -14,7 +14,7 @@ pub const SELECT_APP_INFO_FIELDS: &str = r#"
     denpend_hms, force_update, img_tag, is_pay,
     is_disciplined, is_shelves, submit_type, delete_archive,
     charging, button_grey, app_gift, free_days,
-    pay_install_type, created_at
+    pay_install_type, created_at, listed_at, comment
 "#;
 
 pub const SELECT_APP_METRIC_FIELDS: &str = r#"

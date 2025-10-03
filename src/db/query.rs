@@ -737,7 +737,7 @@ impl Database {
                     download_count, price, release_date,
                     new_features, upgrade_msg, target_sdk,
                     minsdk, compile_sdk_version, min_hmos_api_level,
-                    api_release_type, metrics_created_at
+                    api_release_type, metrics_created_at, listed_at, comment
                 FROM app_latest_info
                 WHERE download_count IS NOT NULL
                   AND dev_en_name !~* $2
@@ -765,7 +765,7 @@ impl Database {
                     download_count, price, release_date,
                     new_features, upgrade_msg, target_sdk,
                     minsdk, compile_sdk_version, min_hmos_api_level,
-                    api_release_type, metrics_created_at
+                    api_release_type, metrics_created_at, listed_at, comment
                 FROM app_latest_info
                 WHERE download_count IS NOT NULL
                 ORDER BY download_count DESC
