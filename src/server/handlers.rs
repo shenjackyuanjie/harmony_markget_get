@@ -3,10 +3,11 @@ use axum::{
     extract::{Path, Query, State},
     response::IntoResponse,
 };
+use chrono::{DateTime, Local};
 use serde_json::{Value as JsonValue, json};
 use tracing::{Level, event};
 
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc};
 
 use crate::{
     db::AppCounts,
@@ -35,7 +36,7 @@ pub async fn submit_app(
         (None, Some(name)) => AppQuery::pkg_name(name),
         _ => unreachable!(),
     };
-    let listed_at = data.get("listed_at").and_then(|v| v.as_str());
+    let listed_at: Option<DateTime<Local>> = data.get("listed_at").and_then(|v| v.as_str()).and_then(|d| DateTime::from_str(d).ok());
 
     #[derive(serde::Deserialize)]
     struct SubmitResult {
@@ -45,7 +46,8 @@ pub async fn submit_app(
     let comment = data.get("comment");
 
     let exists = match state.db.app_exists(&query).await {
-        Ok(exists) => exists,
+        Ok(false) => false,
+        Ok(true) => true,
         Err(e) => {
             event!(Level::WARN, "检查应用是否存在时出错: {e}");
             return Json(ApiResponse::error("数据库错误".to_string()));
@@ -114,11 +116,11 @@ pub async fn query_pkg(
             let new_rating = if let Some(rating) = rating.as_ref() {
                 match state
                     .db
-                    .is_same_rating(&data.app_id, &serde_json::to_value(&rating).unwrap())
+                    .is_same_rating(&data.app_id, &serde_json::to_value(rating).unwrap())
                     .await
                 {
                     Ok(true) => false,
-                    Ok(false) => match state.db.insert_app_rating(&rating).await {
+                    Ok(false) => match state.db.insert_app_rating(rating).await {
                         Ok(_) => true,
                         Err(e) => {
                             event!(Level::WARN, "数据库插入应用评分失败: {e}");
@@ -212,11 +214,11 @@ pub async fn query_app_id(
             let new_rating = if let Some(rating) = rating.as_ref() {
                 match state
                     .db
-                    .is_same_rating(&data.app_id, &serde_json::to_value(&rating).unwrap())
+                    .is_same_rating(&data.app_id, &serde_json::to_value(rating).unwrap())
                     .await
                 {
                     Ok(true) => false,
-                    Ok(false) => match state.db.insert_app_rating(&rating).await {
+                    Ok(false) => match state.db.insert_app_rating(rating).await {
                         Ok(_) => true,
                         Err(e) => {
                             event!(Level::WARN, "数据库插入应用评分失败: {e}");
