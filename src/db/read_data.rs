@@ -20,7 +20,7 @@ pub const SELECT_APP_INFO_FIELDS: &str = r#"
 pub const SELECT_APP_METRIC_FIELDS: &str = r#"
     app_id, version, version_code, size_bytes,
     sha256, info_score::text, info_rate_count,
-    download_count, price, release_date,
+    download_count, price::text, release_date,
     new_features, upgrade_msg, target_sdk,
     minsdk, compile_sdk_version, min_hmos_api_level,
     api_release_type, created_at AS metrics_created_at

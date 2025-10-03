@@ -42,6 +42,7 @@ CREATE TABLE app_info (
     free_days               INTEGER NOT NULL,   -- 免费天数（0）
     pay_install_type        INTEGER NOT NULL,   -- 付费安装类型（0）
     comment                 JSONB,              -- 评论或注释数据（JSON格式）
+    listed_at               TIMESTAMPTZ,        -- 应用上架时间
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now() -- 创建时间
 );
 
@@ -96,56 +97,57 @@ CREATE OR REPLACE VIEW app_latest_info AS
 SELECT ai.app_id,
    ai.alliance_app_id,
    ai.name,
-   ai.pkg_name,
-   ai.dev_id,
-   ai.developer_name,
-   ai.dev_en_name,
-   ai.supplier,
-   ai.kind_id,
-   ai.kind_name,
-   ai.tag_name,
-   ai.kind_type_id,
-   ai.kind_type_name,
-   ai.icon_url,
-   ai.brief_desc,
-   ai.description,
-   ai.privacy_url,
-   ai.ctype,
-   ai.detail_id,
-   ai.app_level,
-   ai.jocat_id,
-   ai.iap,
-   ai.hms,
-   ai.tariff_type,
-   ai.packing_type,
-   ai.order_app,
-   ai.denpend_gms,
-   ai.denpend_hms,
-   ai.force_update,
-   ai.img_tag,
-   ai.is_pay,
-   ai.is_disciplined,
-   ai.is_shelves,
-   ai.submit_type,
-   ai.delete_archive,
-   ai.charging,
-   ai.button_grey,
-   ai.app_gift,
-   ai.free_days,
-   ai.pay_install_type,
-   ai.comment,  -- 评论或注释数据
-   ai.created_at,  -- 创建时间
-   am.version,
-   am.version_code,
-   am.size_bytes,
-   am.sha256,
-   am.info_score,
-   am.info_rate_count,
-   am.download_count,
-   am.price,
-   am.release_date,
-   am.new_features,
-   am.upgrade_msg,
+   ai.pkg_name,                    -- 应用包名
+   ai.dev_id,                      -- 开发者ID
+   ai.developer_name,              -- 开发者名称
+   ai.dev_en_name,                 -- 开发者英文名称
+   ai.supplier,                    -- 供应商名称
+   ai.kind_id,                     -- 应用分类ID
+   ai.kind_name,                   -- 应用分类名称
+   ai.tag_name,                    -- 标签名称
+   ai.kind_type_id,                -- 类型ID
+   ai.kind_type_name,              -- 类型名称
+   ai.icon_url,                    -- 应用图标URL
+   ai.brief_desc,                  -- 简短描述
+   ai.description,                 -- 应用详细描述
+   ai.privacy_url,                 -- 隐私政策链接
+   ai.ctype,                       -- 客户端类型
+   ai.detail_id,                   -- 详情页ID
+   ai.app_level,                   -- 应用等级
+   ai.jocat_id,                    -- 分类ID
+   ai.iap,                         -- 是否含应用内购买
+   ai.hms,                         -- 是否依赖HMS
+   ai.tariff_type,                 -- 资费类型
+   ai.packing_type,                -- 打包类型
+   ai.order_app,                   -- 是否预装应用
+   ai.denpend_gms,                 -- 是否依赖GMS
+   ai.denpend_hms,                 -- 是否依赖HMS
+   ai.force_update,                -- 是否强制更新
+   ai.img_tag,                     -- 图片标签
+   ai.is_pay,                      -- 是否付费
+   ai.is_disciplined,              -- 是否合规
+   ai.is_shelves,                  -- 是否上架
+   ai.submit_type,                 -- 提交类型
+   ai.delete_archive,              -- 是否删除归档
+   ai.charging,                    -- 是否收费
+   ai.button_grey,                 -- 按钮是否置灰
+   ai.app_gift,                    -- 是否有礼包
+   ai.free_days,                   -- 免费天数
+   ai.pay_install_type,            -- 付费安装类型
+   ai.comment,                     -- 评论或注释数据
+   ai.listed_at,                   -- 上架时间
+   ai.created_at,                  -- 创建时间
+   am.version,                     -- 版本号
+   am.version_code,                -- 版本代码
+   am.size_bytes,                  -- 应用大小（字节）
+   am.sha256,                      -- 安装包SHA256校验值
+   am.info_score,                  -- 信息评分
+   am.info_rate_count,             -- 信息评分人数
+   am.download_count,              -- 下载次数
+   am.price,                       -- 价格
+   am.release_date,                -- 发布时间
+   am.new_features,                -- 新功能描述
+   am.upgrade_msg,                 -- 升级提示
    am.target_sdk,
    am.minsdk,
    am.compile_sdk_version,
@@ -205,6 +207,7 @@ SELECT ai.app_id,
 
 -- 创建索引以提高查询性能
 CREATE INDEX idx_app_info_app_id ON app_info(app_id);
+CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
 CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
 CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);

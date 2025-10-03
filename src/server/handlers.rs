@@ -40,6 +40,8 @@ pub async fn submit_app(
         pub is_new: bool,
         pub full_info: FullAppInfo,
     }
+    // 获取提交者数据
+    let submitter = data.get("submitter").and_then(|v| v.as_str());
 
     let exists = match state.db.app_exists(&query).await {
         Ok(exists) => exists,

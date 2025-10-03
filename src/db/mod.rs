@@ -92,7 +92,7 @@ impl Database {
         &self,
         raw_data: &RawJsonData,
         raw_star: Option<&RawRatingData>,
-    ) -> anyhow::Result<(bool, bool)> {
+    ) -> Result<(bool, bool)> {
         // 转换原始JSON数据用于比较
         let raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
         let insert_data = if self

@@ -3,7 +3,14 @@
 
 -- 为 app_info 表添加 comment 列，类型为 JSONB，允许为 NULL
 ALTER TABLE app_info
-ADD COLUMN comment JSONB;
+ADD COLUMN comment JSONB,
+ADD COLUMN listed_at TIMESTAMPTZ;
+
+-- 为新字段添加注释
+COMMENT ON COLUMN app_info.listed_at IS '应用上架时间';
+
+-- 为 listed_at 字段创建索引以提高查询性能
+CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
 
 -- 同时更新 app_latest_info 视图，包含新增的 comment 字段
 CREATE OR REPLACE VIEW app_latest_info AS
@@ -48,6 +55,7 @@ SELECT ai.app_id,
    ai.free_days,
    ai.pay_install_type,
    ai.comment,  -- 新增字段：comment
+   ai.listed_at,  -- 新增字段：上架时间
    ai.created_at,  -- 创建时间
    am.version,
    am.version_code,
@@ -123,4 +131,5 @@ BEGIN
     RAISE NOTICE '迁移完成：成功为 app_info 表添加 comment 字段';
     RAISE NOTICE '- 添加了 comment 字段 (类型: JSONB, 允许为 NULL)';
     RAISE NOTICE '- 更新了 app_latest_info 视图以包含 comment 字段';
+    RAISE NOTICE '- 更新了 app_latest_info 视图以包含 listed_at 字段';
 END $$;

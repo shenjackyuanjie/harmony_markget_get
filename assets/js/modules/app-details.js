@@ -40,7 +40,7 @@ var DashboardAppDetails = (function() {
                             <span ${same_css} bg-amber-100 text-amber-800">编译 api 版本 ${app_metric.compile_sdk_version}</span>
                         </div>
                         <div class="space-y-2 mb-2">
-                            <p><strong>数据更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.created_at)}</span></p>
+                            <p><strong>数据更新时间:</strong> <span class="text-gray-600" id="dataUpdateTime">加载中...</span></p>
                             <p><strong>应用更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.release_date)}</span></p>
                             <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
                             <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
@@ -133,7 +133,16 @@ var DashboardAppDetails = (function() {
                         return response.json();
                     })
                     .then((historyResult) => {
+                        // 原始数据是从新到旧
                         let history = historyResult.data || [];
+                        // 更新数据更新时间为历史数据最新记录的时间（在倒序前获取）
+                        if (history && history.length > 0) {
+                            const latestRecord = history[0]; // 原始数据中最后一个是最新的
+                            const dataUpdateTimeElement = document.getElementById("dataUpdateTime");
+                            if (dataUpdateTimeElement) {
+                                dataUpdateTimeElement.textContent = DashboardUtils.formatDate(latestRecord.created_at);
+                            }
+                        }
                         // 去重 download_count（原有逻辑）
                         if (Array.isArray(history) && history.length > 1) {
                             const deduped = [history[0]];
@@ -144,6 +153,7 @@ var DashboardAppDetails = (function() {
                             }
                             history = deduped;
                         }
+
                         const chartCanvas = document.getElementById("downloadHistoryChart");
                         const incrementCanvas = document.getElementById(
                             "downloadIncrementChart",
@@ -152,9 +162,8 @@ var DashboardAppDetails = (function() {
                         const noIncrementMsg = document.getElementById("noIncrementMessage");
 
                         if (history.length > 1) {
-                            // 倒序（从新到旧，便于显示）
+                            // 倒序, chart.js 需要从旧到新
                             history.reverse();
-
                             /**
                              * @type {Array} 下载量历史数据
                              */
