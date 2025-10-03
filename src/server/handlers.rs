@@ -93,7 +93,7 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                     info,
                     metric,
                     rating,
-                    new_app: exists,
+                    new_app: !exists,
                     new_info,
                     new_metric,
                     new_rating,
