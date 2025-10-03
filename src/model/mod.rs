@@ -28,7 +28,7 @@ impl FullAppInfo {
 }
 
 /// 简化版评分排行结构体
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct ShortAppRating {
     pub app_id: String,
     pub name: String,
@@ -40,7 +40,7 @@ pub struct ShortAppRating {
 }
 
 /// 2. app_info 表
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct AppInfo {
     pub app_id: String,
     pub alliance_app_id: String,
@@ -199,7 +199,7 @@ impl From<FullAppInfo> for ShortAppInfo {
 }
 
 /// 4. app_metrics 表
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct AppMetric {
     pub id: i64,
     pub app_id: String,
@@ -223,7 +223,7 @@ pub struct AppMetric {
 }
 
 /// 5. app_rating 表
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct AppRating {
     pub id: i64,
     pub app_id: String,

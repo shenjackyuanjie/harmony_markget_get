@@ -36,7 +36,10 @@ pub async fn submit_app(
         (None, Some(name)) => AppQuery::pkg_name(name),
         _ => unreachable!(),
     };
-    let listed_at: Option<DateTime<Local>> = data.get("listed_at").and_then(|v| v.as_str()).and_then(|d| DateTime::from_str(d).ok());
+    let listed_at: Option<DateTime<Local>> = data
+        .get("listed_at")
+        .and_then(|v| v.as_str())
+        .and_then(|d| DateTime::from_str(d).ok());
 
     #[derive(serde::Deserialize)]
     struct SubmitResult {
@@ -57,10 +60,7 @@ pub async fn submit_app(
     todo!();
 }
 
-pub async fn query_app(
-    state: Arc<AppState>,
-    query: AppQuery,
-) -> impl IntoResponse {
+pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoResponse {
     match crate::sync::query_app(
         &state.client,
         state.cfg.api_url(),
@@ -70,11 +70,6 @@ pub async fn query_app(
     .await
     {
         Ok((data, rating)) => {
-            let metric = AppMetric::from_raw_data(&data);
-            let rating = rating
-                .as_ref()
-                .map(|star_data| AppRating::from_raw_star(&data, star_data));
-            let info: AppInfo = (&data).into();
             // 检查是否是新的
             let exists = match state.db.app_exists(&query).await {
                 Ok(r) => r,
@@ -85,65 +80,29 @@ pub async fn query_app(
                     ));
                 }
             };
-            let new_info = match state
-                .db
-                .is_same_data(&data.app_id, &serde_json::to_value(&info).unwrap())
-                .await
-            {
-                Ok(true) => false,
-                Ok(false) => match state.db.insert_app_info(&info).await {
-                    Ok(()) => true,
+            let (new_info, new_metric, new_rating) =
+                match state.db.save_app_data(&data, rating.as_ref(), None).await {
+                    Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
                     Err(e) => {
-                        event!(Level::WARN, "数据库插入应用信息失败: {e} {:?}", info);
+                        event!(Level::WARN, "数据库保存应用数据失败: {e}");
                         return Json(ApiResponse::error(
-                            json!({"error": "数据库插入应用信息失败"}),
+                            json!({"error": "数据库保存应用数据失败"}),
                         ));
                     }
-                },
-                Err(e) => {
-                    event!(Level::WARN, "数据库查询应用是否更新失败: {e}");
-                    return Json(ApiResponse::error(
-                        json!({"error": "数据库查询应用是否更新失败"}),
-                    ));
-                }
-            };
-            let new_rating = if let Some(rating) = rating.as_ref() {
-                match state
-                    .db
-                    .is_same_rating(&data.app_id, &serde_json::to_value(rating).unwrap())
-                    .await
-                {
-                    Ok(true) => false,
-                    Ok(false) => match state.db.insert_app_rating(rating).await {
-                        Ok(()) => true,
-                        Err(e) => {
-                            event!(Level::WARN, "数据库插入应用评分失败: {e}");
-                            return Json(ApiResponse::error(
-                                json!({"error": "数据库插入应用评分失败"}),
-                            ));
-                        }
-                    },
-                    Err(e) => {
-                        event!(Level::WARN, "数据库查询应用评分是否更新失败: {e}");
-                        return Json(ApiResponse::error(
-                            json!({"error": "数据库查询应用评分是否更新失败"}),
-                        ));
-                    }
-                }
-            } else {
-                false
-            };
+                };
+            let metric = AppMetric::from_raw_data(&data);
+            let rating = rating
+                .as_ref()
+                .map(|star_data| AppRating::from_raw_star(&data, star_data));
+            let info: AppInfo = (&data).into();
             Json(ApiResponse::success(
-                json!({"info": info, "metric": metric, "rating": rating, "new_app": exists, "new_info": new_info, "new_rating": new_rating}),
+                json!({"info": info, "metric": metric, "rating": rating, "new_app": exists, "new_info": new_info, "new_metric": new_metric, "new_rating": new_rating}),
                 None,
                 None,
             ))
         }
         Err(e) => {
-            event!(
-                Level::WARN,
-                "http服务获取 appid: {query:?} 的信息失败: {e}"
-            );
+            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}");
             Json(ApiResponse::error(json!({"error": e.to_string()})))
         }
     }

@@ -92,76 +92,76 @@ impl Database {
     pub async fn save_app_data(
         &self,
         raw_data: &RawJsonData,
-        raw_star: Option<&RawRatingData>,
+        raw_rating: Option<&RawRatingData>,
         listed_at: Option<DateTime<Local>>,
-    ) -> Result<(bool, bool)> {
+    ) -> Result<(bool, bool, bool)> {
         // 转换原始JSON数据用于比较
-        let raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
+        let raw_json = AppRaw::from_raw_datas(raw_data, raw_rating);
         let insert_data = if self
             .is_same_data(&raw_data.app_id, &raw_json.raw_json_data)
             .await?
         {
-            println!(
-                "{}",
-                format!(
-                    "基本数据与最后一条记录相同，跳过插入: {} ({})",
-                    raw_data.app_id, raw_data.name
-                )
-                .bright_black()
-            );
-            false
+            (false, false)
         } else {
-            // 检查应用是否已存在，如果存在则保留原有的 created_at 时间
-            let existing_created_at = self.get_app_created_at(&raw_data.app_id).await?;
             let mut app_info: AppInfo = raw_data.into();
 
-            // 如果应用已存在，使用原有的 created_at 时间
-            if let Some(created_at) = existing_created_at {
-                app_info.created_at = created_at;
-            }
             if let Some(listed_at) = listed_at {
                 app_info.listed_at = listed_at;
             }
 
             // 转换并保存应用信息
-            self.insert_app_info(&app_info).await?;
+            let info_new = if self.is_same_app_info(&raw_data.app_id, &app_info).await? {
+                false
+            } else {
+                self.insert_app_info(&app_info).await?;
+                println!(
+                    "{}",
+                    format!("插入新的 app info {} ({})", app_info.app_id, app_info.name)
+                        .bright_green()
+                );
+                true
+            };
 
             // 保存指标信息
             let app_metric = AppMetric::from_raw_data(raw_data);
-            self.insert_app_metric(&app_metric).await?;
-            true
-        };
-        // 保存评分信息（如果有）
-        let insert_rate = if let Some(raw_star) = raw_star {
-            let value = serde_json::to_value(raw_star).unwrap();
-            if self.is_same_rating(&raw_data.app_id, &value).await? {
+            let metric_new = if self
+                .is_same_app_metric(&raw_data.app_id, &app_metric)
+                .await?
+            {
+                false
+            } else {
+                self.insert_app_metric(&app_metric).await?;
                 println!(
                     "{}",
                     format!(
-                        "评分数据与最后一条记录相同，跳过评分信息保存: {} ({})",
-                        raw_data.app_id, raw_data.name
+                        "插入新的 app metric {} ({})",
+                        app_metric.app_id, raw_data.name
                     )
-                    .bright_black()
+                    .bright_green()
                 );
+                true
+            };
+            (info_new, metric_new)
+        };
+        // 保存评分信息（如果有）
+        let insert_rate = if let Some(raw_star) = raw_rating {
+            let value = serde_json::to_value(raw_star).unwrap();
+            if self.is_same_rating(&raw_data.app_id, &value).await? {
                 false
             } else {
                 let app_rating = AppRating::from_raw_star(raw_data, raw_star);
+                println!(
+                    "{}",
+                    format!("更新评分数据 {} ({})", raw_data.app_id, raw_data.name).bright_green()
+                );
                 self.insert_app_rating(&app_rating).await?;
                 true
             }
         } else {
-            println!(
-                "{}",
-                format!(
-                    "评分数据缺失，跳过评分信息保存: {} ({})",
-                    raw_data.app_id, raw_data.name
-                )
-                .yellow()
-            );
             false
         };
 
-        if insert_data || insert_rate {
+        if insert_data.0 || insert_data.1 || insert_rate {
             // 保存原始JSON数据
             self.insert_raw_data(&raw_json).await?;
             println!(
@@ -169,6 +169,6 @@ impl Database {
                 format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
             );
         }
-        Ok((insert_data, insert_rate))
+        Ok((insert_data.0, insert_data.1, insert_rate))
     }
 }

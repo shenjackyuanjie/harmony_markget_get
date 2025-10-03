@@ -135,6 +135,45 @@ impl Database {
         }
     }
 
+    /// 实际检查 app info 是否相同
+    pub async fn is_same_app_info(&self, app_id: &str, app_info: &AppInfo) -> Result<bool> {
+        Ok(self.get_app_info(app_id).await? == *app_info)
+    }
+
+    pub async fn get_app_info(&self, app_id: &str) -> Result<AppInfo> {
+        let query = format!(
+            "SELECT {} FROM app_info WHERE app_id = $1",
+            SELECT_APP_INFO_FIELDS
+        );
+        let row = sqlx::query(&query)
+            .bind(app_id)
+            .fetch_one(&self.pool)
+            .await?;
+        let data = Self::read_app_info_from_row(&row);
+
+        Ok(data)
+    }
+
+    /// 实际检查 app metric 是否相同
+    pub async fn is_same_app_metric(&self, app_id: &str, app_metric: &AppMetric) -> Result<bool> {
+        Ok(self.get_app_last_metric(app_id).await? == *app_metric)
+    }
+
+    /// 获取 app 最后一次的 metric
+    pub async fn get_app_last_metric(&self, app_id: &str) -> Result<AppMetric> {
+        let query = format!(
+            "SELECT {} FROM app_metrics WHERE app_id = $1",
+            SELECT_APP_METRIC_FIELDS
+        );
+        let row = sqlx::query(&query)
+            .bind(app_id)
+            .fetch_one(&self.pool)
+            .await?;
+        let data = Self::read_app_metric_from_row(&row);
+
+        Ok(data)
+    }
+
     /// 获取数据库中所有的 pkg_name
     pub async fn get_all_pkg_names(&self) -> Result<Vec<String>> {
         const QUERY: &str = "SELECT DISTINCT pkg_name FROM app_info WHERE pkg_name IS NOT NULL";

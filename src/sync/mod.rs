@@ -187,7 +187,7 @@ pub async fn sync_app(
     app_query: &AppQuery,
     locale: &str,
     listed_at: Option<DateTime<Local>>,
-) -> anyhow::Result<(bool, bool)> {
+) -> anyhow::Result<(bool, bool, bool)> {
     let app_data = query_app(client, api_url, app_query, locale).await?;
 
     event!(
