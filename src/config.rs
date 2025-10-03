@@ -48,10 +48,10 @@ pub struct Config {
 impl Config {
     pub fn load() -> anyhow::Result<&'static Self> {
         let config_content =
-            fs::read_to_string("config.toml").with_context(|| "Failed to read config.toml")?;
+            fs::read_to_string("config.toml").with_context(|| "无法读取 config.toml 配置文件")?;
         event!(Level::INFO, "config.toml loaded");
         let config: Config =
-            toml::from_str(&config_content).with_context(|| "Failed to parse config.toml")?;
+            toml::from_str(&config_content).with_context(|| "无法解析 config.toml 配置文件")?;
         event!(Level::INFO, "config.toml parsed");
         Ok(GLOBAL_CONFIG.get_or_init(|| config))
     }

@@ -14,7 +14,7 @@ fn main() -> anyhow::Result<()> {
         .worker_threads(8)
         .enable_all()
         .build()
-        .with_context(|| "Failed to create tokio runtime")?;
+        .with_context(|| "无法创建 tokio runtime")?;
 
     rt.block_on(async_main())
 }
@@ -24,7 +24,7 @@ async fn async_main() -> anyhow::Result<()> {
 
     let client = reqwest::ClientBuilder::new()
         .build()
-        .with_context(|| "Failed to create reqwest client")?;
+        .with_context(|| "无法创建 Reqwest 客户端")?;
     event!(Level::INFO, "Starting...");
     let start_time = std::time::Instant::now();
     let response = client.get(format!("{src_url}/all_apps")).send().await?;
@@ -109,8 +109,8 @@ async fn async_main() -> anyhow::Result<()> {
 
     // 写到json里
     let json = serde_json::to_string_pretty(&apps)
-        .with_context(|| "Failed to serialize apps data to JSON")?;
-    std::fs::write("apps.json", json).with_context(|| "Failed to write apps data to file")?;
+        .with_context(|| "无法序列化 apps 数据到 JSON")?;
+    std::fs::write("apps.json", json).with_context(|| "无法写入 apps.json 文件")?;
 
     Ok(())
 }

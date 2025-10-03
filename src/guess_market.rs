@@ -16,7 +16,7 @@ fn main() -> anyhow::Result<()> {
         .worker_threads(8)
         .enable_all()
         .build()
-        .with_context(|| "Failed to create tokio runtime")?;
+        .with_context(|| "无法创建 tokio runtime")?;
 
     rt.block_on(async_main())
 }
@@ -35,7 +35,7 @@ fn i32_to_letters(mut n: i32) -> String {
 
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
-    let config = config::Config::load().with_context(|| "Failed to load config")?;
+    let config = config::Config::load().with_context(|| "无法加载配置文件")?;
 
     // C576588020785 6374145
     // C576588020785 6366961
@@ -63,7 +63,7 @@ async fn async_main() -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
         .build()
-        .with_context(|| "Failed to create reqwest client")?;
+        .with_context(|| "无法创建 Reqwest 客户端")?;
     let range_vec: Vec<u64> = range.collect();
     for bunch_id in range_vec.chunks(batch) {
         let mut join_set = tokio::task::JoinSet::new();
