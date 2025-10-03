@@ -5,6 +5,7 @@ pub mod state;
 
 use std::sync::Arc;
 
+use anyhow::Context;
 use colored::Colorize;
 use tracing::{Level, event};
 
@@ -28,7 +29,8 @@ pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::R
     #[cfg(not(feature = "no_sync"))]
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
-        .build()?;
+        .build()
+        .with_context(|| "创建 http 客户端失败")?;
 
     let _ = GLOBAL_CODE_MANAGER.update_token().await;
 
@@ -60,7 +62,8 @@ pub async fn worker(mut waiter: tokio::sync::oneshot::Receiver<()>) -> anyhow::R
 pub async fn web_main(config: Config, db: Database) -> anyhow::Result<()> {
     let client = reqwest::ClientBuilder::new()
         .timeout(std::time::Duration::from_secs(config.api_timeout_seconds()))
-        .build()?;
+        .build()
+        .with_context(|| "创建 Web http 客户端失败")?;
 
     let app_state = Arc::new(AppState {
         db,

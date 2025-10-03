@@ -5,6 +5,7 @@ pub mod server;
 pub mod sync;
 pub mod utils;
 
+use anyhow::Context;
 use chrono::{DateTime, FixedOffset};
 use tracing::{Level, event};
 
@@ -16,14 +17,15 @@ fn main() -> anyhow::Result<()> {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(8)
         .enable_all()
-        .build()?;
+        .build()
+        .with_context(|| "Failed to create tokio runtime")?;
     event!(Level::INFO, "async rt built");
     rt.block_on(async_main())
 }
 
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
-    let config = config::Config::load()?;
+    let config = config::Config::load().with_context(|| "Failed to load config")?;
     event!(Level::INFO, "connecting to db");
     let _db = db::Database::new(config.database_url(), config.db_max_connect()).await?;
     event!(Level::INFO, "connected to db");
