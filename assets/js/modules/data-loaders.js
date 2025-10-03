@@ -1,5 +1,5 @@
 // 数据加载模块
-var DashboardDataLoaders = (function() {
+var DashboardDataLoaders = (function () {
     /**
      * 加载应用市场概览统计信息
      * @async

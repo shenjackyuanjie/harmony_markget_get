@@ -113,22 +113,47 @@ function validateInputs() {
 async function queryApp() {
     const pkgName = document.getElementById("pkgInput").value.trim();
     const appId = document.getElementById("appIdInput").value.trim();
+    const username = document.getElementById("usernameInput").value.trim();
+    const remark = document.getElementById("remarkInput").value.trim();
     const resultArea = document.getElementById("resultArea");
-    const resultContent = document.getElementById("resultContent");
 
-    let url;
+    // 保存用户名到本地存储
+    if (username) {
+        localStorage.setItem('submitUsername', username);
+    }
+
+    let submit_body = {};
     if (pkgName) {
-        url = `/api/apps/pkg_name/${encodeURIComponent(pkgName)}`;
+        submit_body.pkg_name = pkgName;
     } else if (appId) {
         const modifiedAppId = appId.startsWith('C') ? appId : 'C' + appId;
-        url = `/api/apps/app_id/${encodeURIComponent(modifiedAppId)}`;
+        submit_body.app_id = modifiedAppId;
     } else {
         alert("请输入包名或 app_id");
         return;
     }
 
+    let comment = {};
+    // 添加可选的用户名和备注
+    if (username) {
+        comment.user = username;
+    }
+    if (remark) {
+        comment.comment = remark;
+    }
+    if (comment) {
+        submit_body.comment = comment;
+    }
+
+    const url = `${API_BASE}/submit`;
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(submit_body)
+        });
         if (!response.ok) {
             throw new Error("查询失败");
         }
@@ -320,6 +345,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("linkInput").value = "";
         document.getElementById("pkgInput").value = "";
         document.getElementById("appIdInput").value = "";
+        // 从localStorage中重新加载用户名
+        const savedUsername = localStorage.getItem('submitUsername');
+        if (savedUsername) {
+            document.getElementById("usernameInput").value = savedUsername;
+        } else {
+            document.getElementById("usernameInput").value = "";
+        }
+        document.getElementById("remarkInput").value = "";
         document.getElementById("linkError").classList.add("hidden");
         document.getElementById("pkgError").classList.add("hidden");
         document.getElementById("appIdError").classList.add("hidden");
@@ -332,6 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("submitModal").classList.remove("hidden");
         // 清空输入和错误
         clearForm();
+        // 清空函数中已经处理了用户名的加载，无需重复
     });
     // 包名输入事件，隐藏错误
     document.getElementById("pkgInput").addEventListener("input", () => {
@@ -348,5 +382,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (validateInputs()) {
             queryApp();
         }
+    });
+
+    // 清除用户名存储的按钮事件
+    document.getElementById("clearUsernameStorage").addEventListener("click", (e) => {
+        e.stopPropagation(); // 防止事件冒泡
+        localStorage.removeItem('submitUsername');
+        document.getElementById("usernameInput").value = "";
+        alert("已清除记忆的用户名");
     });
 });

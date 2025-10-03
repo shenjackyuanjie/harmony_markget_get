@@ -1,5 +1,5 @@
 // 图表模块
-var DashboardCharts = (function() {
+var DashboardCharts = (function () {
     let starChart = null;
 
     /**
@@ -141,10 +141,10 @@ var DashboardCharts = (function() {
             data: {
                 labels: apps.map((item) =>
                     item.name ?
-                    item.name.length > 10 ?
-                    item.name.slice(0, 10) + "..." :
-                    item.name :
-                    "未知",
+                        item.name.length > 10 ?
+                            item.name.slice(0, 10) + "..." :
+                            item.name :
+                        "未知",
                 ),
                 datasets: [{
                     label: "下载量",
@@ -152,7 +152,7 @@ var DashboardCharts = (function() {
                     backgroundColor: "rgba(59, 130, 246, 0.6)",
                     borderColor: "rgba(59, 130, 246, 1)",
                     borderWidth: 1,
-                }, ],
+                },],
             },
             options: {
                 responsive: true,
@@ -161,7 +161,7 @@ var DashboardCharts = (function() {
                     y: {
                         min: yAxisMin,
                         ticks: {
-                            callback: function(value) {
+                            callback: function (value) {
                                 return DashboardUtils.formatNumber(value);
                             },
                         },
@@ -170,7 +170,7 @@ var DashboardCharts = (function() {
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 return `下载量: ${DashboardUtils.formatNumber(context.raw)}`;
                             },
                         },
@@ -181,7 +181,7 @@ var DashboardCharts = (function() {
                         offset: -3,
                         color: "#333",
                         font: { family: "console", size: 12 },
-                        formatter: function(value) {
+                        formatter: function (value) {
                             return DashboardUtils.formatNumber(value);
                         },
                     },
@@ -235,7 +235,7 @@ var DashboardCharts = (function() {
                             "#22c55e",
                             "#0ea5e9",
                         ],
-                    }, ],
+                    },],
                 },
                 options: {
                     responsive: true,

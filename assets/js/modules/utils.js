@@ -1,5 +1,5 @@
 // 工具函数模块
-var DashboardUtils = (function() {
+var DashboardUtils = (function () {
     /**
      * 格式化数字，四位一分隔（中文习惯）
      * @param {number} num - 要格式化的数字

@@ -1,5 +1,5 @@
 // 渲染模块
-var DashboardRenderers = (function() {
+var DashboardRenderers = (function () {
     /**
      * 渲染应用列表到表格
      * @param {Array} apps - 应用数据数组
@@ -121,8 +121,8 @@ var DashboardRenderers = (function() {
             li.className = `flex ${i === currentPage ? "z-10" : ""}`;
             const a = document.createElement("a");
             a.className = `px-3 py-2 text-sm font-medium rounded-md border ${i === currentPage
-                    ? "border-blue-500 bg-blue-100 text-blue-800"
-                    : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                ? "border-blue-500 bg-blue-100 text-blue-800"
+                : "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
                 }`;
             a.textContent = i;
             a.onclick = (e) => {
