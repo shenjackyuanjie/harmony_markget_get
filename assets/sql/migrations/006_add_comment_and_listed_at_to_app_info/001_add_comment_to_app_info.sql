@@ -1,19 +1,32 @@
--- 迁移脚本：为 app_info 表添加 comment 字段
--- 执行顺序：006_add_comment_to_app_info/001_add_comment_to_app_info.sql
+-- 迁移脚本：为 app_info 表添加 comment 字段和 listed_at 字段
+-- 执行顺序：006_add_comment_and_listed_at_to_app_info/001_add_comment_to_app_info.sql
 
 -- 为 app_info 表添加 comment 列，类型为 JSONB，允许为 NULL
 ALTER TABLE app_info
-ADD COLUMN comment JSONB,
+ADD COLUMN comment JSONB;
+
+-- 为 app_info 表添加 listed_at 列，类型为 TIMESTAMPTZ，暂时允许为 NULL
+ALTER TABLE app_info
 ADD COLUMN listed_at TIMESTAMPTZ;
 
 -- 为新字段添加注释
 COMMENT ON COLUMN app_info.listed_at IS '应用上架时间';
 
+-- 使用 created_at 数据填充 listed_at 字段
+UPDATE app_info SET listed_at = created_at WHERE listed_at IS NULL;
+
+-- 修改 listed_at 字段为 NOT NULL
+ALTER TABLE app_info
+ALTER COLUMN listed_at SET NOT NULL;
+
 -- 为 listed_at 字段创建索引以提高查询性能
 CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
 
--- 同时更新 app_latest_info 视图，包含新增的 comment 字段
-CREATE OR REPLACE VIEW app_latest_info AS
+-- 删除现有视图
+DROP VIEW IF EXISTS app_latest_info;
+
+-- 重新创建 app_latest_info 视图，包含新增的 comment 字段和 listed_at 字段
+CREATE VIEW app_latest_info AS
 SELECT ai.app_id,
    ai.alliance_app_id,
    ai.name,
@@ -54,9 +67,9 @@ SELECT ai.app_id,
    ai.app_gift,
    ai.free_days,
    ai.pay_install_type,
-   ai.comment,  -- 新增字段：comment
-   ai.listed_at,  -- 新增字段：上架时间
-   ai.created_at,  -- 创建时间
+   ai.comment,      -- 新增字段：comment
+   ai.listed_at,    -- 新增字段：上架时间
+   ai.created_at,   -- 创建时间
    am.version,
    am.version_code,
    am.size_bytes,
@@ -128,8 +141,9 @@ SELECT ai.app_id,
 -- 迁移完成提示
 DO $$
 BEGIN
-    RAISE NOTICE '迁移完成：成功为 app_info 表添加 comment 字段';
+    RAISE NOTICE '迁移完成：成功为 app_info 表添加 comment 和 listed_at 字段';
     RAISE NOTICE '- 添加了 comment 字段 (类型: JSONB, 允许为 NULL)';
-    RAISE NOTICE '- 更新了 app_latest_info 视图以包含 comment 字段';
-    RAISE NOTICE '- 更新了 app_latest_info 视图以包含 listed_at 字段';
+    RAISE NOTICE '- 添加了 listed_at 字段 (类型: TIMESTAMPTZ, NOT NULL)';
+    RAISE NOTICE '- 使用 created_at 数据填充了 listed_at 字段';
+    RAISE NOTICE '- 重新创建了 app_latest_info 视图以包含 comment 和 listed_at 字段';
 END $$;

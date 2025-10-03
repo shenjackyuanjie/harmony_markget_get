@@ -1,6 +1,7 @@
 use crate::model::{AppInfo, AppMetric, AppRating, AppRaw, RawJsonData, RawRatingData};
 
 use anyhow::Result;
+use chrono::{DateTime, Local};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
@@ -92,6 +93,7 @@ impl Database {
         &self,
         raw_data: &RawJsonData,
         raw_star: Option<&RawRatingData>,
+        listed_at: Option<DateTime<Local>>,
     ) -> Result<(bool, bool)> {
         // 转换原始JSON数据用于比较
         let raw_json = AppRaw::from_raw_datas(raw_data, raw_star);
@@ -116,6 +118,9 @@ impl Database {
             // 如果应用已存在，使用原有的 created_at 时间
             if let Some(created_at) = existing_created_at {
                 app_info.created_at = created_at;
+            }
+            if let Some(listed_at) = listed_at {
+                app_info.listed_at = listed_at;
             }
 
             // 转换并保存应用信息

@@ -79,6 +79,8 @@ impl Database {
             free_days: row.get("free_days"),
             pay_install_type: row.get("pay_install_type"),
             created_at: row.get("created_at"),
+            listed_at: row.get("listed_at"),
+            comment: row.get("comment"),
         }
     }
 

@@ -130,8 +130,7 @@ async fn async_main() -> anyhow::Result<()> {
             for id in chunk_start..=chunk_end {
                 let client = client.clone();
                 let db = db.clone();
-                let api_url = config.api_info_url().to_string();
-                let star_url = config.api_detail_url().to_string();
+                let api_url = config.api_url().to_string();
                 let locale = config.locale().to_string();
                 let app_id = format!("{}{}", prefix, id);
 
@@ -146,7 +145,7 @@ async fn async_main() -> anyhow::Result<()> {
                     {
                         Ok(data) => {
                             let star =
-                                crate::sync::get_star_by_app_id(&client, &star_url, &data.app_id)
+                                crate::sync::get_star_by_app_id(&client, &api_url, &data.app_id)
                                     .await;
                             let star = match star {
                                 Ok(star_data) => Some(star_data),
@@ -156,7 +155,7 @@ async fn async_main() -> anyhow::Result<()> {
                                 }
                             };
 
-                            match db.save_app_data(&data, star.as_ref()).await {
+                            match db.save_app_data(&data, star.as_ref(), None).await {
                                 Ok(inserted) => {
                                     if inserted.0 || inserted.1 {
                                         println!(

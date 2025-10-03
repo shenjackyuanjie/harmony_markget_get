@@ -1,5 +1,6 @@
 use std::{sync::LazyLock, time::Duration};
 
+use chrono::{DateTime, Local};
 use colored::Colorize;
 use reqwest::Client;
 use tracing::{Level, event};
@@ -74,8 +75,7 @@ pub async fn sync_all(
         match sync_app_data(
             client,
             db,
-            config.api_info_url(),
-            config.api_detail_url(),
+            config.api_url(),
             &AppQuery::pkg_name(package),
             locale,
         )
@@ -148,17 +148,16 @@ pub async fn sync_all(
 pub async fn sync_app_data(
     client: &reqwest::Client,
     db: &Database,
-    data_url: &str,
-    star_url: &str,
+    api_url: &str,
     app_query: &AppQuery,
     locale: &str,
 ) -> anyhow::Result<(bool, bool)> {
-    let data = get_app_info(client, data_url, app_query, locale)
+    let data = get_app_info(client, api_url, app_query, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
     let star = if !app_query.name().starts_with("com.atomicservice") {
-        let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+        let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
         match star_result {
             Ok(star_data) => Some(star_data),
             Err(e) => {
@@ -181,7 +180,7 @@ pub async fn sync_app_data(
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
-        .save_app_data(&data, star.as_ref())
+        .save_app_data(&data, star.as_ref(), None)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
 
@@ -192,16 +191,15 @@ pub async fn sync_app_data(
 pub async fn query_package(
     client: &reqwest::Client,
     db: &Database,
-    data_url: &str,
-    star_url: &str,
+    api_url: &str,
     app_query: &AppQuery,
-    locale: &str,
+    listed_at: Option<DateTime<Local>>,
 ) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_app_info(client, data_url, app_query, locale)
+    let data = get_app_info(client, api_url, app_query, "zh")
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
-    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+    let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
@@ -219,7 +217,7 @@ pub async fn query_package(
 
     // 保存数据到数据库（包含重复检查）
     let is_new = db
-        .save_app_data(&data, star.as_ref())
+        .save_app_data(&data, star.as_ref(), listed_at)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
 
@@ -230,16 +228,16 @@ pub async fn query_package(
 pub async fn get_app_data(
     client: &reqwest::Client,
     db: &Database,
-    data_url: &str,
-    star_url: &str,
+    api_url: &str,
     app_query: &AppQuery,
     locale: &str,
+    listed_at: Option<DateTime<Local>>,
 ) -> anyhow::Result<(RawJsonData, Option<RawRatingData>, (bool, bool))> {
-    let data = get_app_info(client, data_url, app_query, locale)
+    let data = get_app_info(client, api_url, app_query, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
 
-    let star_result = get_star_by_app_id(client, star_url, &data.app_id).await;
+    let star_result = get_star_by_app_id(client, api_url, &data.app_id).await;
     let star = match star_result {
         Ok(star_data) => Some(star_data),
         Err(e) => {
@@ -258,7 +256,7 @@ pub async fn get_app_data(
 
     // 保存数据到数据库（包含重复检查）
     let is_new = db
-        .save_app_data(&data, star.as_ref())
+        .save_app_data(&data, star.as_ref(), listed_at)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", data.name, e))?;
 
@@ -279,7 +277,7 @@ pub async fn get_star_by_app_id(
 
     let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
     let response = client
-        .post(api_url)
+        .post(format!("{api_url}/harmony/page-detail"))
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
         .header("Interface-Code", token.interface_code)
@@ -330,7 +328,6 @@ pub async fn get_star_by_app_id(
     Ok(data)
 }
 
-#[inline]
 pub async fn get_app_info(
     client: &reqwest::Client,
     api_url: &str,
@@ -344,7 +341,7 @@ pub async fn get_app_info(
 
     let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
     let response = client
-        .post(api_url)
+        .post(format!("{api_url}/webedge/appinfo"))
         .header("Content-Type", "application/json")
         .header("User-Agent", USER_AGENT.to_string())
         .header("interface-code", token.interface_code)

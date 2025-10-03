@@ -83,6 +83,8 @@ pub struct AppInfo {
     pub free_days: i32,
     pub pay_install_type: i32,
     pub created_at: DateTime<Local>,
+    pub listed_at: DateTime<Local>,
+    pub comment: Option<serde_json::Value>,
 }
 
 impl From<&RawJsonData> for AppInfo {
@@ -132,6 +134,8 @@ impl From<&RawJsonData> for AppInfo {
             free_days: value.free_days,
             pay_install_type: value.pay_install_type,
             created_at: Local::now(),
+            listed_at: Local::now(),
+            comment: None,
         }
     }
 }

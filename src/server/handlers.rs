@@ -35,13 +35,14 @@ pub async fn submit_app(
         (None, Some(name)) => AppQuery::pkg_name(name),
         _ => unreachable!(),
     };
+    let listed_at = data.get("listed_at").and_then(|v| v.as_str());
+
     #[derive(serde::Deserialize)]
     struct SubmitResult {
         pub is_new: bool,
         pub full_info: FullAppInfo,
     }
-    // 获取提交者数据
-    let submitter = data.get("submitter").and_then(|v| v.as_str());
+    let comment = data.get("comment");
 
     let exists = match state.db.app_exists(&query).await {
         Ok(exists) => exists,
@@ -66,10 +67,9 @@ pub async fn query_pkg(
     match crate::sync::query_package(
         &state.client,
         &state.db,
-        state.cfg.api_info_url(),
-        state.cfg.api_detail_url(),
+        state.cfg.api_url(),
         &AppQuery::pkg_name(&pkg_name),
-        state.cfg.locale(),
+        None,
     )
     .await
     {
@@ -107,10 +107,9 @@ pub async fn query_app_id(
     match crate::sync::query_package(
         &state.client,
         &state.db,
-        state.cfg.api_info_url(),
-        state.cfg.api_detail_url(),
+        state.cfg.api_url(),
         &AppQuery::app_id(&app_id),
-        state.cfg.locale(),
+        None,
     )
     .await
     {

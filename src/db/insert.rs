@@ -15,11 +15,12 @@ impl Database {
                 tariff_type, packing_type, order_app, denpend_gms, denpend_hms,
                 force_update, img_tag, is_pay, is_disciplined, is_shelves,
                 submit_type, delete_archive, charging, button_grey, app_gift,
-                free_days, pay_install_type, created_at
+                free_days, pay_install_type, created_at, listed_at, comment
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
                 $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,
-                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41
+                $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41,
+                $42, $43
             )
             ON CONFLICT (app_id) DO UPDATE SET
                 alliance_app_id = EXCLUDED.alliance_app_id,
@@ -60,7 +61,9 @@ impl Database {
                 button_grey = EXCLUDED.button_grey,
                 app_gift = EXCLUDED.app_gift,
                 free_days = EXCLUDED.free_days,
-                pay_install_type = EXCLUDED.pay_install_type
+                pay_install_type = EXCLUDED.pay_install_type,
+                listed_at = EXCLUDED.listed_at,
+                comment = EXCLUDED.comment,
         "#;
 
         sqlx::query(QUERY)
@@ -105,6 +108,8 @@ impl Database {
             .bind(app_info.free_days)
             .bind(app_info.pay_install_type)
             .bind(app_info.created_at)
+            .bind(app_info.listed_at)
+            .bind(&app_info.comment)
             .execute(&self.pool)
             .await?;
 

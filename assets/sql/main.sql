@@ -42,7 +42,7 @@ CREATE TABLE app_info (
     free_days               INTEGER NOT NULL,   -- 免费天数（0）
     pay_install_type        INTEGER NOT NULL,   -- 付费安装类型（0）
     comment                 JSONB,              -- 评论或注释数据（JSON格式）
-    listed_at               TIMESTAMPTZ,        -- 应用上架时间
+    listed_at               TIMESTAMPTZ NOT NULL, -- 应用上架时间
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now() -- 创建时间
 );
 
