@@ -133,7 +133,7 @@ impl Database {
             .bind(app_metric.info_score)
             .bind(app_metric.info_rate_count)
             .bind(app_metric.download_count)
-            .bind(&app_metric.price)
+            .bind(app_metric.price)
             .bind(app_metric.release_date)
             .bind(&app_metric.new_features)
             .bind(&app_metric.upgrade_msg)
