@@ -306,59 +306,94 @@ window.updateUrlParam = function(key, value) {
  * @param {string} text - 要复制的文本
  * @param {HTMLElement} [button] - 触发复制的按钮元素
  */
-window.copyToClipboard = function(text, button) {
-    navigator.clipboard.writeText(text).then(() => {
-        // 显示临时成功提示
-        if (button) {
-            const originalText = button.textContent;
-            const originalBg = button.style.background;
-            button.textContent = '复制成功！';
-            button.style.background = 'linear-gradient(to right, #10B981, #059669)';
+ window.copyToClipboard = function(text, button) {
+     // 检查navigator.clipboard是否存在
+     if (!navigator.clipboard) {
+         // 如果不支持clipboard API，使用回退方案
+         const textArea = document.createElement('textarea');
+         textArea.value = text;
+         textArea.style.position = 'fixed';
+         textArea.style.opacity = '0';
+         document.body.appendChild(textArea);
+         textArea.select();
 
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = originalBg;
-            }, 2000);
-        } else {
-            // 创建一个浮动提示
-            const toast = document.createElement('div');
-            toast.textContent = '链接已复制到剪贴板！';
-            toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(16,185,129,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
-            document.body.appendChild(toast);
+         try {
+             const successful = document.execCommand('copy');
+             document.body.removeChild(textArea);
 
-            // 2秒后移除提示
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => document.body.removeChild(toast), 300);
-            }, 2000);
-        }
-    }).catch(err => {
-        console.error('复制失败:', err);
+             if (successful) {
+                 showCopySuccess(button);
+             } else {
+                 showCopyError(button);
+             }
+         } catch (err) {
+             document.body.removeChild(textArea);
+             console.error('复制失败:', err);
+             showCopyError(button);
+         }
+         return;
+     }
 
-        // 显示临时失败提示
-        if (button) {
-            const originalText = button.textContent;
-            const originalBg = button.style.background;
-            button.textContent = '复制失败！';
-            button.style.background = 'linear-gradient(to right, #EF4444, #DC2626)';
+     // 使用现代clipboard API
+     navigator.clipboard.writeText(text).then(() => {
+         showCopySuccess(button);
+     }).catch(err => {
+         console.error('复制失败:', err);
+         showCopyError(button);
+     });
 
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = originalBg;
-            }, 2000);
-        } else {
-            const toast = document.createElement('div');
-            toast.textContent = '复制失败，请手动复制。';
-            toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(239,68,68,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
-            document.body.appendChild(toast);
+     // 成功提示函数
+     function showCopySuccess(button) {
+         if (button) {
+             const originalText = button.textContent;
+             const originalBg = button.style.background;
+             button.textContent = '复制成功！';
+             button.style.background = 'linear-gradient(to right, #10B981, #059669)';
 
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => document.body.removeChild(toast), 300);
-            }, 2000);
-        }
-    });
-}
+             setTimeout(() => {
+                 button.textContent = originalText;
+                 button.style.background = originalBg;
+             }, 2000);
+         } else {
+             // 创建一个浮动提示
+             const toast = document.createElement('div');
+             toast.textContent = '链接已复制到剪贴板！';
+             toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(16,185,129,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
+             document.body.appendChild(toast);
+
+             // 2秒后移除提示
+             setTimeout(() => {
+                 toast.style.opacity = '0';
+                 setTimeout(() => document.body.removeChild(toast), 300);
+             }, 2000);
+         }
+     }
+
+     // 失败提示函数
+     function showCopyError(button) {
+         if (button) {
+             const originalText = button.textContent;
+             const originalBg = button.style.background;
+             button.textContent = '复制失败！';
+             button.style.background = 'linear-gradient(to right, #EF4444, #DC2626)';
+
+             setTimeout(() => {
+                 button.textContent = originalText;
+                 button.style.background = originalBg;
+             }, 2000);
+         } else {
+             const toast = document.createElement('div');
+             toast.textContent = '复制失败，请手动复制。';
+             toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background-color:rgba(239,68,68,0.9); color:white; padding:10px 20px; border-radius:4px; z-index:9999; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:all 0.3s ease;';
+             document.body.appendChild(toast);
+
+             setTimeout(() => {
+                 toast.style.opacity = '0';
+                 setTimeout(() => document.body.removeChild(toast), 300);
+             }, 2000);
+         }
+     }
+ }
 
 /**
  * 使用系统分享API分享链接
