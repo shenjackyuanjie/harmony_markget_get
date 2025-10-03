@@ -14,14 +14,14 @@ fn main() -> anyhow::Result<()> {
         .worker_threads(8)
         .enable_all()
         .build()
-        .with_context(|| "Failed to create tokio runtime")?;
+        .with_context(|| "无法创建 tokio runtime")?;
     event!(Level::INFO, "async rt built");
     rt.block_on(async_main())
 }
 
 async fn async_main() -> anyhow::Result<()> {
     // 加载配置
-    let _ = config::Config::load().with_context(|| "Failed to load config")?;
+    let _ = config::Config::load().with_context(|| "无法加载配置文件")?;
     let (worker_send, worker_recv) = tokio::sync::oneshot::channel::<()>();
 
     let worker = tokio::spawn(server::worker(worker_recv));
