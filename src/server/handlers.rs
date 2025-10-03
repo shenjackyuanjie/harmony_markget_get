@@ -57,16 +57,10 @@ pub async fn submit_app(
     todo!();
 }
 
-/// 查询应用包名信息
-pub async fn query_pkg(
-    State(state): State<Arc<AppState>>,
-    Path(pkg_name): Path<String>,
+pub async fn query_app(
+    state: Arc<AppState>,
+    query: AppQuery,
 ) -> impl IntoResponse {
-    event!(
-        Level::INFO,
-        "http 服务正在尝试通过 pkg name 获取 {pkg_name} 的信息"
-    );
-    let query = AppQuery::pkg_name(&pkg_name);
     match crate::sync::query_app(
         &state.client,
         state.cfg.api_url(),
@@ -148,11 +142,24 @@ pub async fn query_pkg(
         Err(e) => {
             event!(
                 Level::WARN,
-                "http服务获取 appid: {pkg_name} 的信息失败: {e}"
+                "http服务获取 appid: {query:?} 的信息失败: {e}"
             );
             Json(ApiResponse::error(json!({"error": e.to_string()})))
         }
     }
+}
+
+/// 查询应用包名信息
+pub async fn query_pkg(
+    State(state): State<Arc<AppState>>,
+    Path(pkg_name): Path<String>,
+) -> impl IntoResponse {
+    event!(
+        Level::INFO,
+        "http 服务正在尝试通过 pkg name 获取 {pkg_name} 的信息"
+    );
+    let query = AppQuery::pkg_name(&pkg_name);
+    query_app(state, query).await
 }
 
 /// 查询应用ID信息
@@ -165,89 +172,7 @@ pub async fn query_app_id(
         "http 服务正在尝试通过 appid 获取 {app_id} 的信息"
     );
     let query = AppQuery::app_id(&app_id);
-    match crate::sync::query_app(
-        &state.client,
-        state.cfg.api_url(),
-        &query,
-        state.cfg.locale(),
-    )
-    .await
-    {
-        Ok((data, rating)) => {
-            let metric = AppMetric::from_raw_data(&data);
-            let rating = rating
-                .as_ref()
-                .map(|star_data| AppRating::from_raw_star(&data, star_data));
-            let info: AppInfo = (&data).into();
-            // 检查是否是新的
-            let exists = match state.db.app_exists(&query).await {
-                Ok(r) => r,
-                Err(e) => {
-                    event!(Level::WARN, "数据库查询应用是否存在失败: {e}");
-                    return Json(ApiResponse::error(
-                        json!({"error": "数据库查询应用是否存在失败"}),
-                    ));
-                }
-            };
-            let new_info = match state
-                .db
-                .is_same_data(&data.app_id, &serde_json::to_value(&info).unwrap())
-                .await
-            {
-                Ok(true) => false,
-                Ok(false) => match state.db.insert_app_info(&info).await {
-                    Ok(_) => true,
-                    Err(e) => {
-                        event!(Level::WARN, "数据库插入应用信息失败: {e}");
-                        return Json(ApiResponse::error(
-                            json!({"error": "数据库插入应用信息失败"}),
-                        ));
-                    }
-                },
-                Err(e) => {
-                    event!(Level::WARN, "数据库查询应用是否更新失败: {e}");
-                    return Json(ApiResponse::error(
-                        json!({"error": "数据库查询应用是否更新失败"}),
-                    ));
-                }
-            };
-            let new_rating = if let Some(rating) = rating.as_ref() {
-                match state
-                    .db
-                    .is_same_rating(&data.app_id, &serde_json::to_value(rating).unwrap())
-                    .await
-                {
-                    Ok(true) => false,
-                    Ok(false) => match state.db.insert_app_rating(rating).await {
-                        Ok(_) => true,
-                        Err(e) => {
-                            event!(Level::WARN, "数据库插入应用评分失败: {e}");
-                            return Json(ApiResponse::error(
-                                json!({"error": "数据库插入应用评分失败"}),
-                            ));
-                        }
-                    },
-                    Err(e) => {
-                        event!(Level::WARN, "数据库查询应用评分是否更新失败: {e}");
-                        return Json(ApiResponse::error(
-                            json!({"error": "数据库查询应用评分是否更新失败"}),
-                        ));
-                    }
-                }
-            } else {
-                false
-            };
-            Json(ApiResponse::success(
-                json!({"info": info, "metric": metric, "rating": rating, "new_app": exists, "new_info": new_info, "new_rating": new_rating}),
-                None,
-                None,
-            ))
-        }
-        Err(e) => {
-            event!(Level::WARN, "http服务获取 appid: {app_id} 的信息失败: {e}");
-            Json(ApiResponse::error(json!({"error": e.to_string()})))
-        }
-    }
+    query_app(state, query).await
 }
 
 /// 获取应用列表统计信息
