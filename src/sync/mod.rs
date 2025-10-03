@@ -16,8 +16,13 @@ pub const TOKEN_UPDATE_INTERVAL: Duration = Duration::from_secs(600);
 pub mod code;
 
 /// UA
-pub static USER_AGENT: LazyLock<String> =
-    LazyLock::new(|| format!("get_huawei_market/{}", env!("CARGO_PKG_VERSION")));
+pub static USER_AGENT: LazyLock<String> = LazyLock::new(|| {
+    format!(
+        "get_huawei_market/{}-{}",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_NAME")
+    )
+});
 
 /// 批量同步所有应用数据
 ///
@@ -95,6 +100,7 @@ pub async fn sync_all(
             config.api_url(),
             &AppQuery::pkg_name(package),
             locale,
+            None,
             None,
         )
         .await
@@ -187,6 +193,7 @@ pub async fn sync_app(
     app_query: &AppQuery,
     locale: &str,
     listed_at: Option<DateTime<Local>>,
+    comment: Option<serde_json::Value>,
 ) -> anyhow::Result<(bool, bool, bool)> {
     let app_data = query_app(client, api_url, app_query, locale).await?;
 
@@ -199,7 +206,7 @@ pub async fn sync_app(
 
     // 保存数据到数据库（包含重复检查）
     let inserted = db
-        .save_app_data(&app_data.0, app_data.1.as_ref(), listed_at)
+        .save_app_data(&app_data.0, app_data.1.as_ref(), listed_at, comment)
         .await
         .map_err(|e| anyhow::anyhow!("保存包 {} 的数据失败: {:#}", app_query, e))?;
 

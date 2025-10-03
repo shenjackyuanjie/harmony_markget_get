@@ -94,6 +94,7 @@ impl Database {
         raw_data: &RawJsonData,
         raw_rating: Option<&RawRatingData>,
         listed_at: Option<DateTime<Local>>,
+        comment: Option<serde_json::Value>,
     ) -> Result<(bool, bool, bool)> {
         // 转换原始JSON数据用于比较
         let raw_json = AppRaw::from_raw_datas(raw_data, raw_rating);
@@ -108,7 +109,7 @@ impl Database {
             (false, false)
         } else {
             let mut app_info: AppInfo = raw_data.into();
-
+            app_info.comment = comment;
             if let Some(listed_at) = listed_at {
                 app_info.listed_at = listed_at;
             }

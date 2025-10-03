@@ -1,4 +1,5 @@
 use colored::Colorize;
+use serde_json::json;
 
 use crate::{model::AppQuery, sync::code::GLOBAL_CODE_MANAGER};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -85,25 +86,39 @@ async fn async_main() -> anyhow::Result<()> {
             let api_url = config.api_url().to_string();
             let locale = config.locale().to_string();
             let app_id = format!("{start}{}", id);
+            let comment = json!({"user": format!("guess_rand-{}", env!("CARGO_PKG_VERSION"))});
             join_set.spawn(async move {
                 if let Ok(data) =
                     crate::sync::query_app(&client, &api_url, &AppQuery::app_id(&app_id), &locale)
                         .await
                 {
-                    match db.save_app_data(&data.0, data.1.as_ref(), None).await {
+                    match db
+                        .save_app_data(&data.0, data.1.as_ref(), None, Some(comment))
+                        .await
+                    {
                         Ok(inserted) => {
-                            if inserted.0 {
-                                println!(
-                                    "{}",
-                                    format!("已将 {app_id} 的数据插入数据库").on_green()
-                                );
-                            }
-                            if inserted.1 {
-                                println!(
-                                    "{}",
-                                    format!("已将 {app_id} 的评分数据插入数据库").on_green()
-                                );
-                            }
+                            println!(
+                                "{}{}{}",
+                                if inserted.0 {
+                                    format!("已将 {app_id} 的基本插入数据库\n")
+                                        .on_green()
+                                        .to_string()
+                                } else {
+                                    "".to_string()
+                                },
+                                if inserted.1 {
+                                    format!("已将 {app_id} metrics\n").on_green().to_string()
+                                } else {
+                                    "".to_string()
+                                },
+                                if inserted.2 {
+                                    format!("已将 {app_id} 的评分数据插入数据库")
+                                        .on_green()
+                                        .to_string()
+                                } else {
+                                    "".to_string()
+                                }
+                            );
                         }
                         Err(err) => {
                             println!(

@@ -154,8 +154,11 @@ async function queryApp() {
 function renderResult(data) {
     const resultContent = document.getElementById("resultContent");
     const { info, metric, rating } = data;
-    const new_info = data.is_new[0];
-    const new_metric = data.is_new[1];
+    const new_app = data.new_app;
+    const new_info = data.new_info;
+    const new_metric = data.new_metric;
+    const new_rating = data.new_rating;
+    const is_new = !!(new_app || new_info || new_metric || new_rating);
 
     if (!info || !metric) {
         resultContent.innerHTML = "<p class='text-red-500'>未找到应用信息</p>";
@@ -165,6 +168,7 @@ function renderResult(data) {
     const iconUrl = info.icon_url || '';
     const downloadCount = metric.download_count || 0;
     const name = info.name || '未知应用';
+    const same_css = `<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs`;
 
     resultContent.innerHTML = `
         <div class="flex items-center space-x-3 mb-2">
@@ -173,9 +177,11 @@ function renderResult(data) {
                 <h4 class="font-semibold">${name}</h4>
                 <p class="text-sm text-gray-600">包名: ${info.pkg_name || 'N/A'}</p>
                 ${rating ? `<p class="text-sm text-gray-600">评分: ${rating.average_rating || 'N/A'} (${rating.total_ratings || 0} 人评价)</p>` : ''}
-                ${new_info ? `<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs ml-2">应用信息有更新</span>` : ''}
-                ${new_metric ? `<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs ml-2">指标数据有更新</span>` : ''}
-                ${(!new_info && !new_metric) ? `<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs ml-2">暂无数据更新</span>` : ''}
+                ${new_app ? `${same_css} ml-3">是新APP！</span>` : ''}
+                ${new_info ? `${same_css} ml-2">基本信息有更新</span>` : ''}
+                ${new_metric ? `${same_css} ml-2">指标数据有更新</span>` : ''}
+                ${new_rating ? `${same_css} ml-2">评分有更新</span>` : ''}
+                ${is_new ? `<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs ml-2">暂无数据更新</span>` : ''}
             </div>
         </div>
         <div class="grid grid-cols-2 gap-2 text-sm">

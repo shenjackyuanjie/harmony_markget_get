@@ -15,6 +15,17 @@ use crate::{
     server::state::{ApiResponse, AppListQuery, AppState, RankingQuery},
 };
 
+#[derive(Debug, serde::Serialize)]
+struct Response {
+    info: AppInfo,
+    metric: AppMetric,
+    rating: Option<AppRating>,
+    new_app: bool,
+    new_info: bool,
+    new_metric: bool,
+    new_rating: bool,
+}
+
 pub async fn submit_app(
     State(state): State<Arc<AppState>>,
     Json(data): Json<JsonValue>,
@@ -41,16 +52,24 @@ pub async fn submit_app(
         .and_then(|v| v.as_str())
         .and_then(|d| DateTime::from_str(d).ok());
 
-    #[derive(serde::Deserialize)]
-    struct SubmitResult {
-        pub is_new: bool,
-        pub full_info: FullAppInfo,
-    }
     let comment = data.get("comment");
 
     let exists = !state.db.app_exists(&query).await;
 
-    todo!();
+    match crate::sync::query_app(
+        &state.client,
+        state.cfg.api_url(),
+        &query,
+        state.cfg.locale(),
+    )
+    .await
+    {
+        Ok((data, rating)) => {}
+        Err(e) => {
+            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}");
+            Json(ApiResponse::error(e.to_string()))
+        }
+    }
 }
 
 pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoResponse {
@@ -65,29 +84,22 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
         Ok((data, rating)) => {
             // 检查是否是新的
             let exists = state.db.app_exists(&query).await;
-            let (new_info, new_metric, new_rating) =
-                match state.db.save_app_data(&data, rating.as_ref(), None).await {
-                    Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
-                    Err(e) => {
-                        event!(Level::WARN, "数据库保存应用数据失败: {e}");
-                        return Json(ApiResponse::error("数据库保存应用数据失败"));
-                    }
-                };
+            let (new_info, new_metric, new_rating) = match state
+                .db
+                .save_app_data(&data, rating.as_ref(), None, None)
+                .await
+            {
+                Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
+                Err(e) => {
+                    event!(Level::WARN, "数据库保存应用数据失败: {e}");
+                    return Json(ApiResponse::error("数据库保存应用数据失败"));
+                }
+            };
             let metric = AppMetric::from_raw_data(&data);
             let rating = rating
                 .as_ref()
                 .map(|star_data| AppRating::from_raw_star(&data, star_data));
             let info: AppInfo = (&data).into();
-            #[derive(Debug, serde::Serialize)]
-            struct Response {
-                info: AppInfo,
-                metric: AppMetric,
-                rating: Option<AppRating>,
-                new_app: bool,
-                new_info: bool,
-                new_metric: bool,
-                new_rating: bool,
-            }
             Json(ApiResponse::success(
                 Response {
                     info,
