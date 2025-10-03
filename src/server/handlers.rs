@@ -94,7 +94,7 @@ pub async fn query_app(
                 Ok(false) => match state.db.insert_app_info(&info).await {
                     Ok(_) => true,
                     Err(e) => {
-                        event!(Level::WARN, "数据库插入应用信息失败: {e}");
+                        event!(Level::WARN, "数据库插入应用信息失败: {e} {:?}", info);
                         return Json(ApiResponse::error(
                             json!({"error": "数据库插入应用信息失败"}),
                         ));

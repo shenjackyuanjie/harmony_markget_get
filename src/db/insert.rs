@@ -63,7 +63,7 @@ impl Database {
                 free_days = EXCLUDED.free_days,
                 pay_install_type = EXCLUDED.pay_install_type,
                 listed_at = EXCLUDED.listed_at,
-                comment = EXCLUDED.comment,
+                comment = EXCLUDED.comment
         "#;
 
         sqlx::query(QUERY)
