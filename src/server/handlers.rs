@@ -24,6 +24,7 @@ struct Response {
     new_info: bool,
     new_metric: bool,
     new_rating: bool,
+    get_data: bool,
 }
 
 pub async fn submit_app(
@@ -90,6 +91,7 @@ pub async fn submit_app(
                     new_info,
                     new_metric,
                     new_rating,
+                    get_data: true,
                 },
                 None,
                 None,
@@ -139,13 +141,14 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                     new_info,
                     new_metric,
                     new_rating,
+                    get_data: true,
                 },
                 None,
                 None,
             ))
         }
         Err(e) => {
-            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}");
+            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}, 尝试获取现有数据");
             Json(ApiResponse::error(e.to_string()))
         }
     }
