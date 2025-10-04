@@ -121,12 +121,14 @@ impl Database {
     pub async fn insert_app_metric(&self, app_metric: &AppMetric) -> Result<()> {
         const QUERY: &str = r#"
             INSERT INTO app_metrics (
-                app_id, version, version_code, size_bytes, sha256, info_score,
+                app_id, pkg_name, version, version_code, size_bytes, sha256, info_score,
                 info_rate_count, download_count, price, release_date, new_features,
                 upgrade_msg, target_sdk, minsdk, compile_sdk_version,
                 min_hmos_api_level, api_release_type
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+                $1,
+                (SELECT pkg_name FROM app_info WHERE app_id = $1),
+                $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
             )
         "#;
 
@@ -158,13 +160,15 @@ impl Database {
     pub async fn insert_app_rating(&self, app_rating: &AppRating) -> Result<()> {
         const QUERY: &str = r#"
             INSERT INTO app_rating (
-                app_id, average_rating,
+                app_id, pkg_name, average_rating,
                 star_1_rating_count, star_2_rating_count, star_3_rating_count,
                 star_4_rating_count, star_5_rating_count, my_star_rating,
                 total_star_rating_count, only_star_count, full_average_rating,
                 source_type
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+                $1,
+                (SELECT pkg_name FROM app_info WHERE app_id = $1),
+                $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
             )
         "#;
 
@@ -197,8 +201,10 @@ impl Database {
         match rating {
             Some(rating_value) => {
                 let query = r#"
-                    INSERT INTO app_raw (app_id, raw_json_data, raw_json_star)
-                    VALUES ($1, $2, $3)
+                    INSERT INTO app_raw (app_id, pkg_name, raw_json_data, raw_json_star)
+                    VALUES ($1,
+                    (SELECT pkg_name FROM app_info WHERE app_id = $1),
+                    $2, $3)
                 "#;
 
                 sqlx::query(query)
@@ -210,8 +216,10 @@ impl Database {
             }
             None => {
                 let query = r#"
-                    INSERT INTO app_raw (app_id, raw_json_data)
-                    VALUES ($1, $2)
+                    INSERT INTO app_raw (app_id, pkg_name, raw_json_data)
+                    VALUES ($1,
+                    (SELECT pkg_name FROM app_info WHERE app_id = $1),
+                    $2)
                 "#;
 
                 sqlx::query(query)
