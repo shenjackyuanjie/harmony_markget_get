@@ -41,11 +41,10 @@ fn api_release_type_default() -> String {
 
 /// 支持的设备
 /// 虽说按理来说应该是都有的, 但是, 万一呢
-fn main_device_codes_default() -> Vec<u8> {
-    const DEFAULT: [u8; 1] = [0];
+fn main_device_codes_default() -> Vec<String> {
     // 真用上了就报告一下
     println!("{}", "沟槽！真用上了!\n\n\n\n\n".on_red());
-    DEFAULT.to_vec()
+    ["0".to_string()].to_vec()
 }
 
 /// 1. 原始 JSON 数据直接映射
@@ -176,7 +175,7 @@ pub struct RawJsonData {
     pub api_release_type: String,
     /// 支持的设备
     #[serde(rename = "mainDeviceCodes", default = "main_device_codes_default")]
-    pub main_device_codes: Vec<u8>,
+    pub main_device_codes: Vec<String>,
     /// 发布的国家
     #[serde(rename = "releaseCountries")]
     pub release_countries: Vec<String>,
