@@ -323,7 +323,12 @@ pub async fn get_app_data(
     if content_length == 0 {
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
-    Ok(response.json::<serde_json::Value>().await?)
+    let mut raw = response.json::<serde_json::Value>().await?;
+    let raw_obj = raw.as_object_mut().unwrap();
+    if raw_obj.contains_key("AG-TraceId") {
+        raw_obj.remove("AG-TraceId");
+    };
+    Ok(raw)
 }
 
 /// 获取应用评分数据
