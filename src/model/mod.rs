@@ -140,6 +140,14 @@ impl From<&RawJsonData> for AppInfo {
     }
 }
 
+impl AppInfo {
+    pub fn update_from_db(&mut self, db_data: &Self) {
+        self.created_at = db_data.created_at;
+        self.listed_at = db_data.listed_at;
+        self.comment = db_data.comment.clone();
+    }
+}
+
 /// 简化过的 AppInfo
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ShortAppInfo {
@@ -265,6 +273,11 @@ impl AppMetric {
             created_at: Local::now(),
         }
     }
+
+    pub fn update_from_db(&mut self, db_data: &Self) {
+        self.id = db_data.id;
+        self.created_at = db_data.created_at;
+    }
 }
 
 impl AppRating {
@@ -285,6 +298,10 @@ impl AppRating {
             source_type: sanitize_utf8_string(&raw_star.source_type).into_owned(),
             created_at: Local::now(),
         }
+    }
+    pub fn update_from_db(&mut self, db_data: &Self) {
+        self.id = db_data.id;
+        self.created_at = db_data.created_at;
     }
 }
 

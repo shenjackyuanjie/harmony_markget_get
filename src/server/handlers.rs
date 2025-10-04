@@ -77,11 +77,20 @@ pub async fn submit_app(
                     return Json(ApiResponse::error("数据库保存应用数据失败"));
                 }
             };
-            let metric = AppMetric::from_raw_data(&data.0);
+            let mut metric = AppMetric::from_raw_data(&data.0);
             let rating = rating
                 .as_ref()
                 .map(|star_data| AppRating::from_raw_star(&data.0, star_data));
-            let info: AppInfo = (&data.0).into();
+            let mut info: AppInfo = (&data.0).into();
+            // 试试获取一下 db 里的数据
+            {
+                if let Some(db_info) = state.db.get_app_info(&info.app_id).await {
+                    info.update_from_db(&db_info);
+                }
+                if let Some(db_metric) = state.db.get_app_last_metric(&info.app_id).await {
+                    metric.update_from_db(&db_metric);
+                }
+            }
             Json(ApiResponse::success(
                 Response {
                     info,
@@ -127,11 +136,20 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                     return Json(ApiResponse::error("数据库保存应用数据失败"));
                 }
             };
-            let metric = AppMetric::from_raw_data(&data.0);
+            let mut metric = AppMetric::from_raw_data(&data.0);
             let rating = rating
                 .as_ref()
                 .map(|star_data| AppRating::from_raw_star(&data.0, star_data));
-            let info: AppInfo = (&data.0).into();
+            let mut info: AppInfo = (&data.0).into();
+            // 试试获取一下 db 里的数据
+            {
+                if let Some(db_info) = state.db.get_app_info(&info.app_id).await {
+                    info.update_from_db(&db_info);
+                }
+                if let Some(db_metric) = state.db.get_app_last_metric(&info.app_id).await {
+                    metric.update_from_db(&db_metric);
+                }
+            }
             Json(ApiResponse::success(
                 Response {
                     info,
@@ -148,7 +166,10 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
             ))
         }
         Err(e) => {
-            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}, 尝试获取现有数据");
+            event!(
+                Level::WARN,
+                "http服务获取 appid: {query:?} 的信息失败: {e}, 尝试获取现有数据"
+            );
             Json(ApiResponse::error(e.to_string()))
         }
     }
