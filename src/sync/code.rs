@@ -11,6 +11,9 @@ use tokio::sync::RwLock;
 
 use crate::sync::{TOKEN_UPDATE_INTERVAL, USER_AGENT};
 
+const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
+const MAX_RETRIES: usize = 5;
+
 /// 格式化 UUID 为无连字符的小写十六进制字符串
 fn format_uuid(uuid: &uuid::Uuid) -> String {
     format!("{:x}", uuid).replace("-", "")
@@ -110,9 +113,6 @@ impl CodeManager {
 
     /// 从服务器获取 interface_code
     async fn fetch_interface_code(&self, identity_id: &str) -> String {
-        const URL: &str = "https://web-drcn.hispace.dbankcloud.com/edge/webedge/getInterfaceCode";
-        const MAX_RETRIES: usize = 5;
-
         let mut retry_count = 0;
 
         loop {
