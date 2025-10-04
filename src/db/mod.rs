@@ -4,6 +4,7 @@ use anyhow::Result;
 use chrono::{DateTime, Local};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 use sqlx::{
     FromRow,
@@ -91,21 +92,18 @@ impl Database {
     /// 返回布尔值表示是否插入了新数据
     pub async fn save_app_data(
         &self,
-        raw_data: &RawJsonData,
+        raw_data: &(RawJsonData, JsonValue),
         raw_rating: Option<&RawRatingData>,
         listed_at: Option<DateTime<Local>>,
         comment: Option<serde_json::Value>,
     ) -> Result<(bool, bool, bool)> {
         // 转换原始JSON数据用于比较
-        let raw_json = AppRaw::from_raw_datas(raw_data, raw_rating);
+        let (raw_data, raw_value) = raw_data;
+        let app_id = raw_data.app_id.clone();
         let exists = self
             .app_exists(&AppQuery::pkg_name(&raw_data.pkg_name))
             .await;
-        let insert_data = if exists
-            && self
-                .is_same_data(&raw_data.app_id, &raw_json.raw_json_data)
-                .await
-        {
+        let insert_data = if exists && self.is_same_data(&app_id, &raw_value).await {
             (false, false)
         } else {
             let mut app_info: AppInfo = raw_data.into();
@@ -115,21 +113,20 @@ impl Database {
             }
 
             // 转换并保存应用信息
-            let info_new = if self.is_same_app_info(&raw_data.app_id, &app_info).await {
+            let info_new = if self.is_same_app_info(&app_id, &app_info).await {
                 false
             } else {
                 self.insert_app_info(&app_info).await?;
                 println!(
                     "{}",
-                    format!("插入新的 app info {} ({})", app_info.app_id, app_info.name)
-                        .bright_green()
+                    format!("插入新的 app info {} ({})", app_id, app_info.name).bright_green()
                 );
                 true
             };
 
             // 保存指标信息
-            let app_metric = AppMetric::from_raw_data(raw_data);
-            let metric_new = if self.is_same_app_metric(&raw_data.app_id, &app_metric).await {
+            let app_metric = AppMetric::from_raw_data(&raw_data);
+            let metric_new = if self.is_same_app_metric(&app_id, &app_metric).await {
                 false
             } else {
                 self.insert_app_metric(&app_metric).await?;
@@ -148,13 +145,13 @@ impl Database {
         // 保存评分信息（如果有）
         let insert_rate = if let Some(raw_star) = raw_rating {
             let value = serde_json::to_value(raw_star).unwrap();
-            if self.is_same_rating(&raw_data.app_id, &value).await {
+            if self.is_same_rating(&app_id, &value).await {
                 false
             } else {
-                let app_rating = AppRating::from_raw_star(raw_data, raw_star);
+                let app_rating = AppRating::from_raw_star(&raw_data, raw_star);
                 println!(
                     "{}",
-                    format!("更新评分数据 {} ({})", raw_data.app_id, raw_data.name).bright_green()
+                    format!("更新评分数据 {} ({})", app_id, raw_data.name).bright_green()
                 );
                 self.insert_app_rating(&app_rating).await?;
                 true
@@ -165,10 +162,15 @@ impl Database {
 
         if insert_data.0 || insert_data.1 || insert_rate {
             // 保存原始JSON数据
-            self.insert_raw_data(&raw_json).await?;
+            self.insert_raw_data(
+                &app_id,
+                &raw_value,
+                raw_rating.map(|r| serde_json::to_value(r).unwrap()),
+            )
+            .await?;
             println!(
                 "{}",
-                format!("应用数据保存成功: {} ({})", raw_data.app_id, raw_data.name).green()
+                format!("应用数据保存成功: {} ({})", app_id, raw_data.name).green()
             );
         }
         Ok((insert_data.0, insert_data.1, insert_rate))

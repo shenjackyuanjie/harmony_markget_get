@@ -42,8 +42,8 @@ async fn async_main() -> anyhow::Result<()> {
     };
 
     let pkg_names: Vec<String> = {
-        let file = std::fs::File::open(&cli_file)
-            .with_context(|| format!("无法读取 {cli_file} 文件"))?;
+        let file =
+            std::fs::File::open(&cli_file).with_context(|| format!("无法读取 {cli_file} 文件"))?;
         let mut reader = std::io::BufReader::new(file);
         let mut pkg_names = Vec::new();
         let mut line = String::new();

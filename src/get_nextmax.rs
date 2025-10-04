@@ -108,8 +108,8 @@ async fn async_main() -> anyhow::Result<()> {
     }
 
     // 写到json里
-    let json = serde_json::to_string_pretty(&apps)
-        .with_context(|| "无法序列化 apps 数据到 JSON")?;
+    let json =
+        serde_json::to_string_pretty(&apps).with_context(|| "无法序列化 apps 数据到 JSON")?;
     std::fs::write("apps.json", json).with_context(|| "无法写入 apps.json 文件")?;
 
     Ok(())

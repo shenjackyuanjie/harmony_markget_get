@@ -1,8 +1,10 @@
 use std::{sync::LazyLock, time::Duration};
 
+use anyhow::Context;
 use chrono::{DateTime, Local};
 use colored::Colorize;
 use reqwest::Client;
+use serde_json::Value as JsonValue;
 use tracing::{Level, event};
 
 use crate::{
@@ -199,9 +201,9 @@ pub async fn sync_app(
 
     event!(
         Level::INFO,
-        app_id = app_data.0.app_id,
+        app_id = app_data.0.0.app_id,
         "获取到包 {app_query} 的数据, 应用名称: {}",
-        app_data.0.name
+        app_data.0.0.name
     );
 
     // 保存数据到数据库（包含重复检查）
@@ -233,10 +235,17 @@ pub async fn query_app(
     api_url: &str,
     app_query: &AppQuery,
     locale: &str,
-) -> anyhow::Result<(RawJsonData, Option<RawRatingData>)> {
+) -> anyhow::Result<((RawJsonData, JsonValue), Option<RawRatingData>)> {
     let data = get_app_data(client, api_url, app_query, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
+
+    let (raw_data, data) = (
+        data.clone(),
+        serde_json::from_value::<RawJsonData>(data)
+            .with_context(|| "不是，怎么又解析失败了")
+            .unwrap(),
+    );
 
     let star = if !data.pkg_name.starts_with("com.atomicservice") {
         let star_result = get_app_rating(client, api_url, &data.app_id).await;
@@ -260,7 +269,7 @@ pub async fn query_app(
         data.name
     );
 
-    Ok((data, star))
+    Ok(((data, raw_data), star))
 }
 
 /// 获取应用基本信息
@@ -284,7 +293,7 @@ pub async fn get_app_data(
     api_url: &str,
     app_query: &AppQuery,
     locale: impl ToString,
-) -> anyhow::Result<RawJsonData> {
+) -> anyhow::Result<JsonValue> {
     let body = serde_json::json!({
         app_query.app_info_type(): app_query.name(),
         "locale": locale.to_string(),
@@ -314,13 +323,7 @@ pub async fn get_app_data(
     if content_length == 0 {
         return Err(anyhow::anyhow!("HTTP响应体为空"));
     }
-
-    let data = response.json::<serde_json::Value>().await?;
-
-    let parsed_data = serde_json::from_value(data.clone())
-        .map_err(|e| anyhow::anyhow!("json 解析错误 {e}\n{data}"))?;
-
-    Ok(parsed_data)
+    Ok(response.json::<serde_json::Value>().await?)
 }
 
 /// 获取应用评分数据

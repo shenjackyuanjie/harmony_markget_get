@@ -1,7 +1,8 @@
-use crate::model::{AppInfo, AppMetric, AppRating, AppRaw};
 use anyhow::Result;
+use serde_json::Value as JsonValue;
 
 use crate::db::Database;
+use crate::model::{AppInfo, AppMetric, AppRating, AppRaw, RawRatingData};
 
 impl Database {
     /// 插入应用信息到 app_info 表
@@ -187,16 +188,21 @@ impl Database {
     }
 
     /// 插入原始 JSON 数据到 app_raw 表
-    pub async fn insert_raw_data(&self, data: &AppRaw) -> Result<()> {
+    pub async fn insert_raw_data(
+        &self,
+        app_id: &str,
+        data: &JsonValue,
+        rating: Option<JsonValue>,
+    ) -> Result<()> {
         let query = r#"
             INSERT INTO app_raw (app_id, raw_json_data, raw_json_star)
             VALUES ($1, $2, $3)
         "#;
 
         sqlx::query(query)
-            .bind(data.app_id.clone())
-            .bind(&data.raw_json_data)
-            .bind(&data.raw_json_star)
+            .bind(app_id)
+            .bind(data)
+            .bind(rating)
             .execute(&self.pool)
             .await?;
 

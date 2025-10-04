@@ -76,11 +76,11 @@ pub async fn submit_app(
                     return Json(ApiResponse::error("数据库保存应用数据失败"));
                 }
             };
-            let metric = AppMetric::from_raw_data(&data);
+            let metric = AppMetric::from_raw_data(&data.0);
             let rating = rating
                 .as_ref()
-                .map(|star_data| AppRating::from_raw_star(&data, star_data));
-            let info: AppInfo = (&data).into();
+                .map(|star_data| AppRating::from_raw_star(&data.0, star_data));
+            let info: AppInfo = (&data.0).into();
             Json(ApiResponse::success(
                 Response {
                     info,
@@ -125,11 +125,11 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                     return Json(ApiResponse::error("数据库保存应用数据失败"));
                 }
             };
-            let metric = AppMetric::from_raw_data(&data);
+            let metric = AppMetric::from_raw_data(&data.0);
             let rating = rating
                 .as_ref()
-                .map(|star_data| AppRating::from_raw_star(&data, star_data));
-            let info: AppInfo = (&data).into();
+                .map(|star_data| AppRating::from_raw_star(&data.0, star_data));
+            let info: AppInfo = (&data.0).into();
             Json(ApiResponse::success(
                 Response {
                     info,
