@@ -198,11 +198,11 @@ impl Database {
         data: &JsonValue,
         rating: Option<JsonValue>,
     ) -> Result<()> {
-        println!(
-            "Inserting raw data for app_id: {}\n{}\n{rating:?}",
-            app_id,
-            serde_json::to_string_pretty(data)?
-        );
+        // println!(
+        //     "Inserting raw data for app_id: {}\n{}\n{rating:?}",
+        //     app_id,
+        //     serde_json::to_string_pretty(data)?
+        // );
         match rating {
             Some(rating_value) => {
                 let query = r#"
