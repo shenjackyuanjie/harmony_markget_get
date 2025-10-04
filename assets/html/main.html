@@ -287,7 +287,7 @@
                 <div class="flex justify-between items-center">
                     <h5 class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">
                         帮助信息 - 华为应用市场看板使用说明</h5>
-                    <button type="button" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180" onclick="document.getElementById('searchHelpModal').classList.add('hidden')">
+                    <button type="button" id="closeHelpModal" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
@@ -349,7 +349,7 @@
                 </div>
             </div>
             <div class="flex justify-end pt-2">
-                <button onclick="document.getElementById('helpModal').classList.add('hidden')" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+                <button id="closeHelpModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
             </div>
         </div>
     </div>
@@ -410,14 +410,19 @@
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-auto animate-fade-in-up">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
-                <button id="closeContactModalBtn" class="btn-animation text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+                <button type="button" id="closeContactModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
             </div>
             <div class="text-gray-700 space-y-2">
                 <p><strong>QQ群:</strong> 757273833</p>
                 <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
             </div>
             <div class="flex justify-end pt-2">
-                <button onclick="document.getElementById('contactModal').classList.add('hidden')" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+                <button id="closeContactModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
             </div>
         </div>
     </div>

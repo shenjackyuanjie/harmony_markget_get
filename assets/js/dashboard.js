@@ -510,10 +510,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Modal event handlers
     const modalHandlers = [
         { id: 'helpBtn', modal: 'helpModal', action: 'show' },
+        { id: 'closeHelpModal', modal: 'helpModal', action: 'hide' },
+        { id: 'closeHelpModalBtn', modal: 'helpModal', action: 'hide' },
         { id: 'searchHelpBtn', modal: 'searchHelpModal', action: 'show' },
         { id: 'closeSearchHelpModal', modal: 'searchHelpModal', action: 'hide' },
         { id: 'closeSearchHelpBtn', modal: 'searchHelpModal', action: 'hide' },
         { id: 'contactBtn', modal: 'contactModal', action: 'show' },
+        { id: 'closeContactModal', modal: 'contactModal', action: 'hide' },
+        { id: 'closeContactModalBtn', modal: 'contactModal', action: 'hide' },
         { id: 'closeSubmitModal', modal: 'submitModal', action: 'hide' }
     ];
 
@@ -538,7 +542,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
-    
+
     // 为应用详情的关闭按钮添加事件，移除URL参数
     document.querySelectorAll("button[onclick]").forEach(btn => {
         const originalOnClick = btn.getAttribute('onclick');
