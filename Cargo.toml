@@ -3,6 +3,10 @@ name = "get_market"
 version = "0.6.0"
 edition = "2024"
 default-run = "get_market"
+authors = [
+  "shenjackyuanjie <3695888@qq.com>",
+  "tianxiu2b2t <atianxiua@163.com>",
+]
 
 [[bin]]
 name = "guess_market"
