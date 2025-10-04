@@ -161,8 +161,8 @@ impl Database {
     pub async fn get_app_info(&self, app: &AppQuery) -> Option<AppInfo> {
         let query = format!(
             "SELECT {} FROM app_info WHERE {} = $1",
+            SELECT_APP_INFO_FIELDS,
             app.app_db_name(),
-            SELECT_APP_INFO_FIELDS
         );
         let row = sqlx::query(&query)
             .bind(app.name())

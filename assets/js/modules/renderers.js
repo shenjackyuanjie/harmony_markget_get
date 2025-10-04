@@ -44,6 +44,7 @@ var DashboardRenderers = (function () {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${DashboardUtils.formatDate(app_metric.created_at)}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(app_info.created_at).toLocaleDateString("zh-CN")}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(app_info.listed_at).toLocaleDateString("zh-CN")}</td>
             `;
 
             tableBody.appendChild(tr);

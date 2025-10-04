@@ -107,6 +107,7 @@ impl AppListQuery {
                     | "rating_count"
                     | "metrics_created_at"
                     | "created_at"
+                    | "listed_at"
                     | "total_star_rating_count"
             )
         } else {
