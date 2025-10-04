@@ -49,7 +49,7 @@ def extract_contributor_info(note_string: str):
     return None
 
 
-SUBMIT_URL = "http://127.0.0.1:10003/api/submit"
+SUBMIT_URL = "http://192.168.3.47:10003/api/submit"
 
 def submit(data: dict[str, str]):
     try:
@@ -70,7 +70,7 @@ def submit(data: dict[str, str]):
 def main():
     gathers = []
 
-    file = "移动端应用市场上新记录整理.CSV"
+    file = "移动端应用市场上新记录整理-game.CSV"
     with open(file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
