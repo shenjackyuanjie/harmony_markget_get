@@ -383,7 +383,30 @@ impl Database {
         sort_desc: bool,
         search: Option<DbSearch>,
     ) -> Result<PaginatedAppInfo<D>> {
-        let total_count = self.get_app_info_count().await?;
+        // 动态统计总数（不依赖 get_app_info_count）
+        let total_count: i64 = match &search {
+            Some(DbSearch { key, value, is_exact }) => {
+                let query = format!(
+                    "SELECT COUNT(*) FROM app_latest_info WHERE {} ILIKE $1",
+                    key
+                );
+                let result: (i64,) = sqlx::query_as(&query)
+                    .bind(if *is_exact {
+                        value.clone()
+                    } else {
+                        format!("%{}%", value)
+                    })
+                    .fetch_one(&self.pool)
+                    .await?;
+                result.0
+            }
+            None => {
+                let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM app_latest_info")
+                    .fetch_one(&self.pool)
+                    .await?;
+                result.0
+            }
+        };
         let total_pages = if page_size == 0 {
             0
         } else {
@@ -400,7 +423,7 @@ impl Database {
 
         Ok(PaginatedAppInfo {
             data,
-            total_count,
+            total_count: total_count as u32,
             page,
             page_size,
             total_pages,

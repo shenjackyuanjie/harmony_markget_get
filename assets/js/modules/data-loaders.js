@@ -69,6 +69,8 @@ var DashboardDataLoaders = (function () {
         search_key = searchKey,
         search_exact = searchExact,
     ) {
+        totalPages = 1; // 清空
+        DashboardRenderers.renderPagination(); // 清空分页
         try {
             const tableBody = document.getElementById("appTableBody");
             tableBody.innerHTML =
