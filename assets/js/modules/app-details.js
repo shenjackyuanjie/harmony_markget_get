@@ -75,15 +75,15 @@ var DashboardAppDetails = (function () {
                             <span ${same_css} bg-emerald-100 text-emerald-800">最小 api 版本 ${app_metric.minsdk}</span>
                             <span ${same_css} bg-amber-100 text-amber-800">编译 api 版本 ${app_metric.compile_sdk_version}</span>
                         </div>
-                        <div class="space-y-2 mb-2">
-                            <p><strong>数据更新时间:</strong> <span class="text-gray-600" id="dataUpdateTime">加载中...</span></p>
-                            <p><strong>应用爬取时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_info.created_at)}</span></p>
-                            <p><strong>应用上架时间(可能):</strong> <span class="text-gray-600">${new Date(app_info.listed_at).toLocaleDateString("zh-CN")}</span></p>
-                            <p><strong>应用更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.release_date)}</span></p>
-                            <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
-                            <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
-                            <p><strong>App ID:</strong> <span class="text-gray-600">${app_info.app_id}</span></p>
-                            <p><strong>Package Name:</strong> <span class="text-gray-600">${app_info.pkg_name}</span></p>
+                        <div class="flex flex-wrap -mx-2 mb-2">
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>数据更新时间:</strong> <span>${DashboardUtils.formatDate(app_metric.created_at)}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>应用爬取时间:</strong> <span>${DashboardUtils.formatDate(app_info.created_at)}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>应用上架时间(可能):</strong> <span>${new Date(app_info.listed_at).toLocaleDateString("zh-CN")}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>应用更新时间:</strong> <span>${DashboardUtils.formatDate(app_metric.release_date)}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>下载量:</strong> <span>${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>应用大小:</strong> <span>${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>App ID:</strong> <span>${app_info.app_id}</span></p>
+                            <p class="w-full md:w-1/2 px-2 py-1"><strong>Package Name:</strong> <span>${app_info.pkg_name}</span></p>
                         </div>
                         <hr class="my-4 border-gray-200">
                         <div id="descriptionContainer"></div>
@@ -173,14 +173,6 @@ var DashboardAppDetails = (function () {
                     .then((historyResult) => {
                         // 原始数据是从新到旧
                         let history = historyResult.data || [];
-                        // 更新数据更新时间为历史数据最新记录的时间（在倒序前获取）
-                        if (history && history.length > 0) {
-                            const latestRecord = history[0]; // 原始数据中最后一个是最新的
-                            const dataUpdateTimeElement = document.getElementById("dataUpdateTime");
-                            if (dataUpdateTimeElement) {
-                                dataUpdateTimeElement.textContent = DashboardUtils.formatDate(latestRecord.created_at);
-                            }
-                        }
                         // 去重 download_count（原有逻辑）
                         if (Array.isArray(history) && history.length > 1) {
                             const deduped = [history[0]];
