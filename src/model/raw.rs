@@ -144,7 +144,9 @@ pub struct RawJsonData {
     pub target_sdk: String,
     #[serde(rename = "minsdk")]
     pub min_sdk: String,
-    #[serde(rename = "compileSdkVersion")]
+    /// 感谢 C5765880207852868633
+    /// 让我知道 compile sdk version 也是可以不带的
+    #[serde(rename = "compileSdkVersion", default)]
     pub compile_sdk_version: i32,
     #[serde(rename = "minHmosApiLevel", default)]
     pub min_hmos_api_level: i32,
