@@ -23,6 +23,7 @@ var DashboardAppDetails = (function () {
             const app_info = data.data.info;
             const app_metric = data.data.metric;
             const app_rating = data.data.rating || {};
+            const getDataSuccess = data.data.get_data !== false; // 明确判断是否为 false
 
             if (!data.success) {
                 const error = data.data.error;
@@ -48,6 +49,12 @@ var DashboardAppDetails = (function () {
 
             const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let html = `
+              ${!getDataSuccess ? `
+                  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                      <strong class="font-bold">注意!</strong>
+                      <span class="block sm:inline">无法从 AppGallery 获取到最新的数据, 可能应用已经下架</span>
+                  </div>
+              ` : ''}
                 <div class="flex flex-col md:flex-row gap-2">
                     <div class="md:w-1/6 text-center md:text-center">
                         <img src="${app_info.icon_url || "/img/default-app-icon.png"}" class="w-24 h-24 app-icon mx-auto item-center" alt="${app_info.name}">
