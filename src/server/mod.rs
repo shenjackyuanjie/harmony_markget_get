@@ -1,4 +1,4 @@
-pub mod handle_static;
+pub mod frontend_handlers;
 pub mod handlers;
 pub mod routes;
 pub mod state;

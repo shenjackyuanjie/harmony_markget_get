@@ -1,9 +1,10 @@
 use axum::routing::post;
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 use std::sync::Arc;
+use tower_http::services::ServeDir;
 
 use crate::server::state::{ApiResponse, AppState};
-use crate::server::{handle_static, handlers};
+use crate::server::{frontend_handlers, handlers};
 
 /// 创建应用路由
 pub fn create_router(app_state: Arc<AppState>) -> Router {
@@ -55,39 +56,12 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
 
     Router::new()
         // Dashboard routes
-        .route("/", get(handle_static::redirect_to_dashboard))
-        .route("/dashboard", get(handle_static::serve_dashboard))
-        .route("/js/dashboard.js", get(handle_static::serve_dashboard_js))
-        .route("/js/chart.js", get(handle_static::serve_chart_js))
-        .route(
-            "/js/chartjs-plugin-datalabels.js",
-            get(handle_static::serve_chart_plugin_datalables_js),
-        )
-        .route(
-            "/js/chartjs-adapter-date-fns.js",
-            get(handle_static::serve_chartjs_adapter_date_fns_js),
-        )
-        .route("/js/modules/utils.js", get(handle_static::serve_utils_js))
-        .route(
-            "/js/modules/data-loaders.js",
-            get(handle_static::serve_data_loaders_js),
-        )
-        .route(
-            "/js/modules/renderers.js",
-            get(handle_static::serve_renderers_js),
-        )
-        .route("/js/modules/charts.js", get(handle_static::serve_charts_js))
-        .route(
-            "/js/modules/app-details.js",
-            get(handle_static::serve_app_details_js),
-        )
-        .route("/favicon.ico", get(handle_static::serve_favicon))
-        .route(
-            "/tencent6875095490394109723.txt",
-            get(handle_static::serve_腾讯),
-        )
+        .route("/", get(frontend_handlers::redirect_to_dashboard))
+        .route("/dashboard", get(frontend_handlers::serve_dashboard))
+        .route("/favicon.ico", get(frontend_handlers::serve_favicon))
+        .nest_service("/js", ServeDir::new("assets/js"))
         .nest("/api", api_router)
-        .fallback(handle_static::serve_not_found)
+        .fallback(frontend_handlers::serve_not_found)
         .with_state(app_state)
 }
 

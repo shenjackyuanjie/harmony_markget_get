@@ -385,7 +385,11 @@ impl Database {
     ) -> Result<PaginatedAppInfo<D>> {
         // 动态统计总数（不依赖 get_app_info_count）
         let total_count: i64 = match &search {
-            Some(DbSearch { key, value, is_exact }) => {
+            Some(DbSearch {
+                key,
+                value,
+                is_exact,
+            }) => {
                 let query = format!(
                     "SELECT COUNT(*) FROM app_latest_info WHERE {} ILIKE $1",
                     key
