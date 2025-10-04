@@ -30,7 +30,7 @@ struct Response {
 pub async fn submit_app(
     State(state): State<Arc<AppState>>,
     Json(data): Json<JsonValue>,
-) -> impl IntoResponse {
+) -> Json<ApiResponse> {
     // 获取 app_id 或者 pkg_name
     let app_id = data.get("app_id").and_then(|v| v.as_str());
     let pkg_name = data.get("pkg_name").and_then(|v| v.as_str());
@@ -55,65 +55,15 @@ pub async fn submit_app(
 
     let comment = data.get("comment");
 
-    match crate::sync::query_app(
-        &state.client,
-        state.cfg.api_url(),
-        &query,
-        state.cfg.locale(),
-    )
-    .await
-    {
-        Ok((data, rating)) => {
-            // 检查是否是新的
-            let exists = state.db.app_exists(&query).await;
-            let (new_info, new_metric, new_rating) = match state
-                .db
-                .save_app_data(&data, rating.as_ref(), listed_at, comment.cloned())
-                .await
-            {
-                Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
-                Err(e) => {
-                    event!(Level::WARN, "数据库保存应用数据失败: {e}");
-                    return Json(ApiResponse::error("数据库保存应用数据失败"));
-                }
-            };
-            let mut metric = AppMetric::from_raw_data(&data.0);
-            let rating = rating
-                .as_ref()
-                .map(|star_data| AppRating::from_raw_star(&data.0, star_data));
-            let mut info: AppInfo = (&data.0).into();
-            // 试试获取一下 db 里的数据
-            {
-                if let Some(db_info) = state.db.get_app_info(&info.app_id).await {
-                    info.update_from_db(&db_info);
-                }
-                if let Some(db_metric) = state.db.get_app_last_metric(&info.app_id).await {
-                    metric.update_from_db(&db_metric);
-                }
-            }
-            Json(ApiResponse::success(
-                Response {
-                    info,
-                    metric,
-                    rating,
-                    new_app: !exists,
-                    new_info,
-                    new_metric,
-                    new_rating,
-                    get_data: true,
-                },
-                None,
-                None,
-            ))
-        }
-        Err(e) => {
-            event!(Level::WARN, "http服务获取 appid: {query:?} 的信息失败: {e}");
-            Json(ApiResponse::error(e.to_string()))
-        }
-    }
+    query_app(state, query, listed_at, comment.cloned()).await
 }
 
-pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoResponse {
+pub async fn query_app(
+    state: Arc<AppState>,
+    query: AppQuery,
+    listed_at: Option<DateTime<Local>>,
+    comment: Option<JsonValue>,
+) -> Json<ApiResponse> {
     match crate::sync::query_app(
         &state.client,
         state.cfg.api_url(),
@@ -127,7 +77,7 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
             let exists = state.db.app_exists(&query).await;
             let (new_info, new_metric, new_rating) = match state
                 .db
-                .save_app_data(&data, rating.as_ref(), None, None)
+                .save_app_data(&data, rating.as_ref(), listed_at, comment)
                 .await
             {
                 Ok((new_info, new_metric, new_rating)) => (new_info, new_metric, new_rating),
@@ -143,10 +93,10 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
             let mut info: AppInfo = (&data.0).into();
             // 试试获取一下 db 里的数据
             {
-                if let Some(db_info) = state.db.get_app_info(&info.app_id).await {
+                if let Some(db_info) = state.db.get_app_info(&query).await {
                     info.update_from_db(&db_info);
                 }
-                if let Some(db_metric) = state.db.get_app_last_metric(&info.app_id).await {
+                if let Some(db_metric) = state.db.get_app_last_metric(&query).await {
                     metric.update_from_db(&db_metric);
                 }
             }
@@ -170,7 +120,42 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
                 Level::WARN,
                 "http服务获取 appid: {query:?} 的信息失败: {e}, 尝试获取现有数据"
             );
-            Json(ApiResponse::error(e.to_string()))
+            if !state.db.app_exists(&query).await {
+                return Json(ApiResponse::error(
+                    "数据库里并没有这个应用, 也获取不到新的数据",
+                ));
+            }
+            let info = if let Some(info) = state.db.get_app_info(&query).await {
+                info
+            } else {
+                event!(Level::WARN, "怎么数据库里也没有 {query} 的 info 啊");
+                return Json(ApiResponse::error(
+                    "对不起, 但是数据库里并没有这个应用的 info",
+                ));
+            };
+            let metric = if let Some(metric) = state.db.get_app_last_metric(&query).await {
+                metric
+            } else {
+                event!(Level::WARN, "怎么数据库里也没有 {query} 的 metric 啊");
+                return Json(ApiResponse::error(
+                    "对不起, 但是数据库里并没有这个应用的 metric",
+                ));
+            };
+            let rating = state.db.get_app_rating(&query).await;
+            Json(ApiResponse::success(
+                Response {
+                    info,
+                    metric,
+                    rating,
+                    new_app: false,
+                    new_info: false,
+                    new_metric: false,
+                    new_rating: false,
+                    get_data: false,
+                },
+                None,
+                None,
+            ))
         }
     }
 }
@@ -179,26 +164,26 @@ pub async fn query_app(state: Arc<AppState>, query: AppQuery) -> impl IntoRespon
 pub async fn query_pkg(
     State(state): State<Arc<AppState>>,
     Path(pkg_name): Path<String>,
-) -> impl IntoResponse {
+) -> Json<ApiResponse> {
     event!(
         Level::INFO,
         "http 服务正在尝试通过 pkg name 获取 {pkg_name} 的信息"
     );
     let query = AppQuery::pkg_name(&pkg_name);
-    query_app(state, query).await
+    query_app(state, query, None, None).await
 }
 
 /// 查询应用ID信息
 pub async fn query_app_id(
     State(state): State<Arc<AppState>>,
     Path(app_id): Path<String>,
-) -> impl IntoResponse {
+) -> Json<ApiResponse> {
     event!(
         Level::INFO,
         "http 服务正在尝试通过 appid 获取 {app_id} 的信息"
     );
     let query = AppQuery::app_id(&app_id);
-    query_app(state, query).await
+    query_app(state, query, None, None).await
 }
 
 /// 获取应用列表统计信息

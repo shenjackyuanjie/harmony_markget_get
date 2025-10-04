@@ -100,10 +100,9 @@ impl Database {
         // 转换原始JSON数据用于比较
         let (raw_data, raw_value) = raw_data;
         let app_id = raw_data.app_id.clone();
-        let exists = self
-            .app_exists(&AppQuery::pkg_name(&raw_data.pkg_name))
-            .await;
-        let insert_data = if exists && self.is_same_data(&app_id, raw_value).await {
+        let query = AppQuery::app_id(&app_id);
+        let exists = self.app_exists(&query).await;
+        let insert_data = if exists && self.is_same_data(&query, raw_value).await {
             (false, false)
         } else {
             let mut app_info: AppInfo = raw_data.into();
@@ -113,7 +112,7 @@ impl Database {
             }
 
             // 转换并保存应用信息
-            let info_new = if self.is_same_app_info(&app_id, &app_info).await {
+            let info_new = if self.is_same_app_info(&query, &app_info).await {
                 false
             } else {
                 self.insert_app_info(&app_info).await?;
@@ -126,7 +125,7 @@ impl Database {
 
             // 保存指标信息
             let app_metric = AppMetric::from_raw_data(raw_data);
-            let metric_new = if self.is_same_app_metric(&app_id, &app_metric).await {
+            let metric_new = if self.is_same_app_metric(&query, &app_metric).await {
                 false
             } else {
                 self.insert_app_metric(&app_metric).await?;
@@ -145,7 +144,7 @@ impl Database {
         // 保存评分信息（如果有）
         let insert_rate = if let Some(raw_star) = raw_rating {
             let value = serde_json::to_value(raw_star).unwrap();
-            if self.is_same_rating(&app_id, &value).await {
+            if self.is_same_rating(&query, &value).await {
                 false
             } else {
                 let app_rating = AppRating::from_raw_star(raw_data, raw_star);

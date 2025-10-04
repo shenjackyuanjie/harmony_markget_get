@@ -8,7 +8,7 @@ use crate::db::read_data::{
     SELECT_APP_INFO_FIELDS, SELECT_APP_METRIC_FIELDS, SELECT_APP_RATING_FIELDS,
 };
 use crate::db::{AppCounts, Database, DbSearch, PaginatedAppInfo};
-use crate::model::{AppInfo, AppMetric, AppQuery, FullAppInfo, ShortAppRating};
+use crate::model::{AppInfo, AppMetric, AppQuery, AppRating, FullAppInfo, ShortAppRating};
 
 impl Database {
     fn read_full_app_data_from_row(row: &PgRow) -> FullAppInfo {
@@ -49,17 +49,20 @@ impl Database {
     }
 
     /// 获取指定应用的最后一条原始JSON数据
-    pub async fn get_last_raw_json_data(&self, app_id: &str) -> Option<Value> {
-        const QUERY: &str = r#"
+    pub async fn get_last_raw_json_data(&self, app: &AppQuery) -> Option<Value> {
+        let query = format!(
+            r#"
                 SELECT raw_json_data
                 FROM app_raw
-                WHERE app_id = $1
+                WHERE {} = $1
                 ORDER BY created_at DESC
                 LIMIT 1
-            "#;
+            "#,
+            app.app_db_name()
+        );
 
-        let result = sqlx::query(QUERY)
-            .bind(app_id)
+        let result = sqlx::query(&query)
+            .bind(app.name())
             .fetch_optional(&self.pool)
             .await
             .ok()?;
@@ -68,15 +71,14 @@ impl Database {
     }
 
     /// 获取指定应用的 created_at 时间
-    pub async fn get_app_created_at(&self, app_id: &str) -> Result<Option<DateTime<Local>>> {
-        const QUERY: &str = r#"
-            SELECT created_at
-            FROM app_info
-            WHERE app_id = $1
-        "#;
+    pub async fn get_app_created_at(&self, app: &AppQuery) -> Result<Option<DateTime<Local>>> {
+        let query = format!(
+            "SELECT created_at FROM app_info WHERE {} = $1",
+            app.app_db_name()
+        );
 
-        let result = sqlx::query(QUERY)
-            .bind(app_id)
+        let result = sqlx::query(&query)
+            .bind(app.name())
             .fetch_optional(&self.pool)
             .await?;
 
@@ -89,18 +91,20 @@ impl Database {
         }
     }
 
-    /// 获取指定应用的最后一条原始JSON数据
-    pub async fn get_last_raw_json_star(&self, app_id: &str) -> Option<Value> {
-        const QUERY: &str = r#"
-            SELECT raw_json_star
-            FROM app_raw
-            WHERE app_id = $1
-            ORDER BY created_at DESC
-            LIMIT 1
-        "#;
+    pub async fn get_last_raw_json_star(&self, app: &AppQuery) -> Option<Value> {
+        let query = format!(
+            r#"
+                SELECT raw_json_star
+                FROM app_raw
+                WHERE {} = $1
+                ORDER BY created_at DESC
+                LIMIT 1
+            "#,
+            app.app_db_name()
+        );
 
-        let result = sqlx::query(QUERY)
-            .bind(app_id)
+        let result = sqlx::query(&query)
+            .bind(app.name())
             .fetch_optional(&self.pool)
             .await
             .ok()?;
@@ -114,37 +118,54 @@ impl Database {
         }
     }
 
+    pub async fn get_app_rating(&self, app: &AppQuery) -> Option<AppRating> {
+        let query = format!(
+            "SELECT {} FROM app_rating WHERE {} = $1",
+            SELECT_APP_RATING_FIELDS,
+            app.app_db_name()
+        );
+
+        let result = sqlx::query(&query)
+            .bind(app.name())
+            .fetch_optional(&self.pool)
+            .await
+            .ok()??;
+
+        Some(Self::read_app_rating_from_row(&result))
+    }
+
     /// 检查新数据是否与最后一条数据相同
-    pub async fn is_same_data(&self, app_id: &str, new_data: &Value) -> bool {
-        self.get_last_raw_json_data(app_id)
+    pub async fn is_same_data(&self, app: &AppQuery, new_data: &Value) -> bool {
+        self.get_last_raw_json_data(app)
             .await
             .map(|last_data| last_data == *new_data)
             .unwrap_or(false)
     }
 
     /// 检查评分是否相同
-    pub async fn is_same_rating(&self, app_id: &str, new_rating: &Value) -> bool {
-        self.get_last_raw_json_star(app_id)
+    pub async fn is_same_rating(&self, app: &AppQuery, new_rating: &Value) -> bool {
+        self.get_last_raw_json_star(app)
             .await
             .map(|last_rating| last_rating == *new_rating)
             .unwrap_or(false)
     }
 
     /// 实际检查 app info 是否相同
-    pub async fn is_same_app_info(&self, app_id: &str, app_info: &AppInfo) -> bool {
-        self.get_app_info(app_id)
+    pub async fn is_same_app_info(&self, app: &AppQuery, app_info: &AppInfo) -> bool {
+        self.get_app_info(app)
             .await
             .map(|d| d == *app_info)
             .unwrap_or(false)
     }
 
-    pub async fn get_app_info(&self, app_id: &str) -> Option<AppInfo> {
+    pub async fn get_app_info(&self, app: &AppQuery) -> Option<AppInfo> {
         let query = format!(
-            "SELECT {} FROM app_info WHERE app_id = $1",
+            "SELECT {} FROM app_info WHERE {} = $1",
+            app.app_db_name(),
             SELECT_APP_INFO_FIELDS
         );
         let row = sqlx::query(&query)
-            .bind(app_id)
+            .bind(app.name())
             .fetch_one(&self.pool)
             .await
             .ok()?;
@@ -154,21 +175,22 @@ impl Database {
     }
 
     /// 实际检查 app metric 是否相同
-    pub async fn is_same_app_metric(&self, app_id: &str, app_metric: &AppMetric) -> bool {
-        self.get_app_last_metric(app_id)
+    pub async fn is_same_app_metric(&self, app: &AppQuery, app_metric: &AppMetric) -> bool {
+        self.get_app_last_metric(app)
             .await
             .map(|last_metric| last_metric == *app_metric)
             .unwrap_or(false)
     }
 
     /// 获取 app 最后一次的 metric
-    pub async fn get_app_last_metric(&self, app_id: &str) -> Option<AppMetric> {
+    pub async fn get_app_last_metric(&self, app: &AppQuery) -> Option<AppMetric> {
         let query = format!(
-            "SELECT {} FROM app_metrics WHERE app_id = $1",
-            SELECT_APP_METRIC_FIELDS
+            "SELECT {} FROM app_metrics WHERE {} = $1",
+            SELECT_APP_METRIC_FIELDS,
+            app.app_db_name()
         );
         let row = sqlx::query(&query)
-            .bind(app_id)
+            .bind(app.name())
             .fetch_optional(&self.pool)
             .await
             .ok()?;
