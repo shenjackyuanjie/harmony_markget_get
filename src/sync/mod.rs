@@ -328,6 +328,13 @@ pub async fn get_app_data(
     if raw_obj.contains_key("AG-TraceId") {
         raw_obj.remove("AG-TraceId");
     };
+    // 拜 cn.com.wind.wft_pc 所赐
+    // 我们需要去掉可能的 \0
+    let _ = raw_obj
+        .get("privacyUrl")
+        .and_then(|v| v.as_str())
+        .map(|v| v.replace("\0", ""))
+        .map(|v| raw_obj.insert("privacyUrl".to_string(), serde_json::Value::String(v)));
     Ok(raw)
 }
 

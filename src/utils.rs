@@ -30,9 +30,12 @@ pub fn sanitize_utf8_string(s: &str) -> Cow<'_, str> {
         return Cow::Borrowed(s);
     }
 
-    // 检查是否包含空字节或其他无效字符
-    if s.contains('\0') || !s.is_ascii() && s.chars().any(|c| c as u32 == 0xFFFD) {
-        // 清理字符串：移除空字节和替换无效字符
+    // 检查是否包含需要清理的字符
+    if s.contains('\0')
+        || s.chars()
+            .any(|c| c.is_control() && c != '\n' && c != '\r' && c != '\t')
+    {
+        // 清理字符串：移除空字节和替换控制字符
         let cleaned: String = s
             .chars()
             .filter(|&c| c != '\0') // 移除空字节
@@ -61,17 +64,19 @@ pub fn remove_null_bytes(s: &str) -> Cow<'_, str> {
 }
 
 /// 清理字符串，确保它是有效的UTF8
-/// 这个方法更激进，会移除所有非UTF8字符
+/// 这个方法更激进，会移除所有控制字符和空字节
 pub fn ensure_valid_utf8(s: &str) -> String {
     s.chars()
         .filter(|&c| c != '\0') // 移除空字节
-        .filter(|c| c.is_ascii() || !c.is_control() || *c == '\n' || *c == '\r' || *c == '\t')
+        .filter(|c| !c.is_control() || *c == '\n' || *c == '\r' || *c == '\t') // 保留常见空白字符
         .collect()
 }
 
 /// 检查字符串是否包含无效的UTF8字符
 pub fn has_invalid_utf8_chars(s: &str) -> bool {
-    s.contains('\0') || s.chars().any(|c| c as u32 == 0xFFFD)
+    s.contains('\0')
+        || s.chars()
+            .any(|c| c.is_control() && c != '\n' && c != '\r' && c != '\t')
 }
 
 #[cfg(test)]

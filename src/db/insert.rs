@@ -198,13 +198,18 @@ impl Database {
         data: &JsonValue,
         rating: Option<JsonValue>,
     ) -> Result<()> {
+        println!(
+            "Inserting raw data for app_id: {}\n{}\n{rating:?}",
+            app_id,
+            serde_json::to_string_pretty(data)?
+        );
         match rating {
             Some(rating_value) => {
                 let query = r#"
                     INSERT INTO app_raw (app_id, pkg_name, raw_json_data, raw_json_star)
                     VALUES ($1,
                     (SELECT pkg_name FROM app_info WHERE app_id = $1),
-                    $2, $3)
+                    $2::jsonb, $3::jsonb)
                 "#;
 
                 sqlx::query(query)
@@ -219,7 +224,7 @@ impl Database {
                     INSERT INTO app_raw (app_id, pkg_name, raw_json_data)
                     VALUES ($1,
                     (SELECT pkg_name FROM app_info WHERE app_id = $1),
-                    $2)
+                    $2::jsonb)
                 "#;
 
                 sqlx::query(query)

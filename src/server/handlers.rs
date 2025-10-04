@@ -55,6 +55,15 @@ pub async fn submit_app(
 
     let comment = data.get("comment");
 
+    let comment_str = comment
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| "None".to_string());
+
+    println!(
+        "接收到投稿 data: query: {:?}, listed_at: {:?}, comment: {:?}",
+        query, listed_at, comment_str
+    );
+
     query_app(state, query, listed_at, comment.cloned()).await
 }
 
