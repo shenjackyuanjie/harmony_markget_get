@@ -24,6 +24,19 @@ var DashboardAppDetails = (function () {
             const app_metric = data.data.metric;
             const app_rating = data.data.rating || {};
 
+            if (!data.success) {
+                const error = data.data.error;
+                let html = `
+                    <div class="text-center py-8">
+                        <div class="text-red-500 text-lg font-medium mb-2">获取数据失败，应用可能已经下架/不存在</div>
+                        <div class="text-gray-600 text-sm">${error || '未知错误'}</div>
+                    </div>
+                `;
+                modalContent.innerHTML = html;
+                modal.classList.remove("hidden");
+                return;
+            }
+
             // 更新当前应用包名信息
             currentApp.pkgName = app_info.pkg_name;
 
@@ -64,6 +77,8 @@ var DashboardAppDetails = (function () {
                         </div>
                         <div class="space-y-2 mb-2">
                             <p><strong>数据更新时间:</strong> <span class="text-gray-600" id="dataUpdateTime">加载中...</span></p>
+                            <p><strong>应用爬取时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_info.created_at)}</span></p>
+                            <p><strong>应用上架时间(可能):</strong> <span class="text-gray-600">${new Date(app_info.listed_at).toLocaleDateString("zh-CN")}</span></p>
                             <p><strong>应用更新时间:</strong> <span class="text-gray-600">${DashboardUtils.formatDate(app_metric.release_date)}</span></p>
                             <p><strong>下载量:</strong> <span class="text-gray-600">${DashboardUtils.formatNumber(app_metric.download_count || 0)}</span></p>
                             <p><strong>应用大小:</strong> <span class="text-gray-600">${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
