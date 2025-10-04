@@ -144,7 +144,9 @@ pub struct RawJsonData {
     /// 让我知道 new features 也能不带
     #[serde(rename = "newFeatures", default)]
     pub new_features: String,
-    #[serde(rename = "upgradeMsg")]
+    /// 感谢 C5765880207855312913
+    /// 让我知道 upgrade msg 也能不带
+    #[serde(rename = "upgradeMsg", default)]
     pub upgrade_msg: String,
     #[serde(rename = "targetSdk")]
     pub target_sdk: String,
