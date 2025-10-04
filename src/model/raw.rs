@@ -126,10 +126,12 @@ pub struct RawJsonData {
     pub size_bytes: i64,
     #[serde(rename = "sha256")]
     pub sha256: String,
-    /// 反正有概率没有
+    /// 感谢 com.atomicservice.5765880207855314153
+    /// 让我知道 hot 也可以没有的
     #[serde(rename = "hot", default = "hot_default")]
     pub hot_score: String,
-    /// 反正有
+    /// 感谢 com.atomicservice.5765880207855317715
+    /// 让我知道 rate num 也可以没有的
     #[serde(rename = "rateNum", default = "rate_num_default")]
     pub rate_num: String,
     #[serde(rename = "downCount")]
