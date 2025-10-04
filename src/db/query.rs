@@ -18,7 +18,7 @@ impl Database {
         let app_rating = if let Ok(rate) = row.try_get::<'_, Option<i32>, _>("star_1_rating_count")
         {
             if rate.is_some() {
-                Some(Self::read_app_rating_from_row(row))
+                Self::read_app_rating_from_row(row)
             } else {
                 None
             }
@@ -131,7 +131,7 @@ impl Database {
             .await
             .ok()??;
 
-        Some(Self::read_app_rating_from_row(&result))
+        Self::read_app_rating_from_row(&result)
     }
 
     /// 检查新数据是否与最后一条数据相同

@@ -111,28 +111,28 @@ impl Database {
         }
     }
 
-    pub fn read_app_rating_from_row(row: &PgRow) -> AppRating {
-        AppRating {
+    pub fn read_app_rating_from_row(row: &PgRow) -> Option<AppRating> {
+        Some(AppRating {
             id: row.try_get("id").unwrap_or(0),
-            app_id: row.get("app_id"),
+            app_id: row.try_get("app_id").ok()?,
             average_rating: {
-                let raw: String = row.get("average_rating");
+                let raw: String = row.try_get("average_rating").ok()?;
                 raw.parse().unwrap_or(0.0)
             },
-            star_1_rating_count: row.get("star_1_rating_count"),
-            star_2_rating_count: row.get("star_2_rating_count"),
-            star_3_rating_count: row.get("star_3_rating_count"),
-            star_4_rating_count: row.get("star_4_rating_count"),
-            star_5_rating_count: row.get("star_5_rating_count"),
-            my_star_rating: row.get("my_star_rating"),
-            total_star_rating_count: row.get("total_star_rating_count"),
-            only_star_count: row.get("only_star_count"),
+            star_1_rating_count: row.try_get("star_1_rating_count").ok()?,
+            star_2_rating_count: row.try_get("star_2_rating_count").ok()?,
+            star_3_rating_count: row.try_get("star_3_rating_count").ok()?,
+            star_4_rating_count: row.try_get("star_4_rating_count").ok()?,
+            star_5_rating_count: row.try_get("star_5_rating_count").ok()?,
+            my_star_rating: row.try_get("my_star_rating").ok()?,
+            total_star_rating_count: row.try_get("total_star_rating_count").ok()?,
+            only_star_count: row.try_get("only_star_count").ok()?,
             full_average_rating: {
-                let raw: String = row.get("full_average_rating");
+                let raw: String = row.try_get("full_average_rating").ok()?;
                 raw.parse().unwrap_or(0.0)
             },
-            source_type: row.get("source_type"),
-            created_at: row.get("rating_created_at"),
-        }
+            source_type: row.try_get("source_type").ok()?,
+            created_at: row.try_get("rating_created_at").ok()?,
+        })
     }
 }
