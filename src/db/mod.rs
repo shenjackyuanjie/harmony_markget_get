@@ -1,4 +1,4 @@
-use crate::model::{AppInfo, AppMetric, AppQuery, AppRating, AppRaw, RawJsonData, RawRatingData};
+use crate::model::{AppInfo, AppMetric, AppQuery, AppRating, RawJsonData, RawRatingData};
 
 use anyhow::Result;
 use chrono::{DateTime, Local};
@@ -103,7 +103,7 @@ impl Database {
         let exists = self
             .app_exists(&AppQuery::pkg_name(&raw_data.pkg_name))
             .await;
-        let insert_data = if exists && self.is_same_data(&app_id, &raw_value).await {
+        let insert_data = if exists && self.is_same_data(&app_id, raw_value).await {
             (false, false)
         } else {
             let mut app_info: AppInfo = raw_data.into();
@@ -125,7 +125,7 @@ impl Database {
             };
 
             // 保存指标信息
-            let app_metric = AppMetric::from_raw_data(&raw_data);
+            let app_metric = AppMetric::from_raw_data(raw_data);
             let metric_new = if self.is_same_app_metric(&app_id, &app_metric).await {
                 false
             } else {
@@ -148,7 +148,7 @@ impl Database {
             if self.is_same_rating(&app_id, &value).await {
                 false
             } else {
-                let app_rating = AppRating::from_raw_star(&raw_data, raw_star);
+                let app_rating = AppRating::from_raw_star(raw_data, raw_star);
                 println!(
                     "{}",
                     format!("更新评分数据 {} ({})", app_id, raw_data.name).bright_green()
@@ -164,7 +164,7 @@ impl Database {
             // 保存原始JSON数据
             self.insert_raw_data(
                 &app_id,
-                &raw_value,
+                raw_value,
                 raw_rating.map(|r| serde_json::to_value(r).unwrap()),
             )
             .await?;

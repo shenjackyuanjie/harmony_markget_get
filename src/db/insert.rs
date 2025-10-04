@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde_json::Value as JsonValue;
 
 use crate::db::Database;
-use crate::model::{AppInfo, AppMetric, AppRating, AppRaw, RawRatingData};
+use crate::model::{AppInfo, AppMetric, AppRating};
 
 impl Database {
     /// 插入应用信息到 app_info 表
