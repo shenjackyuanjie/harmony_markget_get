@@ -199,10 +199,13 @@ impl Database {
             VALUES ($1, $2, $3)
         "#;
 
+        // 当 rating 为 None 时，使用空的 JSON 对象作为默认值
+        let rating_value = rating.unwrap_or_default();
+
         sqlx::query(query)
             .bind(app_id)
             .bind(data)
-            .bind(rating)
+            .bind(rating_value)
             .execute(&self.pool)
             .await?;
 
