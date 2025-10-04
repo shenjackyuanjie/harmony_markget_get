@@ -22,7 +22,7 @@ WHERE rn > 1 -- 筛选出所有在分区内不是第一条的记录，即重复�
 ORDER BY app_id, raw_json_data, raw_json_star, created_at DESC, id DESC;
 
 
-BEGIN; -- 开启一个事务，以便可以在必要时回滚
+-- BEGIN; -- 开启一个事务，以便可以在必要时回滚
 
 -- 使用CTE来识别并删除重复项
 WITH app_raw_duplicates AS (
