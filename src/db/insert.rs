@@ -194,20 +194,33 @@ impl Database {
         data: &JsonValue,
         rating: Option<JsonValue>,
     ) -> Result<()> {
-        let query = r#"
-            INSERT INTO app_raw (app_id, raw_json_data, raw_json_star)
-            VALUES ($1, $2, $3)
-        "#;
+        match rating {
+            Some(rating_value) => {
+                let query = r#"
+                    INSERT INTO app_raw (app_id, raw_json_data, raw_json_star)
+                    VALUES ($1, $2, $3)
+                "#;
 
-        // 当 rating 为 None 时，使用空的 JSON 对象作为默认值
-        let rating_value = rating.unwrap_or_default();
+                sqlx::query(query)
+                    .bind(app_id)
+                    .bind(data)
+                    .bind(rating_value)
+                    .execute(&self.pool)
+                    .await?;
+            }
+            None => {
+                let query = r#"
+                    INSERT INTO app_raw (app_id, raw_json_data)
+                    VALUES ($1, $2)
+                "#;
 
-        sqlx::query(query)
-            .bind(app_id)
-            .bind(data)
-            .bind(rating_value)
-            .execute(&self.pool)
-            .await?;
+                sqlx::query(query)
+                    .bind(app_id)
+                    .bind(data)
+                    .execute(&self.pool)
+                    .await?;
+            }
+        }
 
         Ok(())
     }
