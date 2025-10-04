@@ -330,11 +330,28 @@ pub async fn get_app_data(
     };
     // 拜 cn.com.wind.wft_pc 所赐
     // 我们需要去掉可能的 \0
-    let _ = raw_obj
-        .get("privacyUrl")
-        .and_then(|v| v.as_str())
-        .map(|v| v.replace("\0", ""))
-        .map(|v| raw_obj.insert("privacyUrl".to_string(), serde_json::Value::String(v)));
+    // 拜 C5765880207856097575 所赐
+    // 我决定直接遍历
+    let keys_to_fix: Vec<String> = raw_obj
+        .iter()
+        .filter_map(|(key, value)| {
+            if let Some(v) = value.as_str() {
+                if v.contains('\0') {
+                    Some(key.clone())
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    for key in keys_to_fix {
+        if let Some(value) = raw_obj.get(&key).and_then(|v| v.as_str()) {
+            raw_obj.insert(key, serde_json::Value::String(value.replace('\0', "")));
+        }
+    }
     Ok(raw)
 }
 
