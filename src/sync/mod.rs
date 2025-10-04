@@ -243,7 +243,7 @@ pub async fn query_app(
     let (raw_data, data) = (
         data.clone(),
         serde_json::from_value::<RawJsonData>(data)
-            .with_context(|| "不是，怎么又解析失败了")
+            .with_context(|| format!("不是，怎么又解析失败了 {app_query}"))
             .unwrap(),
     );
 

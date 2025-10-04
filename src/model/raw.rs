@@ -126,8 +126,10 @@ pub struct RawJsonData {
     pub size_bytes: i64,
     #[serde(rename = "sha256")]
     pub sha256: String,
+    /// 反正有概率没有
     #[serde(rename = "hot", default = "hot_default")]
     pub hot_score: String,
+    /// 反正有
     #[serde(rename = "rateNum", default = "rate_num_default")]
     pub rate_num: String,
     #[serde(rename = "downCount")]
@@ -136,7 +138,9 @@ pub struct RawJsonData {
     pub price: String,
     #[serde(rename = "releaseDate")]
     pub release_date: i64,
-    #[serde(rename = "newFeatures")]
+    /// 感谢 C5765880207853227715
+    /// 让我知道 new features 也能不带
+    #[serde(rename = "newFeatures", default)]
     pub new_features: String,
     #[serde(rename = "upgradeMsg")]
     pub upgrade_msg: String,
@@ -148,8 +152,12 @@ pub struct RawJsonData {
     /// 让我知道 compile sdk version 也是可以不带的
     #[serde(rename = "compileSdkVersion", default)]
     pub compile_sdk_version: i32,
+    /// 感谢 com.harmonyfzmj.huawei
+    /// 让我知道 min hmos api level 也能不带
     #[serde(rename = "minHmosApiLevel", default)]
     pub min_hmos_api_level: i32,
+    /// 感谢 com.cxy.chinaposthar
+    /// 让我知道 api release type 也能不带
     #[serde(rename = "apiReleaseType", default = "api_release_type_default")]
     pub api_release_type: String,
 }

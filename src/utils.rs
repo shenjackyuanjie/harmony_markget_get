@@ -13,6 +13,8 @@ pub fn init_log() {
             Level::TRACE
         } else if args.contains(&"-v".to_string()) {
             Level::DEBUG
+        } else if args.contains(&"-d".to_string()) {
+            Level::WARN
         } else {
             Level::INFO
         }
