@@ -85,6 +85,8 @@ pub struct AppInfo {
     pub created_at: DateTime<Local>,
     pub listed_at: DateTime<Local>,
     pub comment: Option<serde_json::Value>,
+    pub release_countries: Vec<String>,
+    pub main_device_codes: Vec<String>,
 }
 
 impl From<&RawJsonData> for AppInfo {
@@ -136,6 +138,8 @@ impl From<&RawJsonData> for AppInfo {
             created_at: Local::now(),
             listed_at: Local::now(),
             comment: None,
+            release_countries: value.release_countries.clone(),
+            main_device_codes: value.main_device_codes.clone(),
         }
     }
 }
@@ -145,6 +149,8 @@ impl AppInfo {
         self.created_at = db_data.created_at;
         self.listed_at = db_data.listed_at;
         self.comment = db_data.comment.clone();
+        self.release_countries = db_data.release_countries.clone();
+        self.main_device_codes = db_data.main_device_codes.clone();
     }
 }
 

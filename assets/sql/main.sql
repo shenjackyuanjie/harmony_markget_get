@@ -43,6 +43,8 @@ CREATE TABLE app_info (
     pay_install_type        INTEGER NOT NULL,     -- 付费安装类型（0）
     comment                 JSONB,                -- 评论或注释数据（JSON格式）
     listed_at               TIMESTAMPTZ NOT NULL, -- 应用上架时间
+    release_countries       TEXT[] NOT NULL DEFAULT '{}', -- 应用发布的国家/地区列表
+    main_device_codes       TEXT[] NOT NULL DEFAULT '{}', -- 应用支持的主要设备类型
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now() -- 创建时间
 );
 
@@ -140,6 +142,8 @@ SELECT ai.app_id,
    ai.comment,                     -- 评论或注释数据
    ai.listed_at,                   -- 上架时间
    ai.created_at,                  -- 创建时间
+   ai.release_countries,           -- 发布的国家/地区列表
+   ai.main_device_codes,           -- 支持的主要设备类型
    am.version,                     -- 版本号
    am.version_code,                -- 版本代码
    am.size_bytes,                  -- 应用大小（字节）

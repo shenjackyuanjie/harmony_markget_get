@@ -14,7 +14,8 @@ pub const SELECT_APP_INFO_FIELDS: &str = r#"
     denpend_hms, force_update, img_tag, is_pay,
     is_disciplined, is_shelves, submit_type, delete_archive,
     charging, button_grey, app_gift, free_days,
-    pay_install_type, created_at, listed_at, comment
+    pay_install_type, created_at, listed_at, comment,
+    release_countries, main_device_codes
 "#;
 
 pub const SELECT_APP_METRIC_FIELDS: &str = r#"
@@ -81,6 +82,8 @@ impl Database {
             created_at: row.get("created_at"),
             listed_at: row.get("listed_at"),
             comment: row.get("comment"),
+            release_countries: row.get("release_countries"),
+            main_device_codes: row.get("main_device_codes"),
         }
     }
 
