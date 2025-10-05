@@ -48,6 +48,8 @@ pub async fn submit_app(
         (None, Some(name)) => AppQuery::pkg_name(name),
         _ => unreachable!(),
     };
+    let app_exists = state.db.app_exists(&query).await;
+
     let listed_at: Option<DateTime<Local>> = data
         .get("listed_at")
         .and_then(|v| v.as_str())
@@ -63,8 +65,11 @@ pub async fn submit_app(
         "接收到投稿 data: query: {:?}, listed_at: {:?}, comment: {:?}",
         query, listed_at, comment_str
     );
-
-    query_app(state, query, listed_at, comment.cloned()).await
+    if app_exists {
+        query_app(state, query, None, None).await
+    } else {
+        query_app(state, query, listed_at, comment.cloned()).await
+    }
 }
 
 pub async fn query_app(
@@ -470,3 +475,25 @@ pub async fn get_app_download_history(
         }
     }
 }
+
+// pub async fn submit_substance(
+//     State(state): State<Arc<AppState>>,
+//     Path(substance_id): Path<String>,
+// ) -> impl IntoResponse {
+//     event!(
+//         Level::INFO,
+//         "http 服务正在尝试提交 substance {}",
+//         substance_id
+//     );
+
+//     match crate::sync::get_app_from_substance(&state.client, state.cfg.api_url(), &substance_id)
+//         .await {
+//             Ok(apps) => {
+
+//             }
+//             Err(e) => {
+//                 event!(Level::WARN, "http服务获取 substance {} 失败: {e}", substance_id);
+//                 Json(ApiResponse::error("Failed to get substance"))
+//             }
+//         }
+// }

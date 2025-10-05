@@ -1,6 +1,6 @@
 use std::{sync::LazyLock, time::Duration};
 
-use anyhow::Context;
+use anyhow::{Context, Result};
 use chrono::{DateTime, Local};
 use colored::Colorize;
 use reqwest::Client;
@@ -46,7 +46,7 @@ pub async fn sync_all(
     client: &Client,
     db: &crate::db::Database,
     config: &crate::config::Config,
-) -> anyhow::Result<()> {
+) -> Result<()> {
     let mut packages = config.packages().to_vec();
     let locale = config.locale();
 
@@ -196,7 +196,7 @@ pub async fn sync_app(
     locale: &str,
     listed_at: Option<DateTime<Local>>,
     comment: Option<serde_json::Value>,
-) -> anyhow::Result<(bool, bool, bool)> {
+) -> Result<(bool, bool, bool)> {
     let app_data = query_app(client, api_url, app_query, locale).await?;
 
     event!(
@@ -235,7 +235,7 @@ pub async fn query_app(
     api_url: &str,
     app_query: &AppQuery,
     locale: &str,
-) -> anyhow::Result<((RawJsonData, JsonValue), Option<RawRatingData>)> {
+) -> Result<((RawJsonData, JsonValue), Option<RawRatingData>)> {
     let data = get_app_data(client, api_url, app_query, locale)
         .await
         .map_err(|e| anyhow::anyhow!("获取包 {} 的数据失败: {:#}", app_query, e))?;
@@ -293,7 +293,7 @@ pub async fn get_app_data(
     api_url: &str,
     app_query: &AppQuery,
     locale: impl ToString,
-) -> anyhow::Result<JsonValue> {
+) -> Result<JsonValue> {
     let body = serde_json::json!({
         app_query.app_info_type(): app_query.name(),
         "locale": locale.to_string(),
@@ -374,7 +374,7 @@ pub async fn get_app_rating(
     client: &reqwest::Client,
     api_url: &str,
     app_id: impl ToString,
-) -> anyhow::Result<RawRatingData> {
+) -> Result<RawRatingData> {
     let body = serde_json::json!({
         "pageId": format!("webAgAppDetail|{}", app_id.to_string()),
         "pageNum": 1,
@@ -430,6 +430,77 @@ pub async fn get_app_rating(
         } else {
             return Err(anyhow::anyhow!("starInfo not found"));
         }
+    };
+
+    Ok(data)
+}
+
+/// 获取主题的内容
+pub async fn get_app_from_substance(
+    client: &reqwest::Client,
+    api_url: &str,
+    substance_id: impl ToString,
+) -> Result<Vec<AppQuery>> {
+    let body = serde_json::json!({
+        "pageId": format!("webAgSubstanceDetail|{}", substance_id.to_string()),
+        "pageNum": 1,
+        "pageSize": 100,
+        "zone": ""
+    });
+
+    let token = code::GLOBAL_CODE_MANAGER.get_full_token().await;
+    let response = client
+        .post(format!("{api_url}/harmony/page-detail"))
+        .header("Content-Type", "application/json")
+        .header("User-Agent", USER_AGENT.to_string())
+        .header("Interface-Code", token.interface_code)
+        .header("identity-id", token.identity_id)
+        .json(&body)
+        .send()
+        .await?;
+
+    // 检查响应状态码
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!(
+            "HTTP请求失败,状态码: {}\nurl: {} body: {}",
+            response.status(),
+            api_url,
+            body
+        ));
+    }
+
+    // 检查响应体是否为空
+    let content_length = response.content_length().unwrap_or(0);
+    if content_length == 0 {
+        return Err(anyhow::anyhow!(
+            "HTTP响应体为空 \nurl: {api_url} data: {body}"
+        ));
+    }
+
+    // 华为我谢谢你
+    let data = {
+        let raw = response.json::<serde_json::Value>().await?;
+        let layouts = raw["pages"][0]["data"]["cardlist"]["layoutData"]
+            .as_array()
+            .expect("faild to parse page info");
+        let data_card = layouts
+            .iter()
+            .filter(|v| {
+                v["type"].as_str().expect("type not str")
+                    == "com.huawei.hmsapp.appgallery.verticallistcard"
+            })
+            .collect::<Vec<_>>();
+        if data_card.is_empty() {
+            return Err(anyhow::anyhow!("data card not found"));
+        }
+        let data_cards = data_card[0]["data"].as_array().expect("data not array");
+        let mut apps = Vec::with_capacity(data_cards.len());
+        for card in data_cards {
+            if let Some(app_id) = card.get("appId") {
+                apps.push(AppQuery::app_id(app_id.as_str().expect("appId not str")));
+            }
+        }
+        apps
     };
 
     Ok(data)
