@@ -51,7 +51,7 @@ pub fn create_router(app_state: Arc<AppState>) -> Router {
         )
         // 投稿
         .route("/submit", post(handlers::submit_app))
-        .route("/submit_substance", post(handlers::submit_substance))
+        .route("/submit_substance/{substance_id}", post(handlers::submit_substance))
         .fallback(api_not_found)
         .with_state(app_state.clone());
 
