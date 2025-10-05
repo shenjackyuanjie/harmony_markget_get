@@ -102,7 +102,42 @@
 
 ---
 
-## 4. 最佳实践
+## 4. 常见错误与注意事项
+
+在进行数据库迁移时，需要特别注意以下常见错误：
+
+### 视图修改
+- **重要警告**: 修改视图时，必须使用 `DROP VIEW` 然后 `CREATE VIEW`，**不能使用 `ALTER VIEW`**
+- **原因**: PostgreSQL 不支持 `ALTER VIEW` 来添加或删除列，只能修改视图的属性
+- **正确做法**:
+  ```sql
+  -- 错误：ALTER VIEW view_name ADD COLUMN new_column;
+  -- 正确：
+  DROP VIEW IF EXISTS view_name;
+  CREATE VIEW view_name AS SELECT ...;
+  ```
+
+### 字段添加
+- **特别注意**: 向表中添加字段时，如果该字段有默认值或非空约束，需要特别小心
+- **最佳实践**: 先添加可空字段，再分步骤设置默认值和约束
+  ```sql
+  -- 推荐的分步操作：
+  -- 1. 先添加可空字段
+  ALTER TABLE table_name ADD COLUMN new_column TEXT;
+  
+  -- 2. 更新现有数据
+  UPDATE table_name SET new_column = 'default_value' WHERE new_column IS NULL;
+  
+  -- 3. 添加非空约束（如果需要）
+  ALTER TABLE table_name ALTER COLUMN new_column SET NOT NULL;
+  ```
+
+### 其他常见错误
+- **依赖关系**: 修改表结构前，检查是否有视图、函数或触发器依赖该表
+- **事务管理**: 确保迁移脚本在事务中执行，避免部分成功的情况
+- **备份**: 执行破坏性操作前务必备份数据
+
+## 6. 最佳实践
 
 - **原子性**: 每个 `.sql` 文件应只执行一个逻辑上独立的任务。
 - **幂等性**: 脚本应尽可能设计成可重复执行而不会产生错误。例如，使用 `CREATE OR REPLACE VIEW`，或在添加字段前检查字段是否存在（如果数据库支持）。
@@ -111,7 +146,7 @@
 
 ---
 
-## 5. 如何执行迁移
+## 7. 如何执行迁移
 
 当前项目需要**手动执行**迁移。请使用任何标准的 PostgreSQL 客户端（如 `psql`, DBeaver）连接到目标数据库。
 

@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS app_latest_info;
+
 -- 更新 app_latest_info 视图以包含新增的 release_countries 和 main_device_codes 字段
 CREATE OR REPLACE VIEW app_latest_info AS
 SELECT ai.app_id,
