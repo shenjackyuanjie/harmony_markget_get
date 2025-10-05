@@ -149,8 +149,6 @@ impl AppInfo {
         self.created_at = db_data.created_at;
         self.listed_at = db_data.listed_at;
         self.comment = db_data.comment.clone();
-        self.release_countries = db_data.release_countries.clone();
-        self.main_device_codes = db_data.main_device_codes.clone();
     }
 }
 
