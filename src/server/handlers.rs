@@ -476,24 +476,81 @@ pub async fn get_app_download_history(
     }
 }
 
-// pub async fn submit_substance(
-//     State(state): State<Arc<AppState>>,
-//     Path(substance_id): Path<String>,
-// ) -> impl IntoResponse {
-//     event!(
-//         Level::INFO,
-//         "http 服务正在尝试提交 substance {}",
-//         substance_id
-//     );
+pub async fn submit_substance(
+    State(state): State<Arc<AppState>>,
+    Path(substance_id): Path<String>,
+) -> impl IntoResponse {
+    event!(
+        Level::INFO,
+        "http 服务正在尝试提交 substance {}",
+        substance_id
+    );
 
-//     match crate::sync::get_app_from_substance(&state.client, state.cfg.api_url(), &substance_id)
-//         .await {
-//             Ok(apps) => {
-
-//             }
-//             Err(e) => {
-//                 event!(Level::WARN, "http服务获取 substance {} 失败: {e}", substance_id);
-//                 Json(ApiResponse::error("Failed to get substance"))
-//             }
-//         }
-// }
+    match crate::sync::get_app_from_substance(&state.client, state.cfg.api_url(), &substance_id)
+        .await
+    {
+        Ok(querys) => {
+            let mut app_datas = Vec::with_capacity(querys.len());
+            for query in querys {
+                match crate::sync::query_app(
+                    &state.client,
+                    state.cfg.api_url(),
+                    &query,
+                    state.cfg.locale(),
+                )
+                .await
+                {
+                    Ok((data, rating)) => {
+                        let new_app = !state.db.app_exists(&query).await;
+                        // 直接保存数据
+                        match state
+                            .db
+                            .save_app_data(&data, rating.as_ref(), None, None)
+                            .await
+                        {
+                            Ok((new_info, new_metric, new_rating)) => {
+                                event!(Level::INFO, "substance {} 对应的应用数据保存成功", query);
+                                app_datas.push(Response {
+                                    info: (&data.0).into(),
+                                    metric: AppMetric::from_raw_data(&data.0),
+                                    rating: rating.as_ref().map(|star_data| {
+                                        AppRating::from_raw_star(&data.0, star_data)
+                                    }),
+                                    new_app,
+                                    new_info,
+                                    new_metric,
+                                    new_rating,
+                                    get_data: true,
+                                });
+                            }
+                            Err(e) => {
+                                event!(
+                                    Level::WARN,
+                                    "substance {} 对应的应用数据保存失败: {e}",
+                                    substance_id
+                                );
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        event!(
+                            Level::WARN,
+                            "http服务获取 substance {} 对应的应用信息失败: {e}",
+                            substance_id
+                        );
+                    }
+                }
+            }
+            let total_len = app_datas.len() as u32;
+            Json(ApiResponse::success(app_datas, Some(total_len), None))
+        }
+        Err(e) => {
+            event!(
+                Level::WARN,
+                "http服务获取 substance {} 失败: {e}",
+                substance_id
+            );
+            Json(ApiResponse::error("Failed to get substance"))
+        }
+    }
+}
