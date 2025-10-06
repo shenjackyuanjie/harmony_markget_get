@@ -1,10 +1,12 @@
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     model::AppQuery,
     sync::{USER_AGENT, code},
 };
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SubstanceData {
     pub id: String,
     pub title: String,

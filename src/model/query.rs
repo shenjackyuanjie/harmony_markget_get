@@ -1,8 +1,11 @@
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AppQuery {
+    #[serde(rename = "pkg_name")]
     PkgName(String),
+    #[serde(rename = "app_id")]
     AppId(String),
 }
 

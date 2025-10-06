@@ -490,7 +490,6 @@ pub async fn submit_substance(
         .await
     {
         Ok(substance) => {
-            let mut app_datas = Vec::with_capacity(substance.data.len());
             for query in substance.data.iter() {
                 match crate::sync::query_app(
                     &state.client,
@@ -501,31 +500,19 @@ pub async fn submit_substance(
                 .await
                 {
                     Ok((data, rating)) => {
-                        let new_app = !state.db.app_exists(query).await;
+                        let _new_app = !state.db.app_exists(query).await;
                         // 直接保存数据
                         match state
                             .db
                             .save_app_data(&data, rating.as_ref(), None, None)
                             .await
                         {
-                            Ok((new_info, new_metric, new_rating)) => {
+                            Ok((_new_info, _new_metric, _new_rating)) => {
                                 event!(
                                     Level::INFO,
                                     "substance {query} ({}) 对应的应用数据保存成功",
                                     substance.say_my_name()
                                 );
-                                app_datas.push(Response {
-                                    info: (&data.0).into(),
-                                    metric: AppMetric::from_raw_data(&data.0),
-                                    rating: rating.as_ref().map(|star_data| {
-                                        AppRating::from_raw_star(&data.0, star_data)
-                                    }),
-                                    new_app,
-                                    new_info,
-                                    new_metric,
-                                    new_rating,
-                                    get_data: true,
-                                });
                             }
                             Err(e) => {
                                 event!(
@@ -545,8 +532,8 @@ pub async fn submit_substance(
                     }
                 }
             }
-            let total_len = app_datas.len() as u32;
-            Json(ApiResponse::success(app_datas, Some(total_len), None))
+            let len = substance.data.len();
+            Json(ApiResponse::success(substance, Some(len as u32), None))
         }
         Err(e) => {
             event!(
