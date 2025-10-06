@@ -489,19 +489,19 @@ pub async fn submit_substance(
     match crate::sync::get_app_from_substance(&state.client, state.cfg.api_url(), &substance_id)
         .await
     {
-        Ok(querys) => {
-            let mut app_datas = Vec::with_capacity(querys.len());
-            for query in querys {
+        Ok(substance) => {
+            let mut app_datas = Vec::with_capacity(substance.data.len());
+            for query in substance.data.iter() {
                 match crate::sync::query_app(
                     &state.client,
                     state.cfg.api_url(),
-                    &query,
+                    query,
                     state.cfg.locale(),
                 )
                 .await
                 {
                     Ok((data, rating)) => {
-                        let new_app = !state.db.app_exists(&query).await;
+                        let new_app = !state.db.app_exists(query).await;
                         // 直接保存数据
                         match state
                             .db
@@ -509,7 +509,11 @@ pub async fn submit_substance(
                             .await
                         {
                             Ok((new_info, new_metric, new_rating)) => {
-                                event!(Level::INFO, "substance {} 对应的应用数据保存成功", query);
+                                event!(
+                                    Level::INFO,
+                                    "substance {query} ({}) 对应的应用数据保存成功",
+                                    substance.say_my_name()
+                                );
                                 app_datas.push(Response {
                                     info: (&data.0).into(),
                                     metric: AppMetric::from_raw_data(&data.0),
