@@ -209,13 +209,13 @@ var DashboardAppDetails = (function () {
                                 y: item.download_count,
                             }));
 
-                            // 计算增量数据和每小时增量数据
+                            // 计算增量数据和平均每小时增量数据
                             /**
                              * @type {Array} 下载增量数据
                              */
                             const increments = [];
                             /**
-                             * @type {Array} 每小时增量数据
+                             * @type {Array} 平均每小时增量数据
                              */
                             const hourlyIncrements = [];
 
@@ -239,7 +239,7 @@ var DashboardAppDetails = (function () {
                                     y: increment,
                                 });
 
-                                // 计算每小时增量
+                                // 计算平均每小时增量
                                 const timeDiff =
                                     (new Date(history[i].created_at) -
                                         new Date(history[i - 1].created_at)) /
@@ -324,7 +324,7 @@ var DashboardAppDetails = (function () {
                                 },
                             });
 
-                            // 创建增量图表，包含总增量和每小时增量
+                            // 创建增量图表，包含总增量和平均每小时增量
                             if (increments.length > 0) {
                                 const incrementCtx = incrementCanvas.getContext("2d");
 
@@ -344,8 +344,8 @@ var DashboardAppDetails = (function () {
                                                 const datasetLabel = context.dataset.label || "";
                                                 if (datasetLabel === "下载增量") {
                                                     return `下载增量: ${DashboardUtils.formatNumber(context.parsed.y)}`;
-                                                } else if (datasetLabel === "每小时增量") {
-                                                    return `每小时增量: ${DashboardUtils.formatNumber(context.parsed.y)}`;
+                                                } else if (datasetLabel === "平均每小时增量") {
+                                                    return `平均每小时增量: ${DashboardUtils.formatNumber(context.parsed.y)}`;
                                                 }
                                                 return `${datasetLabel}: ${DashboardUtils.formatNumber(context.parsed.y)}`;
                                             },
@@ -365,7 +365,7 @@ var DashboardAppDetails = (function () {
                                             tension: 0.1,
                                         },
                                         {
-                                            label: "每小时增量",
+                                            label: "平均每小时增量",
                                             data: hourlyIncrements,
                                             borderColor: "rgb(255, 99, 132)",
                                             backgroundColor: "rgba(255, 99, 132, 0.1)",
