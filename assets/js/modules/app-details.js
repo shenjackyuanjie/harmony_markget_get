@@ -109,7 +109,6 @@ var DashboardAppDetails = (function () {
                             <span ${same_css} bg-cyan-100 text-cyan-800">目标 api 版本 ${app_metric.target_sdk}</span>
                             <span ${same_css} bg-emerald-100 text-emerald-800">最小 api 版本 ${app_metric.minsdk}</span>
                             <span ${same_css} bg-amber-100 text-amber-800">编译 api 版本 ${app_metric.compile_sdk_version}</span>
-                            ${device_html}
                         </div>
                         <div class="flex flex-wrap -mx-2 mb-2">
                             <p class="w-full md:w-1/2 px-2 py-1"><strong>数据更新时间:</strong> <span>${DashboardUtils.formatDate(app_metric.created_at)}</span></p>
@@ -120,6 +119,9 @@ var DashboardAppDetails = (function () {
                             <p class="w-full md:w-1/2 px-2 py-1"><strong>应用大小:</strong> <span>${DashboardUtils.formatSize(app_metric.size_bytes || 0)}</span></p>
                             <p class="w-full md:w-1/2 px-2 py-1"><strong>App ID:</strong> <span>${app_info.app_id}</span></p>
                             <p class="w-full md:w-1/2 px-2 py-1"><strong>Package Name:</strong> <span>${app_info.pkg_name}</span></p>
+                            <p class="w-full px-2 py-1"><strong>上架终端列表</strong></p>
+                            <div class="w-full px-2 py-1 flex flex-wrap gap-2">${device_html}</div>
+                            <p class="w-full px-2 py-1 text-gray-500 text-sm">应用上架终端类型与APP Gallery同步，不代表实际情况</p>
                         </div>
                         <hr class="my-4 border-gray-200">
                         <div id="descriptionContainer"></div>
