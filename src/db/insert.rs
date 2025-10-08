@@ -196,49 +196,46 @@ impl Database {
         Ok(())
     }
 
-    /// 插入原始 JSON 数据到 app_raw 表
-    pub async fn insert_raw_data(
+    /// 插入应用数据到 app_data_history 表
+    pub async fn insert_data_history(
         &self,
         app_id: &str,
         data: &JsonValue,
-        rating: Option<JsonValue>,
     ) -> Result<()> {
-        // println!(
-        //     "Inserting raw data for app_id: {}\n{}\n{rating:?}",
-        //     app_id,
-        //     serde_json::to_string_pretty(data)?
-        // );
-        match rating {
-            Some(rating_value) => {
-                let query = r#"
-                    INSERT INTO app_raw (app_id, pkg_name, raw_json_data, raw_json_star)
-                    VALUES ($1,
-                    (SELECT pkg_name FROM app_info WHERE app_id = $1),
-                    $2::jsonb, $3::jsonb)
-                "#;
+        let query = r#"
+            INSERT INTO app_data_history (app_id, pkg_name, raw_json_data)
+            VALUES ($1,
+            (SELECT pkg_name FROM app_info WHERE app_id = $1),
+            $2::jsonb)
+        "#;
 
-                sqlx::query(query)
-                    .bind(app_id)
-                    .bind(data)
-                    .bind(rating_value)
-                    .execute(&self.pool)
-                    .await?;
-            }
-            None => {
-                let query = r#"
-                    INSERT INTO app_raw (app_id, pkg_name, raw_json_data)
-                    VALUES ($1,
-                    (SELECT pkg_name FROM app_info WHERE app_id = $1),
-                    $2::jsonb)
-                "#;
+        sqlx::query(query)
+            .bind(app_id)
+            .bind(data)
+            .execute(&self.pool)
+            .await?;
 
-                sqlx::query(query)
-                    .bind(app_id)
-                    .bind(data)
-                    .execute(&self.pool)
-                    .await?;
-            }
-        }
+        Ok(())
+    }
+
+    /// 插入评分数据到 app_rating_history 表
+    pub async fn insert_rating_history(
+        &self,
+        app_id: &str,
+        rating: &JsonValue,
+    ) -> Result<()> {
+        let query = r#"
+            INSERT INTO app_rating_history (app_id, pkg_name, raw_json_rating)
+            VALUES ($1,
+            (SELECT pkg_name FROM app_info WHERE app_id = $1),
+            $2::jsonb)
+        "#;
+
+        sqlx::query(query)
+            .bind(app_id)
+            .bind(rating)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }

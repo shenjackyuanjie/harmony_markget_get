@@ -309,26 +309,45 @@ impl AppRating {
     }
 }
 
-/// 6. app_raw 表
+/// 6. 应用数据历史记录表 (app_data_history)
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct AppRaw {
+pub struct AppDataHistory {
     pub id: i64,
     pub app_id: String,
+    pub pkg_name: String,
     pub raw_json_data: serde_json::Value,
-    pub raw_json_star: serde_json::Value,
     pub created_at: DateTime<Local>,
 }
 
-impl AppRaw {
-    pub fn from_raw_datas(data: &RawJsonData, star: Option<&RawRatingData>) -> Self {
+/// 7. 应用评分历史记录表 (app_rating_history)
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AppRatingHistory {
+    pub id: i64,
+    pub app_id: String,
+    pub pkg_name: String,
+    pub raw_json_rating: serde_json::Value,
+    pub created_at: DateTime<Local>,
+}
+
+impl AppDataHistory {
+    pub fn from_raw_data(app_id: &str, pkg_name: &str, data: &serde_json::Value) -> Self {
         Self {
             id: 0,
-            app_id: data.app_id.clone(),
-            raw_json_data: serde_json::to_value(data).unwrap(),
-            raw_json_star: match star {
-                Some(star_data) => serde_json::to_value(star_data).unwrap(),
-                None => serde_json::json!({}),
-            },
+            app_id: app_id.to_string(),
+            pkg_name: pkg_name.to_string(),
+            raw_json_data: data.clone(),
+            created_at: Local::now(),
+        }
+    }
+}
+
+impl AppRatingHistory {
+    pub fn from_raw_rating(app_id: &str, pkg_name: &str, rating: &serde_json::Value) -> Self {
+        Self {
+            id: 0,
+            app_id: app_id.to_string(),
+            pkg_name: pkg_name.to_string(),
+            raw_json_rating: rating.clone(),
             created_at: Local::now(),
         }
     }

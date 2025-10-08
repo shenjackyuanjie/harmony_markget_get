@@ -157,25 +157,29 @@ impl Database {
                     format!("更新评分数据 {} ({})", app_id, raw_data.name).bright_green()
                 );
                 self.insert_app_rating(&app_rating).await?;
+                self.insert_rating_history(&app_id, &value).await?;
                 true
             }
         } else {
             false
         };
-
-        if insert_data.0 || insert_data.1 || insert_rate {
-            // 保存原始JSON数据
-            self.insert_raw_data(
-                &app_id,
-                raw_value,
-                raw_rating.map(|r| serde_json::to_value(r).unwrap()),
-            )
-            .await?;
-            println!(
-                "{}",
-                format!("应用数据保存成功: {} ({})", app_id, raw_data.name).green()
-            );
+        if insert_data.0 || insert_data.1 {
+            self.insert_data_history(&app_id, raw_value).await?
         }
+
+        // if insert_data.0 || insert_data.1 || insert_rate {
+        //     // 保存原始JSON数据
+        //     self.insert_raw_data(
+        //         &app_id,
+        //         raw_value,
+        //         raw_rating.map(|r| serde_json::to_value(r).unwrap()),
+        //     )
+        //     .await?;
+        //     println!(
+        //         "{}",
+        //         format!("应用数据保存成功: {} ({})", app_id, raw_data.name).green()
+        //     );
+        // }
         Ok((insert_data.0, insert_data.1, insert_rate))
     }
 }

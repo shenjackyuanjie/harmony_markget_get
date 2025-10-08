@@ -69,7 +69,7 @@ impl Database {
         let query = format!(
             r#"
                 SELECT raw_json_data
-                FROM app_raw
+                FROM app_data_history
                 WHERE {} = $1
                 ORDER BY created_at DESC
                 LIMIT 1
@@ -110,8 +110,8 @@ impl Database {
     pub async fn get_last_raw_json_star(&self, app: &AppQuery) -> Option<Value> {
         let query = format!(
             r#"
-                SELECT raw_json_star
-                FROM app_raw
+                SELECT raw_json_rating
+                FROM app_rating_history
                 WHERE {} = $1
                 ORDER BY created_at DESC
                 LIMIT 1
@@ -125,13 +125,10 @@ impl Database {
             .await
             .ok()?;
 
-        match result {
-            Some(row) => {
-                let raw_json: Value = row.get("raw_json_star");
-                Some(raw_json)
-            }
-            None => None,
-        }
+        result.map(|row| {
+            let raw_json: Value = row.get("raw_json_rating");
+            raw_json
+        })
     }
 
     pub async fn get_app_rating(&self, app: &AppQuery) -> Option<AppRating> {
@@ -913,5 +910,32 @@ impl Database {
         }
 
         Ok(apps)
+    }
+
+    /// 统计各种设备的兼容数量
+    pub async fn count_device_code(&self) -> Result<Vec<(String, u32)>> {
+        const QUERY: &str = r#"SELECT
+            unnest(main_device_codes) AS device_code,
+            COUNT(*) AS count
+        FROM
+            app_info
+        GROUP BY
+            device_code
+        ORDER BY
+            count DESC, device_code"#;
+
+        let rows = sqlx::query(QUERY)
+            .fetch_all(&self.pool)
+            .await?;
+
+        let mut device_codes = Vec::new();
+        for row in rows {
+            let device_code = row.get("device_code");
+            let count: i32 = row.get("count");
+
+            device_codes.push((device_code, count as u32));
+        }
+
+        Ok(device_codes)
     }
 }
