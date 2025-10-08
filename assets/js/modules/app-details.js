@@ -11,6 +11,8 @@ var DashboardAppDetails = (function () {
          return '手机';
        case '4':
          return '平板';
+       case '15':
+         return '电脑';
        default:
          return `未知 ${code}`;
      }
@@ -63,15 +65,15 @@ var DashboardAppDetails = (function () {
                 window.updateUrlParam('app_id', app_info.app_id);
             }
             let device_codes = app_info.main_device_codes || [];
+            const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let device_html = '';
             device_codes.forEach(code => {
                 device_html += `
-                    <div class="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-md mb-2">
+                <span ${same_css} bg-emerald-100 text-emerald-800">
                         ${parse_device_code(code)}
-                    </div>`;
+                    </span>`;
             });
 
-            const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let html = `
               ${!getDataSuccess ? `
                   <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
