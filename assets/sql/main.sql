@@ -1,5 +1,3 @@
--- 优化后的 SQL 表定义，使用更合适的数据类型
-
 CREATE TABLE app_info (
     app_id                  TEXT PRIMARY KEY,     -- 应用唯一ID（如 C1164531384803416384）
     alliance_app_id         TEXT,                 -- 联盟应用ID（如 1164531384803416384）
@@ -48,13 +46,20 @@ CREATE TABLE app_info (
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now() -- 创建时间
 );
 
-CREATE TABLE app_raw (
+CREATE TABLE app_data_history (
     id              BIGSERIAL PRIMARY KEY,                     -- 主键ID
     app_id          TEXT NOT NULL REFERENCES app_info(app_id), -- 对应 app_info 的 app_id
-    pkg_name        TEXT NOT NULL REFERENCES app_info(pkg_name) ON DELETE CASCADE, -- 新增：对应 app_info 的 pkg_name，并建立外键
+    pkg_name        TEXT NOT NULL REFERENCES app_info(pkg_name) ON DELETE CASCADE, -- 对应 app_info 的 pkg_name
     raw_json_data   JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始应用数据JSON
-    raw_json_star   JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始评分数据JSON
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()           -- 创建时间
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),        -- 数据创建或记录时间
+);
+
+CREATE TABLE app_rating_history (
+    id              BIGSERIAL PRIMARY KEY,                     -- 主键ID
+    app_id          TEXT NOT NULL REFERENCES app_info(app_id), -- 对应 app_info 的 app_id
+    pkg_name        TEXT NOT NULL REFERENCES app_info(pkg_name) ON DELETE CASCADE, -- 对应 app_info 的 pkg_name
+    raw_json_rating JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始评分数据JSON (原 raw_json_star)
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),        -- 数据创建或记录时间
 );
 
 CREATE TABLE app_metrics (
@@ -219,9 +224,6 @@ CREATE INDEX idx_app_info_name ON app_info(name);
 CREATE INDEX idx_app_info_developer_name ON app_info(developer_name);
 CREATE INDEX idx_app_info_listed_at ON app_info(listed_at);
 
-CREATE INDEX idx_app_raw_app_id ON app_raw(app_id);
-CREATE INDEX idx_app_raw_pkg_name ON app_raw (pkg_name);
-
 CREATE INDEX idx_app_metrics_app_id ON app_metrics(app_id);
 CREATE INDEX idx_app_metrics_version ON app_metrics(version);
 CREATE INDEX idx_app_metrics_download_count ON app_metrics(download_count);
@@ -229,3 +231,9 @@ CREATE INDEX idx_app_metrics_pkg_name ON app_metrics (pkg_name);
 
 CREATE INDEX idx_app_rating_app_id ON app_rating(app_id);
 CREATE INDEX idx_app_rating_pkg_name ON app_rating (pkg_name);
+
+CREATE INDEX idx_app_data_history_app_pkg_data ON app_data_history (app_id, pkg_name, raw_json_data);
+CREATE INDEX idx_app_data_history_created_at ON app_data_history (created_at);
+
+CREATE INDEX idx_app_rating_history_app_pkg_rating ON app_rating_history (app_id, pkg_name, raw_json_rating);
+CREATE INDEX idx_app_rating_history_created_at ON app_rating_history (created_at);
