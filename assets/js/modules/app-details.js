@@ -1,22 +1,22 @@
 // 应用详情模块
 var DashboardAppDetails = (function () {
-  /**
-   *
-   * @param {string} code
-   * @returns {string}
-   */
-   function parse_device_code(code) {
-     switch (code) {
-       case '0':
-         return '手机';
-       case '4':
-         return '平板';
-       case '15':
-         return '电脑';
-       default:
-         return `未知 ${code}`;
-     }
-   }
+    /**
+     *
+     * @param {string} code
+     * @returns {string}
+     */
+    function parse_device_code(code) {
+        switch (code) {
+            case '0':
+                return '手机';
+            case '4':
+                return '平板';
+            case '15':
+                return '电脑';
+            default:
+                return `未知 ${code}`;
+        }
+    }
 
     /**
      * 在模态框中显示应用详细信息
