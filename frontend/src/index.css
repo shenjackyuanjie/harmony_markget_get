@@ -1,5 +1,265 @@
 @import "tailwindcss";
 
+/* 按钮基础样式 */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem 1rem;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--btn-text);
+  border-radius: .375rem;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  white-space: nowrap;
+}
+
+.btn-base:focus { box-shadow: var(--focus-ring); }
+.btn-base:hover { transform: scale(1.05); box-shadow: var(--btn-shadow); }
+
+.btn-base svg { width: 1rem; height: 1rem; flex-shrink: 0; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+
+/* 卡片基础样式 */
+.card-base {
+  border-radius: .5rem;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--card-border);
+  transition: box-shadow .3s ease, transform .15s ease;
+  overflow: hidden;
+}
+
+.card-base:hover { box-shadow: var(--card-shadow-hover); }
+
+/* 渐变卡片变体 */
+.card-gradient-blue { background: linear-gradient(to right, var(--bg-gradient-from) 0%, var(--bg-gradient-to) 100%); }
+.card-gradient-rose { background: linear-gradient(to bottom right, #fff0f2 0%, #fff5f7 100%); }
+.card-gradient-amber { background: linear-gradient(to bottom right, #fff7ed 0%, #fffbeb 100%); }
+.card-gradient-emerald { background: linear-gradient(to bottom right, #ecfdf5 0%, #f0fdf4 100%); }
+.card-gradient-indigo { background: linear-gradient(to bottom right, #f0f5ff 0%, #fbf7ff 100%); }
+.card-gradient-purple { background: linear-gradient(to right, #faf5ff 0%, #fdf4ff 100%); }
+.card-gradient-teal { background: linear-gradient(to right, #f0fdfa 0%, #ecfdf5 100%); }
+.card-gradient-yellow { background: linear-gradient(to right, #fefce8 0%, #fef9c3 100%); }
+
+/* 模态框基础样式 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  overflow-y: auto;
+  height: 100%;
+  width: 100%;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.3s;
+}
+
+.modal-container {
+  position: relative;
+  top: 2rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+  border: 1px solid var(--card-border);
+  width: 91.666667%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  transition: transform 0.3s;
+}
+
+.modal-container-lg { width: 91.666667%; }
+.modal-container-xl { width: 75%; }
+.modal-container-2xl { width: 83.333333%; }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.modal-close-btn {
+  transition: all 0.3s;
+  transform-origin: center;
+}
+
+.modal-close-btn:hover { transform: rotate(180deg); }
+
+/* 统计卡片网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 图表网格 */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .charts-grid { grid-template-columns: 2fr 1fr; }
+}
+
+/* 表格样式 */
+.table-base {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(to right, var(--table-th-from), var(--table-th-to));
+  color: #3a6ea5;
+}
+
+.table-header:hover {
+  background: linear-gradient(to right, var(--table-th-hover-from), var(--table-th-hover-to));
+  transform: translateY(-2px);
+}
+
+/* 表单控件样式 */
+.form-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  outline: none;
+  font-size: 0.875rem;
+  background: var(--chart-bg);
+}
+
+.form-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  border-color: #3b82f6;
+}
+
+.form-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  outline: none;
+  font-size: 0.875rem;
+  background: var(--chart-bg);
+}
+
+.form-select:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  border-color: #3b82f6;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 9999px;
+  vertical-align: middle;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 按钮颜色变体 */
+.btn-cyan { background: linear-gradient(90deg,#06b6d4 0%,#2563eb 100%); color: var(--btn-text); }
+.btn-cyan:hover { background: linear-gradient(90deg,#0891b2 0%,#1e40af 100%); }
+
+.btn-emerald { background: linear-gradient(90deg,#10b981 0%,#16a34a 100%); color: var(--btn-text); }
+.btn-emerald:hover { background: linear-gradient(90deg,#059669 0%,#15803d 100%); }
+
+.btn-purple { background: linear-gradient(90deg,#8b5cf6 0%,#4f46e5 100%); color: var(--btn-text); }
+.btn-purple:hover { background: linear-gradient(90deg,#7c3aed 0%,#4338ca 100%); }
+
+.btn-orange { background: linear-gradient(90deg,#f97316 0%,#f59e0b 100%); color: var(--btn-text); }
+.btn-orange:hover { background: linear-gradient(90deg,#ea580c 0%,#d97706 100%); }
+
+.btn-amber { background: linear-gradient(90deg,#f59e0b 0%,#d97706 100%); color: var(--btn-text); }
+.btn-amber:hover { background: linear-gradient(90deg,#eab308 0%,#ca8a04 100%); }
+
+/* 深色模式按钮变体 */
+.dark .btn-cyan { background: linear-gradient(90deg,#0891b2 0%,#1e40af 100%); }
+.dark .btn-emerald { background: linear-gradient(90deg,#059669 0%,#15803d 100%); }
+.dark .btn-purple { background: linear-gradient(90deg,#7c3aed 0%,#4338ca 100%); }
+.dark .btn-orange { background: linear-gradient(90deg,#ea580c 0%,#d97706 100%); }
+.dark .btn-amber { background: linear-gradient(90deg,#eab308 0%,#ca8a04 100%); }
+
+/* 卡片标题深色模式颜色 */
+.dark .card-base h1.text-blue-800 { color: #bfdbfe; }
+.dark .card-base h5.text-blue-800 { color: #bfdbfe; }
+.dark .card-base h5.text-purple-800 { color: #c4b5fd; }
+.dark .card-base h5.text-teal-800 { color: #99f6e4; }
+.dark .card-base h5.text-amber-800 { color: #fde68a; }
+
+/* 表格深色模式样式 */
+.dark .table th {
+  color: #c7d2fe;
+}
+
+.dark .table-base th.text-amber-700,
+.dark .table-base span.text-amber-500 {
+  color: #fde68a;
+}
+
+.dark .table-base .divide-amber-200 {
+  border-color: rgba(253, 230, 138, 0.2);
+}
+
+/* 表单元素深色模式样式 */
+.dark .form-input,
+.dark .form-select {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+}
+
+.dark .form-input:focus,
+.dark .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.dark label span.text-amber-700 {
+  color: #fde68a;
+}
+
+/* 开关深色模式样式 */
+.dark .bg-gray-200 {
+  background-color: #374151;
+}
+
+.dark .peer-checked\:bg-amber-600 {
+  background-color: #d97706;
+}
+
 :root{
   /* 主题变量（浅色） */
   --bg-gradient-from: #EFF8FF;
@@ -40,7 +300,7 @@
     --card-shadow-hover: 0 8px 24px rgba(2,6,23,0.7);
     --title-color: #c7d2fe;
     --muted: #9ca3af;
-    --btn-text: #0b1220;
+    --btn-text: #ffffff;
     --btn-shadow: 0 10px 30px rgba(2,6,23,0.6);
     --focus-ring: 0 0 0 4px rgba(255,255,255,0.06);
 
@@ -64,7 +324,7 @@
   --card-shadow-hover: 0 8px 24px rgba(2,6,23,0.7);
   --title-color: #c7d2fe;
   --muted: #9ca3af;
-  --btn-text: #0b1220;
+  --btn-text: #ffffff;
   --btn-shadow: 0 10px 30px rgba(2,6,23,0.6);
 
   --table-th-from: #041226;
@@ -296,12 +556,38 @@ body{
 .stat--indigo .loading-spinner { color: #6366f1; }
 
 /* 深色模式的卡片配色覆盖（.dark 或 prefers-color-scheme: dark 生效，由变量控制） */
-.dark .stat-card,
-@media (prefers-color-scheme: dark) { .stat-card {
+.dark .stat-card {
   box-shadow: 0 1px 3px rgba(2,6,23,0.6);
   border: 1px solid rgba(148,163,184,0.08);
   background: linear-gradient(135deg, rgba(10,14,24,0.45), rgba(8,12,20,0.6));
-} }
+}
+
+/* 渐变卡片深色模式背景 */
+.dark .card-gradient-blue { background: linear-gradient(to right, #1e3a8a 0%, #3730a3 100%); }
+.dark .card-gradient-purple { background: linear-gradient(to right, #581c87 0%, #701a75 100%); }
+.dark .card-gradient-teal { background: linear-gradient(to right, #134e4a 0%, #164e63 100%); }
+.dark .card-gradient-yellow { background: linear-gradient(to right, #713f12 0%, #854d0e 100%); }
+
+/* 卡片边框深色模式 */
+.dark .border-blue-100 {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .border-purple-100 {
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.dark .border-teal-100 {
+  border-color: rgba(20, 184, 166, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .stat-card {
+    box-shadow: 0 1px 3px rgba(2,6,23,0.6);
+    border: 1px solid rgba(148,163,184,0.08);
+    background: linear-gradient(135deg, rgba(10,14,24,0.45), rgba(8,12,20,0.6));
+  }
+}
 
 /* 深色变体颜色微调（保留视觉区分） */
 .dark .stat--rose  { background: linear-gradient(135deg,#2a0b0d,#2f0f12); border-color: rgba(220,38,38,0.08); }
@@ -319,6 +605,20 @@ body{
 .dark .stat--indigo { background: linear-gradient(135deg,#0b1226,#0d1228); border-color: rgba(99,102,241,0.06); }
 .dark .stat--indigo h5, .dark .stat--indigo h3 { color: #c7d2fe; }
 .dark .stat--indigo .loading-spinner { color: #93c5fd; }
+
+/* 表单元素深色模式样式 */
+.dark .form-input,
+.dark .form-select {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+}
+
+.dark .form-input:focus,
+.dark .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
 
 /* 小尺寸与可访问性调整 */
 .stat-card { border-radius: .5rem; }
