@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华为应用市场看板</title>
+</head>
+
+<body>
+    <div class="px-4 py-6">
+        <div class="mb-6">
+          <div class="card">
+            <div class="card-inner">
+              <h1 class="card-title">
+                华为应用市场看板 数据收集自 appgallery api 不保证来源的准确性、完整性和真实性 仅供参考
+              </h1>
+
+              <div class="controls-row">
+                <div class="btn-group" role="toolbar" aria-label="actions">
+                  <button id="refreshBtn" class="btn btn--refresh" type="button">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    刷新数据
+                  </button>
+
+                  <button id="helpBtn" class="btn btn--help" type="button">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    帮助信息
+                  </button>
+
+                  <button id="contactBtn" class="btn btn--contact" type="button">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    问题反馈&交流
+                  </button>
+
+                  <button id="submitBtn" class="btn btn--submit" type="button">
+                    <svg class="icon-stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    投稿
+                  </button>
+                </div>
+
+                <span class="last-update">最后更新: <span id="lastUpdate">-</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card stat--rose">
+            <div class="stat-inner">
+              <h5>已爬取总数</h5>
+              <h3 id="totalCount">
+                <span id="loadingTotalCount" class="loading-spinner"></span>
+              </h3>
+            </div>
+          </div>
+
+          <div class="stat-card stat--amber">
+            <div class="stat-inner">
+              <h5>应用总数</h5>
+              <h3 id="appCount">
+                <span id="loadingOverview" class="loading-spinner"></span>
+              </h3>
+            </div>
+          </div>
+
+          <div class="stat-card stat--emerald">
+            <div class="stat-inner">
+              <h5>元服务总数</h5>
+              <h3 id="atomicServiceCount">
+                <span id="loadingAtomicServiceCount" class="loading-spinner"></span>
+              </h3>
+            </div>
+          </div>
+
+          <div class="stat-card stat--indigo">
+            <div class="stat-inner">
+              <h5>开发者总数</h5>
+              <h3 id="developerCount">
+                <span id="loadingDeveloperCount" class="loading-spinner"></span>
+              </h3>
+            </div>
+          </div>
+        </div>
+
+    </div>
+</body>
