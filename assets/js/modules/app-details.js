@@ -14,7 +14,9 @@ var DashboardAppDetails = (function () {
             case '4':
                 return '平板';
             case '7':
-                return '手表';
+                return '智能手表';
+            case '9':
+                return '运动手表';
             case '15':
                 return '电脑';
             default:
