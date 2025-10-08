@@ -1,5 +1,21 @@
 // 应用详情模块
 var DashboardAppDetails = (function () {
+  /**
+   *
+   * @param {string} code
+   * @returns {string}
+   */
+   function parse_device_code(code) {
+     switch (code) {
+       case '0':
+         return '手机';
+       case '4':
+         return '平板';
+       default:
+         return `未知 ${code}`;
+     }
+   }
+
     /**
      * 在模态框中显示应用详细信息
      * @async
@@ -46,6 +62,14 @@ var DashboardAppDetails = (function () {
             if (urlParams.has('pkg_name') && !urlParams.has('app_id')) {
                 window.updateUrlParam('app_id', app_info.app_id);
             }
+            let device_codes = app_info.main_device_codes || [];
+            let device_html = '';
+            device_codes.forEach(code => {
+                device_html += `
+                    <div class="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-md mb-2">
+                        ${parse_device_code(code)}
+                    </div>`;
+            });
 
             const same_css = `class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium`;
             let html = `
@@ -81,6 +105,7 @@ var DashboardAppDetails = (function () {
                             <span ${same_css} bg-cyan-100 text-cyan-800">目标 api 版本 ${app_metric.target_sdk}</span>
                             <span ${same_css} bg-emerald-100 text-emerald-800">最小 api 版本 ${app_metric.minsdk}</span>
                             <span ${same_css} bg-amber-100 text-amber-800">编译 api 版本 ${app_metric.compile_sdk_version}</span>
+                            ${device_html}
                         </div>
                         <div class="flex flex-wrap -mx-2 mb-2">
                             <p class="w-full md:w-1/2 px-2 py-1"><strong>数据更新时间:</strong> <span>${DashboardUtils.formatDate(app_metric.created_at)}</span></p>
