@@ -9,6 +9,8 @@ var DashboardAppDetails = (function () {
         switch (code) {
             case '0':
                 return '手机';
+            case '3':
+                return '智慧屏';
             case '4':
                 return '平板';
             case '7':
