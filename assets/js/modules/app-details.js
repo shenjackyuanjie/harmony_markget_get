@@ -11,6 +11,8 @@ var DashboardAppDetails = (function () {
                 return '手机';
             case '4':
                 return '平板';
+            case '7':
+                return '手表';
             case '15':
                 return '电脑';
             default:
