@@ -91,6 +91,7 @@ pub struct AppListQuery {
     pub search_key: Option<String>,
     pub search_value: Option<String>,
     pub search_exact: Option<bool>,
+    pub search_not_null: Option<bool>,
     pub page_size: Option<u32>,
     pub detail: Option<bool>,
 }
@@ -151,6 +152,7 @@ impl AppListQuery {
                 key.clone(),
                 value.clone(),
                 self.search_exact.unwrap_or(false),
+                self.search_not_null.unwrap_or(true),
             )),
             _ => None,
         }

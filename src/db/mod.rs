@@ -35,6 +35,7 @@ pub struct DbSearch {
     pub key: String,
     pub value: String,
     pub is_exact: bool,
+    pub not_null: bool,
 }
 
 #[derive(Debug, FromRow, serde::Deserialize, serde::Serialize)]
@@ -45,25 +46,28 @@ pub struct AppCounts {
 }
 
 impl DbSearch {
-    pub fn new(key: String, value: String, is_exact: bool) -> Self {
+    pub fn new(key: String, value: String, is_exact: bool, not_null: bool) -> Self {
         Self {
             key,
             value,
             is_exact,
+            not_null,
         }
     }
-    pub fn exact(key: String, value: String) -> Self {
+    pub fn exact(key: String, value: String, not_null: bool) -> Self {
         Self {
             key,
             value,
             is_exact: true,
+            not_null,
         }
     }
-    pub fn fuzzy(key: String, value: String) -> Self {
+    pub fn fuzzy(key: String, value: String, not_null: bool) -> Self {
         Self {
             key,
             value,
             is_exact: false,
+            not_null,
         }
     }
     /// exact: 不动

@@ -219,7 +219,7 @@ var DashboardCharts = (function () {
 
             // 创建带数字的标签
             const labels = [
-                `[0-1)星 (${starValues[0]})`,
+                `无评分 (${starValues[0]})`,
                 `[1-2)星 (${starValues[1]})`,
                 `[2-3)星 (${starValues[2]})`,
                 `[3-4)星 (${starValues[3]})`,

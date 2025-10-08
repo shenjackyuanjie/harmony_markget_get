@@ -32,6 +32,22 @@ impl Database {
         }
     }
 
+    /// aaa
+    pub async fn app_query_to_app_id(&self, app: &AppQuery) -> Result<AppQuery> {
+        Ok(match app {
+            AppQuery::AppId(id) => AppQuery::app_id(id),
+            AppQuery::PkgName(pkg_name) => {
+                let query = "SELECT app_id FROM app_info WHERE pkg_name = $1";
+                let row = sqlx::query(query)
+                    .bind(pkg_name)
+                    .fetch_one(&self.pool)
+                    .await?;
+                let app_id: String = row.get("app_id");
+                AppQuery::app_id(app_id)
+            }
+        })
+    }
+
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_query: &AppQuery) -> bool {
         let query = format!(
@@ -272,22 +288,26 @@ impl Database {
                 key,
                 value,
                 is_exact,
+                not_null,
             }) => {
                 let query = format!(
                     r#"
-                    SELECT {}, {}, {}
+                    SELECT {SELECT_APP_INFO_FIELDS}, {}, {}
                     FROM app_latest_info
-                    WHERE {} ILIKE $1
-                    ORDER BY {} {}
+                    WHERE {} ILIKE $1 {} AND {sort_key} IS NOT NULL
+                    ORDER BY {sort_key} {}
                     LIMIT $2 OFFSET $3
                 "#,
-                    SELECT_APP_INFO_FIELDS,
                     SELECT_APP_METRIC_FIELDS
                         .replace("created_at AS metrics_created_at", "metrics_created_at"),
                     SELECT_APP_RATING_FIELDS
                         .replace("created_at AS rating_created_at", "rating_created_at"),
                     key,
-                    sort_key,
+                    if not_null {
+                        format!("AND {sort_key} IS NOT NULL")
+                    } else {
+                        "".to_string()
+                    },
                     if sort_desc { "DESC" } else { "ASC" }
                 );
 
@@ -305,17 +325,16 @@ impl Database {
             None => {
                 let query = format!(
                     r#"
-                    SELECT {}, {}, {}
+                    SELECT {SELECT_APP_INFO_FIELDS}, {}, {}
                     FROM app_latest_info
-                    ORDER BY {} {}
+                    WHERE {sort_key} IS NOT NULL
+                    ORDER BY {sort_key} {}
                     LIMIT $1 OFFSET $2
                 "#,
-                    SELECT_APP_INFO_FIELDS,
                     SELECT_APP_METRIC_FIELDS
                         .replace("created_at AS metrics_created_at", "metrics_created_at"),
                     SELECT_APP_RATING_FIELDS
                         .replace("created_at AS rating_created_at", "rating_created_at"),
-                    sort_key,
                     if sort_desc { "DESC" } else { "ASC" }
                 );
 
@@ -344,18 +363,18 @@ impl Database {
         .await
     }
 
-    /// Get star distribution counts from app_rating table
+    /// Get star distribution counts from app_latest_info view
+    /// The ranges are: no rating, 1-2 stars, 2-3 stars, 3-4 stars, 4-5 stars.
     pub async fn get_star_distribution(&self) -> Result<(i64, i64, i64, i64, i64), sqlx::Error> {
         sqlx::query_as::<_, (i64, i64, i64, i64, i64)>(
             r#"
             SELECT
-                COUNT(*) FILTER (WHERE average_rating >= 0 AND average_rating < 1) AS range_0_1,
-                COUNT(*) FILTER (WHERE average_rating >= 1 AND average_rating < 2) AS range_1_2,
-                COUNT(*) FILTER (WHERE average_rating >= 2 AND average_rating < 3) AS range_2_3,
-                COUNT(*) FILTER (WHERE average_rating >= 3 AND average_rating < 4) AS range_3_4,
-                COUNT(*) FILTER (WHERE average_rating >= 4 AND average_rating <= 5) AS range_4_5
+                COUNT(*) FILTER (WHERE average_rating IS NULL OR average_rating = 0.0) AS range_no_rating,
+                COUNT(*) FILTER (WHERE average_rating >= 1.0 AND average_rating < 2.0) AS range_1_2,
+                COUNT(*) FILTER (WHERE average_rating >= 2.0 AND average_rating < 3.0) AS range_2_3,
+                COUNT(*) FILTER (WHERE average_rating >= 3.0 AND average_rating < 4.0) AS range_3_4,
+                COUNT(*) FILTER (WHERE average_rating >= 4.0 AND average_rating <= 5.0) AS range_4_5
             FROM app_latest_info
-            WHERE average_rating IS NOT NULL
             "#,
         )
         .fetch_one(&self.pool)
@@ -389,10 +408,12 @@ impl Database {
                 key,
                 value,
                 is_exact,
+                not_null,
             }) => {
                 let query = format!(
-                    "SELECT COUNT(*) FROM app_latest_info WHERE {} ILIKE $1",
-                    key
+                    "SELECT COUNT(*) FROM app_latest_info WHERE {} ILIKE $1 {}",
+                    key,
+                    if *not_null { "AND NOT NULL" } else { "" }
                 );
                 let result: (i64,) = sqlx::query_as(&query)
                     .bind(if *is_exact {
