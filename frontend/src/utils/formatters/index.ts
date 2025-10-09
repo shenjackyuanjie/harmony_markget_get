@@ -1,6 +1,6 @@
 // 数据格式化工具函数模块
 
-import type { AppRating } from '../../types';
+import type { AppRating } from '../types';
 
 /**
  * 格式化数字，四位一分隔（中文习惯）

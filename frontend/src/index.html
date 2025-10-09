@@ -19,34 +19,40 @@
                         <div class="flex flex-wrap justify-start items-center gap-1 sm:gap-3 w-full sm:w-auto">
                             <button id="refreshBtn" class="inline-flex items-center btn-base btn-gradient-cyan">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                                     </path>
                                 </svg>
                                 刷新数据
                             </button>
                             <button id="helpBtn" class="inline-flex items-center btn-base btn-gradient-emerald">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                                     </path>
                                 </svg>
                                 帮助信息
                             </button>
                             <button id="contactBtn" class="inline-flex items-center btn-base btn-gradient-purple">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                                     </path>
                                 </svg>
                                 问题反馈&交流
                             </button>
                             <button id="submitBtn" class="inline-flex items-center btn-base btn-gradient-orange">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
                                 投稿
                             </button>
                             <button id="dart_mode_button" class="inline-flex items-center btn-base btn-gradient-gray">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
                                     </path>
                                 </svg>
                                 切换黑暗模式
@@ -63,32 +69,40 @@
             <div class="stats-card-rose">
                 <div class="py-3">
                     <h5 class="text-rose-600 text-sm font-medium card-title">已爬取总数</h5>
-                    <h3 id="totalCount" class="text-2xl font-bold text-rose-800 transition-all duration-500 hover:text-rose-600 card-value">
-                        <span id="loadingTotalCount" class="inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full"></span>
+                    <h3 id="totalCount"
+                        class="text-2xl font-bold text-rose-800 transition-all duration-500 hover:text-rose-600 card-value">
+                        <span id="loadingTotalCount"
+                            class="inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
             <div class="stats-card-orange">
                 <div class="py-3">
                     <h5 class="text-amber-600 text-sm font-medium card-title">应用总数</h5>
-                    <h3 id="appCount" class="text-2xl font-bold text-amber-800 transition-all duration-500 hover:text-amber-600 card-value">
-                        <span id="loadingOverview" class="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full"></span>
+                    <h3 id="appCount"
+                        class="text-2xl font-bold text-amber-800 transition-all duration-500 hover:text-amber-600 card-value">
+                        <span id="loadingOverview"
+                            class="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
             <div class="stats-card-emerald">
                 <div class="py-3">
                     <h5 class="text-emerald-600 text-sm font-medium card-title">元服务总数</h5>
-                    <h3 id="atomicServiceCount" class="text-2xl font-bold text-emerald-800 transition-all duration-500 hover:text-emerald-600 card-value">
-                        <span id="loadingAtomicServiceCount" class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
+                    <h3 id="atomicServiceCount"
+                        class="text-2xl font-bold text-emerald-800 transition-all duration-500 hover:text-emerald-600 card-value">
+                        <span id="loadingAtomicServiceCount"
+                            class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
             <div class="stats-card-indigo">
                 <div class="py-3">
                     <h5 class="text-indigo-600 text-sm font-medium card-title">开发者总数</h5>
-                    <h3 id="developerCount" class="text-2xl font-bold text-indigo-800 transition-all duration-500 hover:text-indigo-600 card-value">
-                        <span id="loadingDeveloperCount" class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                    <h3 id="developerCount"
+                        class="text-2xl font-bold text-indigo-800 transition-all duration-500 hover:text-indigo-600 card-value">
+                        <span id="loadingDeveloperCount"
+                            class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
                     </h3>
                 </div>
             </div>
@@ -135,9 +149,11 @@
             <div class="p-4">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
-                    <div class="flex flex-col border-amber-100 sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                    <div
+                        class="flex flex-col border-amber-100 sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                         <button id="searchHelpBtn" class="btn-base btn-gradient-amber" title="搜索帮助">搜索功能帮助</button>
-                        <input type="text" id="searchInput" class="flex-1 min-w-0 input-base placeholder-amber-400" placeholder="搜索应用">
+                        <input type="text" id="searchInput" class="flex-1 min-w-0 input-base placeholder-amber-400"
+                            placeholder="搜索应用">
                         <select id="searchKeySelect" class="input-base text-amber-700">
                             <option value="name" selected>应用名称</option>
                             <option value="pkg_name">包名</option>
@@ -148,7 +164,8 @@
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="searchExact" class="sr-only peer">
                             <span class="ml-1 text-sm font-medium text-amber-700">精确匹配</span>
-                            <div class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600">
+                            <div
+                                class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600">
                             </div>
                         </label>
                         <button id="searchBtn" class="btn-base btn-gradient-amber">搜索</button>
@@ -158,42 +175,43 @@
             <div class="overflow-x-auto app-table">
                 <div class="rounded-lg overflow-hidden border-amber-200">
                     <table class="min-w-full">
-                            <thead>
-                                <tr>
-                                    <th class="table-header-base">
-                                        序号</th>
-                                    <th class="table-header-base">
-                                        应用名称</th>
-                                    <th class="table-header-base">
-                                        开发者</th>
-                                    <th class="table-header-base">
-                                        分类</th>
-                                    <th class="table-header-base">
-                                        评分</th>
-                                    <th class="table-header-base table-header-sortable" data-sort="total_star_rating_count">
-                                        评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
-                                    </th>
-                                    <th class="table-header-base table-header-sortable" data-sort="download_count">
-                                        下载量 <span class="ml-1 text-amber-500 font-bold">↓</span>
-                                    </th>
-                                    <th class="table-header-base table-header-sortable" data-sort="size_bytes">
-                                        大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                    </th>
-                                    <th class="table-header-base table-header-sortable" data-sort="metrics_created_at">
-                                        上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                    </th>
-                                    <th class="table-header-base table-header-sortable" data-sort="create_at">
-                                        应用爬取时间 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                    </th>
-                                    <th class="table-header-base table-header-sortable" data-sort="listed_at">
-                                        应用上架时间(可能不准) <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                    </th>
-                                </tr>
-                            </thead>
+                        <thead>
+                            <tr>
+                                <th class="table-header-base">
+                                    序号</th>
+                                <th class="table-header-base">
+                                    应用名称</th>
+                                <th class="table-header-base">
+                                    开发者</th>
+                                <th class="table-header-base">
+                                    分类</th>
+                                <th class="table-header-base">
+                                    评分</th>
+                                <th class="table-header-base table-header-sortable" data-sort="total_star_rating_count">
+                                    评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="download_count">
+                                    下载量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="size_bytes">
+                                    大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="metrics_created_at">
+                                    上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="create_at">
+                                    应用爬取时间 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="listed_at">
+                                    应用上架时间(可能不准) <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                            </tr>
+                        </thead>
                         <tbody id="appTableBody" class="divide-y divide-amber-100">
                             <tr>
                                 <td colspan="12" class="text-center py-12">
-                                    <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
+                                    <div
+                                        class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
                                     </div>
                                 </td>
                             </tr>
@@ -214,11 +232,14 @@
         <div class="modal-container modal-indigo">
             <div class="mt-3">
                 <div class="flex justify-between items-center">
-                    <h5 class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">
+                    <h5
+                        class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">
                         帮助信息 - 华为应用市场看板使用说明</h5>
-                    <button type="button" id="closeHelpModal" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180">
+                    <button type="button" id="closeHelpModal"
+                        class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -277,7 +298,8 @@
                 </div>
             </div>
             <div class="flex justify-end pt-2">
-                <button id="closeHelpModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+                <button id="closeHelpModalBtn"
+                    class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
             </div>
         </div>
     </div>
@@ -286,11 +308,14 @@
         <div class="modal-container modal-amber">
             <div class="mt-3">
                 <div class="flex justify-between items-center">
-                    <h5 class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">
+                    <h5
+                        class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">
                         搜索功能帮助</h5>
-                    <button type="button" id="closeSearchHelpModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                    <button type="button" id="closeSearchHelpModal"
+                        class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
@@ -313,7 +338,8 @@
                             <br>
                             <br>
                             <br>
-                            <strong>高级说明</strong><br> 搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br> 因此你可以使用 % 来做通配符 _ 来做单个通配符<br> 或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
+                            <strong>高级说明</strong><br> 搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br> 因此你可以使用 % 来做通配符
+                            _ 来做单个通配符<br> 或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
                         </p>
                     </div>
                     <div class="card-gradient-amber">
@@ -337,9 +363,11 @@
         <div class="submit-container">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
-                <button type="button" id="closeContactModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                <button type="button" id="closeContactModal"
+                    class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -348,7 +376,8 @@
                 <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
             </div>
             <div class="flex justify-end pt-2">
-                <button id="closeContactModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+                <button id="closeContactModalBtn"
+                    class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
             </div>
         </div>
     </div>
@@ -363,21 +392,27 @@
             <!-- 应用详情页链接（可选） -->
             <div class="mb-4">
                 <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
-                <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
+                <input type="url" id="linkInput"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
                 <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
             </div>
 
             <!-- 包名 -->
             <div class="mb-4">
                 <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
-                <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
+                <input type="text" id="pkgInput"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="com.example.app">
                 <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
             </div>
 
             <!-- app_id -->
             <div class="mb-4">
                 <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
-                <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
+                <input type="text" id="appIdInput"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="123456">
                 <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
             </div>
 
@@ -385,211 +420,246 @@
             <div class="mb-4">
                 <div class="flex justify-between items-center mb-1">
                     <label for="usernameInput" class="block text-sm font-medium text-gray-700">用户名（可选）</label>
-                    <button type="button" id="clearUsernameStorage" class="text-xs text-gray-500 hover:text-red-500">清除记忆</button>
+                    <button type="button" id="clearUsernameStorage"
+                        class="text-xs text-gray-500 hover:text-red-500">清除记忆</button>
                 </div>
-                <input type="text" id="usernameInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="您的用户名">
+                <input type="text" id="usernameInput"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="您的用户名">
             </div>
 
             <!-- 备注（可选） -->
             <div class="mb-4">
                 <label for="remarkInput" class="block text-sm font-medium text-gray-700 mb-1">备注（可选）</label>
-                <input type="text" id="remarkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="备注信息">
+                <input type="text" id="remarkInput"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="备注信息">
             </div>
 
             <!-- 应用详情模态框 -->
             <div id="appDetailModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
-              <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                  <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-                </div>
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                    </div>
 
-                <!-- 模态框内容 -->
-                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                  <div id="appDetailContent">
-                    <!-- 加载动画 -->
-                    <div class="loader flex justify-center items-center py-8">
-                      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                    </div>
-                    
-                    <!-- 应用详情内容 -->
-                    <div class="app-detail-content hidden">
-                      <div class="bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <!-- 应用头部信息 -->
-                        <div class="p-6 border-b">
-                          <div class="flex items-start space-x-4">
-                            <img id="appDetailIcon" src="/img/default-app-icon.png" 
-                                 class="w-20 h-20 rounded-lg shadow-md"
-                                 alt="应用图标"
-                                 onerror="this.src='/img/default-app-icon.png'">
-                            <div class="flex-1">
-                              <h2 id="appDetailName" class="text-2xl font-bold text-gray-900 mb-2">应用名称</h2>
-                              <div class="space-y-1">
-                                <p id="appDetailDeveloper" class="text-gray-600">开发者: 未知</p>
-                                <p id="appDetailAppId" class="text-gray-600">应用ID: </p>
-                                <div class="flex items-center space-x-4">
-                                  <span id="appDetailType" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    应用类型
-                                  </span>
-                                  <span id="appDetailRating" class="text-gray-600"></span>
-                                </div>
-                              </div>
+                    <!-- 模态框内容 -->
+                    <div
+                        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                        <div id="appDetailContent">
+                            <!-- 加载动画 -->
+                            <div class="loader flex justify-center items-center py-8">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                             </div>
-                            <button onclick="closeAppDetail()" class="text-gray-400 hover:text-gray-600">
-                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <!-- 详细信息标签页 -->
-                        <div class="border-b">
-                          <nav class="flex space-x-8 px-6" aria-label="Tabs">
-                            <button onclick="switchDetailTab('basic')" class="detail-tab active py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600" data-tab="basic">
-                              基本信息
-                            </button>
-                            <button onclick="switchDetailTab('metrics')" class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="metrics">
-                              数据指标
-                            </button>
-                            <button onclick="switchDetailTab('technical')" class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="technical">
-                              技术信息
-                            </button>
-                          </nav>
-                        </div>
-                        
-                        <!-- 标签页内容 -->
-                        <div class="p-6">
-                          <!-- 基本信息标签页 -->
-                          <div id="basic-tab" class="tab-content">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div class="space-y-4">
-                                <h3 class="text-lg font-semibold text-gray-900">应用信息</h3>
-                                <div class="space-y-2">
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">包名:</span>
-                                    <span id="appDetailPackageName" class="font-mono text-sm">未知</span>
-                                  </div>
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">创建时间:</span>
-                                    <span id="appDetailCreatedAt">未知</span>
-                                  </div>
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">上架时间:</span>
-                                    <span id="appDetailListedAt">未知</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div class="space-y-4">
-                                <h3 class="text-lg font-semibold text-gray-900">评分信息</h3>
-                                <div class="space-y-2">
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">平均评分:</span>
-                                    <span id="appDetailAverageRating">无评分</span>
-                                  </div>
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">评分人数:</span>
-                                    <span id="appDetailRatingCount">0</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <!-- 数据指标标签页 -->
-                          <div id="metrics-tab" class="tab-content hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <div class="space-y-4">
-                                <h3 class="text-lg font-semibold text-gray-900">下载统计</h3>
-                                <div class="space-y-2">
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">总下载量:</span>
-                                    <span id="appDetailDownloadCount" class="font-semibold">0</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div class="space-y-4">
-                                <h3 class="text-lg font-semibold text-gray-900">应用大小</h3>
-                                <div class="space-y-2">
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">安装包大小:</span>
-                                    <span id="appDetailSize">0</span>
-                                  </div>
-                                  <div class="flex justify-between">
-                                    <span class="text-gray-600">最后更新:</span>
-                                    <span id="appDetailUpdatedAt">未知</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <!-- 技术信息标签页 -->
-                          <div id="technical-tab" class="tab-content hidden">
-                            <div class="space-y-6">
-                              <div>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">技术信息</h3>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                  <div class="space-y-2">
-                                    <div class="flex justify-between">
-                                      <span class="text-gray-600">应用ID:</span>
-                                      <div class="flex items-center space-x-2">
-                                        <span id="appDetailTechnicalAppId" class="font-mono text-sm"></span>
-                                        <button onclick="copyAppId('')" class="text-blue-600 hover:text-blue-800">
-                                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                          </svg>
-                                        </button>
-                                      </div>
+
+                            <!-- 应用详情内容 -->
+                            <div class="app-detail-content hidden">
+                                <div class="bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
+                                    <!-- 应用头部信息 -->
+                                    <div class="p-6 border-b">
+                                        <div class="flex items-start space-x-4">
+                                            <img id="appDetailIcon" src="/img/default-app-icon.png"
+                                                class="w-20 h-20 rounded-lg shadow-md" alt="应用图标"
+                                                onerror="this.src='/img/default-app-icon.png'">
+                                            <div class="flex-1">
+                                                <h2 id="appDetailName" class="text-2xl font-bold text-gray-900 mb-2">
+                                                    应用名称</h2>
+                                                <div class="space-y-1">
+                                                    <p id="appDetailDeveloper" class="text-gray-600">开发者: 未知</p>
+                                                    <p id="appDetailAppId" class="text-gray-600">应用ID: </p>
+                                                    <div class="flex items-center space-x-4">
+                                                        <span id="appDetailType"
+                                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                                            应用类型
+                                                        </span>
+                                                        <span id="appDetailRating" class="text-gray-600"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button onclick="closeAppDetail()"
+                                                class="text-gray-400 hover:text-gray-600">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="flex justify-between">
-                                      <span class="text-gray-600">包名:</span>
-                                      <div class="flex items-center space-x-2">
-                                        <span id="appDetailTechnicalPackageName" class="font-mono text-sm">未知</span>
-                                        <button onclick="copyPackageName('')" class="text-blue-600 hover:text-blue-800">
-                                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                          </svg>
-                                        </button>
-                                      </div>
+
+                                    <!-- 详细信息标签页 -->
+                                    <div class="border-b">
+                                        <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                                            <button onclick="switchDetailTab('basic')"
+                                                class="detail-tab active py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600"
+                                                data-tab="basic">
+                                                基本信息
+                                            </button>
+                                            <button onclick="switchDetailTab('metrics')"
+                                                class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                                                data-tab="metrics">
+                                                数据指标
+                                            </button>
+                                            <button onclick="switchDetailTab('technical')"
+                                                class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                                                data-tab="technical">
+                                                技术信息
+                                            </button>
+                                        </nav>
                                     </div>
-                                  </div>
+
+                                    <!-- 标签页内容 -->
+                                    <div class="p-6">
+                                        <!-- 基本信息标签页 -->
+                                        <div id="basic-tab" class="tab-content">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div class="space-y-4">
+                                                    <h3 class="text-lg font-semibold text-gray-900">应用信息</h3>
+                                                    <div class="space-y-2">
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">包名:</span>
+                                                            <span id="appDetailPackageName"
+                                                                class="font-mono text-sm">未知</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">创建时间:</span>
+                                                            <span id="appDetailCreatedAt">未知</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">上架时间:</span>
+                                                            <span id="appDetailListedAt">未知</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="space-y-4">
+                                                    <h3 class="text-lg font-semibold text-gray-900">评分信息</h3>
+                                                    <div class="space-y-2">
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">平均评分:</span>
+                                                            <span id="appDetailAverageRating">无评分</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">评分人数:</span>
+                                                            <span id="appDetailRatingCount">0</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 数据指标标签页 -->
+                                        <div id="metrics-tab" class="tab-content hidden">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div class="space-y-4">
+                                                    <h3 class="text-lg font-semibold text-gray-900">下载统计</h3>
+                                                    <div class="space-y-2">
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">总下载量:</span>
+                                                            <span id="appDetailDownloadCount"
+                                                                class="font-semibold">0</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="space-y-4">
+                                                    <h3 class="text-lg font-semibold text-gray-900">应用大小</h3>
+                                                    <div class="space-y-2">
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">安装包大小:</span>
+                                                            <span id="appDetailSize">0</span>
+                                                        </div>
+                                                        <div class="flex justify-between">
+                                                            <span class="text-gray-600">最后更新:</span>
+                                                            <span id="appDetailUpdatedAt">未知</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 技术信息标签页 -->
+                                        <div id="technical-tab" class="tab-content hidden">
+                                            <div class="space-y-6">
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">技术信息</h3>
+                                                    <div class="bg-gray-50 rounded-lg p-4">
+                                                        <div class="space-y-2">
+                                                            <div class="flex justify-between">
+                                                                <span class="text-gray-600">应用ID:</span>
+                                                                <div class="flex items-center space-x-2">
+                                                                    <span id="appDetailTechnicalAppId"
+                                                                        class="font-mono text-sm"></span>
+                                                                    <button onclick="copyAppId('')"
+                                                                        class="text-blue-600 hover:text-blue-800">
+                                                                        <svg class="w-4 h-4" fill="none"
+                                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round" stroke-width="2"
+                                                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                                                            </path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-gray-600">包名:</span>
+                                                                <div class="flex items-center space-x-2">
+                                                                    <span id="appDetailTechnicalPackageName"
+                                                                        class="font-mono text-sm">未知</span>
+                                                                    <button onclick="copyPackageName('')"
+                                                                        class="text-blue-600 hover:text-blue-800">
+                                                                        <svg class="w-4 h-4" fill="none"
+                                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round"
+                                                                                stroke-linejoin="round" stroke-width="2"
+                                                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                                                            </path>
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 操作按钮 -->
+                                    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                                        <button onclick="exportAppDetail('')"
+                                            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                                            导出详情
+                                        </button>
+                                        <button onclick="closeAppDetail()"
+                                            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                                            关闭
+                                        </button>
+                                    </div>
                                 </div>
-                              </div>
                             </div>
-                          </div>
+
+                            <!-- 错误状态 -->
+                            <div class="error-content hidden text-center py-8">
+                                <div class="text-red-500 mb-4">加载应用详情失败</div>
+                                <button onclick="closeAppDetail()"
+                                    class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                    关闭
+                                </button>
+                            </div>
                         </div>
-                        
-                        <!-- 操作按钮 -->
-                        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
-                          <button onclick="exportAppDetail('')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                            导出详情
-                          </button>
-                          <button onclick="closeAppDetail()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
-                            关闭
-                          </button>
-                        </div>
-                      </div>
                     </div>
-                    
-                    <!-- 错误状态 -->
-                    <div class="error-content hidden text-center py-8">
-                      <div class="text-red-500 mb-4">加载应用详情失败</div>
-                      <button onclick="closeAppDetail()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-                        关闭
-                      </button>
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
 
             <!-- 查询按钮 -->
-            <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-2">查询</button>
+            <button id="queryBtn"
+                class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-2">查询</button>
 
             <!-- 清空按钮 -->
-            <button id="clearBtn" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 mb-4">清空</button>
+            <button id="clearBtn"
+                class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 mb-4">清空</button>
 
             <!-- 查询结果展示区域 -->
             <div id="resultArea" class="hidden mb-4">
@@ -598,7 +668,8 @@
             </div>
 
             <!-- 关闭按钮 -->
-            <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
+            <button id="closeSubmitModal"
+                class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
         </div>
     </div>
 </body>
