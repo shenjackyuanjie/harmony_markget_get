@@ -1,0 +1,449 @@
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华为应用市场看板</title>
+</head>
+
+<body class="theme-transition">
+    <div class="px-4 py-6">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="card-gradient-blue">
+                <div class="px-5 py-4">
+                    <h1 class="text-2xl font-semibold text-indigo-900 mb-3 animate-pulse">
+                        华为应用市场看板 数据收集自 appgallery api 不保证来源的准确性、完整性和真实性 仅供参考
+                    </h1>
+                    <div class="flex flex-col sm:flex-row justify-start sm:justify-between items-center gap-4">
+                        <div class="flex flex-wrap justify-start items-center gap-1 sm:gap-3 w-full sm:w-auto">
+                            <button id="refreshBtn" class="inline-flex items-center btn-base btn-gradient-cyan">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    </path>
+                                </svg>
+                                刷新数据
+                            </button>
+                            <button id="helpBtn" class="inline-flex items-center btn-base btn-gradient-emerald">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    </path>
+                                </svg>
+                                帮助信息
+                            </button>
+                            <button id="contactBtn" class="inline-flex items-center btn-base btn-gradient-purple">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                问题反馈&交流
+                            </button>
+                            <button id="submitBtn" class="inline-flex items-center btn-base btn-gradient-orange">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                投稿
+                            </button>
+                            <button id="dart_mode_button" class="inline-flex items-center btn-base btn-gradient-gray">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                    </path>
+                                </svg>
+                                切换黑暗模式
+                            </button>
+                        </div>
+                        <span class="text-gray-500 text-sm">最后更新: <span id="lastUpdate">-</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="stats-card-rose">
+                <div class="py-3">
+                    <h5 class="text-rose-600 text-sm font-medium card-title">已爬取总数</h5>
+                    <h3 id="totalCount" class="text-2xl font-bold text-rose-800 transition-all duration-500 hover:text-rose-600 card-value">
+                        <span id="loadingTotalCount" class="inline-block w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full"></span>
+                    </h3>
+                </div>
+            </div>
+            <div class="stats-card-orange">
+                <div class="py-3">
+                    <h5 class="text-amber-600 text-sm font-medium card-title">应用总数</h5>
+                    <h3 id="appCount" class="text-2xl font-bold text-amber-800 transition-all duration-500 hover:text-amber-600 card-value">
+                        <span id="loadingOverview" class="inline-block w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full"></span>
+                    </h3>
+                </div>
+            </div>
+            <div class="stats-card-emerald">
+                <div class="py-3">
+                    <h5 class="text-emerald-600 text-sm font-medium card-title">元服务总数</h5>
+                    <h3 id="atomicServiceCount" class="text-2xl font-bold text-emerald-800 transition-all duration-500 hover:text-emerald-600 card-value">
+                        <span id="loadingAtomicServiceCount" class="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
+                    </h3>
+                </div>
+            </div>
+            <div class="stats-card-indigo">
+                <div class="py-3">
+                    <h5 class="text-indigo-600 text-sm font-medium card-title">开发者总数</h5>
+                    <h3 id="developerCount" class="text-2xl font-bold text-indigo-800 transition-all duration-500 hover:text-indigo-600 card-value">
+                        <span id="loadingDeveloperCount" class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full"></span>
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="lg:col-span-2">
+                <div class="chart-card-blue">
+                    <div class="p-4 border-b border-blue-100">
+                        <h5 class="text-lg font-semibold text-blue-800 mb-0 card-title">总下载榜</h5>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <div class="p-2 chart-container" style="min-width: 1400px;">
+                            <canvas id="top_download_chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="chart-card-purple">
+                    <div class="p-4 border-b border-purple-100">
+                        <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">总应用评分分布</h5>
+                    </div>
+                    <div class="p-2 chart-container">
+                        <canvas id="starChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="chart-card-teal mb-6">
+            <div class="p-4 border-b border-teal-100">
+                <h5 class="text-lg font-semibold text-teal-800 mb-0 card-title">非华为应用/内置应用下载榜</h5>
+            </div>
+            <div class="overflow-x-auto">
+                <div class="p-2 chart-container" style="min-width: 2200px;">
+                    <canvas id="top_download_chart_not_huawei"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apps Table -->
+        <div class="chart-card-amber mb-6">
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                        <button id="searchHelpBtn" class="btn-base btn-gradient-amber"
+                            title="搜索帮助">搜索功能帮助</button>
+                        <input type="text" id="searchInput" class="flex-1 min-w-0 input-base placeholder-amber-400" placeholder="搜索应用">
+                        <select id="searchKeySelect" class="input-base text-amber-700">
+                            <option value="name" selected>应用名称</option>
+                            <option value="pkg_name">包名</option>
+                            <option value="app_id">应用 ID</option>
+                            <option value="developer_name">开发者名称</option>
+                            <option value="developer_en_name">开发者英文名称</option>
+                        </select>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="searchExact" class="sr-only peer">
+                            <span class="ml-1 text-sm font-medium text-amber-700">精确匹配</span>
+                            <div
+                                class="ml-2 relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600">
+                            </div>
+                        </label>
+                        <button id="searchBtn" class="btn-base btn-gradient-amber">搜索</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-amber-200">
+                        <thead class="bg-gradient-to-r from-amber-100 to-yellow-100">
+                            <tr>
+                                <th class="table-header-base">
+                                    序号</th>
+                                <th class="table-header-base">
+                                    应用名称</th>
+                                <th class="table-header-base">
+                                    开发者</th>
+                                <th class="table-header-base">
+                                    分类</th>
+                                <th class="table-header-base">
+                                    评分</th>
+                                <th class="table-header-base table-header-sortable" data-sort="total_star_rating_count">
+                                    评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="download_count">
+                                    下载量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="size_bytes">
+                                    大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="metrics_created_at">
+                                    上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="create_at">
+                                    应用爬取时间 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                                <th class="table-header-base table-header-sortable" data-sort="listed_at">
+                                    应用上架时间(可能不准) <span class="ml-1 text-amber-500 font-bold">↑</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="appTableBody" class="bg-gradient-to-r from-amber-50 to-yellow-50 divide-y divide-amber-100">
+                            <tr>
+                                <td colspan="12" class="text-center py-12">
+                                    <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-6">
+                    <ul id="pagination" class="flex justify-center space-x-2"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal-backdrop">
+        <div class="modal-container modal-indigo">
+            <div class="mt-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold text-indigo-900 bg-gradient-to-r from-indigo-200 to-purple-200 px-4 py-2 rounded-lg shadow-sm">
+                        帮助信息 - 华为应用市场看板使用说明</h5>
+                    <button type="button" id="closeHelpModal" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="my-4 space-y-6">
+                    <!-- 数据来源说明 -->
+                    <div class="card-gradient-blue">
+                        <h6 class="text-md font-semibold text-blue-800 mb-2">📊 数据来源说明</h6>
+                        <p class="text-blue-700 text-sm">
+                            本看板数据收集自华为应用市场（AppGallery）公开API，数据仅供参考，不保证来源的准确性、完整性和真实性。
+                        </p>
+                    </div>
+
+                    <!-- 主要功能 -->
+                    <div class="card-gradient-green">
+                        <h6 class="text-md font-semibold text-emerald-800 mb-2">🚀 主要功能</h6>
+                        <ul class="text-emerald-700 text-sm space-y-2">
+                            <li><strong class="text-emerald-600">数据概览</strong> - 显示已爬取总数、应用总数、元服务总数、开发者总数</li>
+                            <li><strong class="text-emerald-600">总下载榜</strong> - 展示应用下载量排行榜</li>
+                            <li><strong class="text-emerald-600">评分分布</strong> - 显示应用评分的分布情况</li>
+                            <li><strong class="text-emerald-600">非华为应用下载榜</strong> - 展示非华为应用和内置应用的下载排行</li>
+                            <li><strong class="text-emerald-600">应用列表</strong> - 详细的应用信息表格，支持搜索和排序</li>
+                        </ul>
+                    </div>
+
+                    <!-- 使用说明 -->
+                    <div class="card-gradient-purple">
+                        <h6 class="text-md font-semibold text-amber-800 mb-2">📝 使用说明</h6>
+                        <ul class="text-amber-700 text-sm space-y-2">
+                            <li><strong class="text-amber-600">刷新数据</strong> - 点击"刷新数据"按钮获取最新数据</li>
+                            <li><strong class="text-amber-600">搜索应用</strong> - 在应用列表上方的搜索框中输入应用名称进行搜索</li>
+                            <li><strong class="text-amber-600">分类过滤</strong> - 使用分类下拉菜单筛选特定分类的应用</li>
+                            <li><strong class="text-amber-600">排序功能</strong> - 点击表格标题（开发者、分类、评分、下载量、大小、上次更新）进行排序</li>
+                            <li><strong class="text-amber-600">查看详情</strong> - 点击应用名称查看详细的应用信息</li>
+                            <li><strong class="text-amber-600">分页浏览</strong> - 使用底部分页控件浏览更多应用</li>
+                        </ul>
+                    </div>
+
+                    <!-- 注意事项 -->
+                    <div class="card-gradient-amber">
+                        <h6 class="text-md font-semibold text-rose-800 mb-2">⚠️ 注意事项</h6>
+                        <ul class="text-rose-700 text-sm space-y-2">
+                            <li>部分功能仍在开发中，可能会出现bug或数据不完整的情况</li>
+                            <li>数据更新可能存在延迟，请以官方数据为准</li>
+                            <li>应用详情页面仍在施工中，部分数据可能显示不正确</li>
+                            <li>使用ESC键可以快速关闭弹窗</li>
+                        </ul>
+                    </div>
+
+                    <!-- 技术支持 -->
+                    <div class="card-gradient-rose">
+                        <h6 class="text-md font-semibold text-violet-800 mb-2">🔧 技术支持</h6>
+                        <p class="text-violet-700 text-sm">
+                            如遇到问题或需要技术支持，请联系相关开发人员。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button id="closeHelpModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchHelpModal" class="modal-backdrop">
+        <div class="modal-container modal-amber">
+            <div class="mt-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold text-amber-800 bg-gradient-to-r from-amber-200 to-yellow-200 px-4 py-2 rounded-lg shadow-sm">
+                        搜索功能帮助</h5>
+                    <button type="button" id="closeSearchHelpModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="my-4 space-y-6">
+                    <div class="card-gradient-blue">
+                        <h6 class="text-md font-semibold text-blue-800 mb-2">🔍 搜索类别说明</h6>
+                        <ul class="text-blue-700 text-sm space-y-2">
+                            <li><strong>应用名称</strong> (name): 搜索应用的显示名称，如 "微信"。</li>
+                            <li><strong>包名</strong> (pkg_name): 搜索应用的唯一包标识符，如 "com.tencent.mm"。</li>
+                            <li><strong>应用 ID</strong> (app_id): 搜索华为应用市场的应用唯一 ID。</li>
+                            <li><strong>开发者名称</strong> (developer_name): 搜索中文开发者名称。</li>
+                            <li><strong>开发者英文名称</strong> (developer_en_name): 搜索英文开发者名称。</li>
+                        </ul>
+                    </div>
+                    <div class="card-gradient-green">
+                        <h6 class="text-md font-semibold text-emerald-800 mb-2">⚡ 精确匹配开关</h6>
+                        <p class="text-emerald-700 text-sm">
+                            <strong>开启 (勾选)</strong>: 进行精确匹配，只返回完全匹配关键词的结果。<br>
+                            <strong>关闭 (未勾选)</strong>: 进行模糊搜索，支持部分匹配，提高搜索灵活性。<br> 默认关闭（模糊搜索）。
+                            <br>
+                            <br>
+                            <br>
+                            <strong>高级说明</strong><br> 搜索使用 PostgreSql 的 ILIKE, 模糊搜索就是在搜索内容两边各加一个 %, <br> 因此你可以使用 % 来做通配符 _ 来做单个通配符<br> 或者使用其他 pg ILIKE 语法允许的特殊内容 (不用想着注入了, 我用的 .bind)
+                        </p>
+                    </div>
+                    <div class="card-gradient-amber">
+                        <h6 class="text-md font-semibold text-amber-800 mb-2">📝 使用提示</h6>
+                        <ul class="text-amber-700 text-sm space-y-2">
+                            <li>点击"搜索"按钮或按 Enter 键执行搜索。</li>
+                            <li>搜索仅在输入关键词和选择类别后生效。</li>
+                            <li>支持排序和分页，与搜索结果结合使用。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button id="closeSearchHelpBtn" class="btn-base btn-gradient-amber text-base">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="submit-modal">
+        <div class="submit-container">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">问题反馈&交流</h3>
+                <button type="button" id="closeContactModal" class="text-amber-400 hover:text-amber-600 transition-all duration-300 transform hover:rotate-180">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="text-gray-700 space-y-2">
+                <p><strong>QQ群:</strong> 757273833</p>
+                <p><strong>邮箱:</strong> shenjackyuanjie@qq.com</p>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button id="closeContactModalBtn" class="btn-animation px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Detail Modal -->
+    <div id="appDetailModal" class="app-detail-modal">
+        <div class="app-detail-container">
+            <div class="mt-3">
+                <div class="flex justify-between items-center">
+                    <h5 id="appDetailTitle" class="text-lg font-semibold text-cyan-900 bg-gradient-to-r from-cyan-200 to-blue-200 px-4 py-2 rounded-lg shadow-sm">
+                        应用详情</h5>
+                    <button type="button" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180" onclick="document.getElementById('appDetailModal').classList.add('hidden')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="my-4" id="appDetailContent"></div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="document.getElementById('appDetailModal').classList.add('hidden')" class="btn-animation px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:from-cyan-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 投稿模态框 -->
+    <div id="submitModal" class="submit-modal">
+        <div class="submit-container">
+            <h2 class="text-xl font-bold mb-4 text-center">投稿</h2>
+
+            <!-- 应用详情页链接（可选） -->
+            <div class="mb-4">
+                <label for="linkInput" class="block text-sm font-medium text-gray-700 mb-1">应用详情页链接（可选）</label>
+                <input type="url" id="linkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://appgallery.huawei.com/app/detail?id=com.example.app">
+                <span id="linkError" class="text-red-500 text-sm hidden">链接格式不正确</span>
+            </div>
+
+            <!-- 包名 -->
+            <div class="mb-4">
+                <label for="pkgInput" class="block text-sm font-medium text-gray-700 mb-1">包名</label>
+                <input type="text" id="pkgInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="com.example.app">
+                <span id="pkgError" class="text-red-500 text-sm hidden">包名不能为空且只能包含字母、数字、下划线和点</span>
+            </div>
+
+            <!-- app_id -->
+            <div class="mb-4">
+                <label for="appIdInput" class="block text-sm font-medium text-gray-700 mb-1">app_id</label>
+                <input type="text" id="appIdInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="123456">
+                <span id="appIdError" class="text-red-500 text-sm hidden">app_id不能为空</span>
+            </div>
+
+            <!-- 用户名（可选） -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                    <label for="usernameInput" class="block text-sm font-medium text-gray-700">用户名（可选）</label>
+                    <button type="button" id="clearUsernameStorage" class="text-xs text-gray-500 hover:text-red-500">清除记忆</button>
+                </div>
+                <input type="text" id="usernameInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="您的用户名">
+            </div>
+
+            <!-- 备注（可选） -->
+            <div class="mb-4">
+                <label for="remarkInput" class="block text-sm font-medium text-gray-700 mb-1">备注（可选）</label>
+                <input type="text" id="remarkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="备注信息">
+            </div>
+
+            <!-- 查询按钮 -->
+            <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-2">查询</button>
+
+            <!-- 清空按钮 -->
+            <button id="clearBtn" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 mb-4">清空</button>
+
+            <!-- 查询结果展示区域 -->
+            <div id="resultArea" class="hidden mb-4">
+                <h3 class="text-lg font-semibold mb-2">查询结果</h3>
+                <div id="resultContent" class="bg-gray-50 p-3 rounded-md"></div>
+            </div>
+
+            <!-- 关闭按钮 -->
+            <button id="closeSubmitModal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">关闭</button>
+        </div>
+
+        <!-- Custom JavaScript -->
+        <script src="/js/dashboard.js"></script>
+    </div>
+</body>
+
+</html>
