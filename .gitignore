@@ -4,3 +4,4 @@ config.toml
 
 # vscode 的 LocalHistory 老插件了
 .lh
+frontend

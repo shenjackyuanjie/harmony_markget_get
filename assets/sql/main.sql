@@ -51,7 +51,7 @@ CREATE TABLE app_data_history (
     app_id          TEXT NOT NULL REFERENCES app_info(app_id), -- 对应 app_info 的 app_id
     pkg_name        TEXT NOT NULL REFERENCES app_info(pkg_name) ON DELETE CASCADE, -- 对应 app_info 的 pkg_name
     raw_json_data   JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始应用数据JSON
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),        -- 数据创建或记录时间
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()         -- 数据创建或记录时间
 );
 
 CREATE TABLE app_rating_history (
@@ -59,7 +59,7 @@ CREATE TABLE app_rating_history (
     app_id          TEXT NOT NULL REFERENCES app_info(app_id), -- 对应 app_info 的 app_id
     pkg_name        TEXT NOT NULL REFERENCES app_info(pkg_name) ON DELETE CASCADE, -- 对应 app_info 的 pkg_name
     raw_json_rating JSONB NOT NULL DEFAULT '{}'::JSONB,        -- 原始评分数据JSON (原 raw_json_star)
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),        -- 数据创建或记录时间
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()         -- 数据创建或记录时间
 );
 
 CREATE TABLE app_metrics (
