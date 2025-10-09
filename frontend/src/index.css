@@ -98,7 +98,7 @@ body {
 
 /* 表格头部基础样式 */
 .table-header-base {
-    @apply px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider;
+    @apply px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider bg-gradient-to-r from-amber-50;
 }
 
 /* 可排序表头样式 */
@@ -107,7 +107,16 @@ body {
 }
 
 .table-header-sortable:hover {
-    @apply bg-amber-200;
+    @apply  from-amber-100
+}
+
+/* 黑暗模式表格头部样式 */
+.dark .table-header-base {
+    @apply !text-amber-300  !from-amber-800 ;
+}
+
+.dark .table-header-sortable:hover {
+    @apply  !from-amber-700;
 }
 
 /* 统计卡片样式 */
@@ -176,7 +185,7 @@ body {
 
 /* 投稿模态框 */
 .submit-modal {
-    @apply fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50;
+    @apply fixed inset-0 bg-black/50 items-center justify-center hidden z-50;
 }
 
 .submit-container {
@@ -189,14 +198,18 @@ body {
     background-color: rgba(255, 255, 255, 0.7);
 }
 
+.app-table {
+    @apply bg-white p-2;
+    background-color: rgba(255, 255, 255, 0.7);
+}
 /* 表格样式 */
 .table th {
     @apply cursor-pointer transition-all duration-200 ease-in-out;
-    @apply bg-gradient-to-r from-gray-50 to-blue-100 text-blue-800;
+    @apply bg-gray-100 text-blue-800;
 }
 
 .table th:hover {
-    @apply bg-gradient-to-r from-blue-100 to-indigo-100 -translate-y-0.5;
+    @apply bg-blue-100 -translate-y-0.5;
 }
 
 /* 加载状态 */
@@ -226,11 +239,6 @@ body {
     100% {
         background-position: 0% 50%;
     }
-}
-
-/* 平滑过渡效果 */
-.theme-transition * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 /* ==================== 黑暗模式样式 ==================== */
@@ -337,19 +345,116 @@ body {
 
 /* 黑暗模式表格 */
 .dark .table th {
-    @apply !bg-gradient-to-r !from-gray-700 !to-gray-600 !text-slate-200;
+    @apply !bg-amber-800 !text-slate-200;
 }
 
 .dark .table th:hover {
-    @apply !bg-gradient-to-r !from-gray-600 !to-gray-500;
+    @apply !bg-amber-700;
 }
 
 .dark .table-header-sortable:hover {
+    @apply !bg-amber-700;
+}
+
+/* 黑暗模式表格内容 */
+.dark .table tbody {
+    @apply !bg-transparent;
+}
+
+.dark .table tbody tr {
+    @apply !border-gray-600;
+}
+
+.dark .table tbody tr:hover {
     @apply !bg-gray-600;
+}
+
+.dark .table td {
+    @apply !text-slate-200 !border-gray-600;
+}
+
+.dark .table td.text-gray-900 {
+    @apply !text-slate-200;
+}
+
+.dark .table td.text-gray-500 {
+    @apply !text-gray-400;
+}
+
+.dark .table td .text-gray-900 {
+    @apply !text-slate-200;
+}
+
+.dark .table td .text-gray-500 {
+    @apply !text-gray-400;
+}
+
+.dark .table td .font-medium {
+    @apply !text-slate-200;
+}
+
+.dark .divide-amber-100 > * + * {
+    @apply !border-gray-600;
+}
+
+.dark .divide-amber-200 > * + * {
+    @apply !border-gray-600;
+}
+
+/* 黑暗模式分类标签 */
+.dark .bg-blue-100 {
+    @apply !bg-blue-800;
+}
+
+.dark .text-blue-800 {
+    @apply !text-blue-200;
+}
+
+/* 黑暗模式加载动画 */
+.dark .border-amber-500 {
+    @apply !border-amber-400;
+}
+
+.dark .border-t-transparent {
+    @apply !border-t-transparent;
+}
+
+/* 黑暗模式分页输入框 */
+.dark input.text-blue-900 {
+    @apply !text-slate-200 !bg-gray-700 !border-gray-600;
+}
+
+.dark .bg-blue-50 {
+    @apply !bg-gray-700;
+}
+
+.dark .border-blue-300 {
+    @apply !border-gray-600;
+}
+
+.dark .text-blue-700 {
+    @apply !text-gray-300;
+}
+
+.dark .border-blue-500 {
+    @apply !border-blue-500;
+}
+
+.dark .bg-blue-100 {
+    @apply !bg-blue-600;
+}
+
+.dark .text-blue-800 {
+    @apply !text-white;
 }
 
 /* 黑暗模式图表容器 */
 .dark .chart-container {
+    @apply !bg-slate-800;
+    background-color: rgba(30, 41, 59, 0.7) !important;
+}
+
+.dark .app-table {
     @apply !bg-slate-800;
     background-color: rgba(30, 41, 59, 0.7) !important;
 }
@@ -370,6 +475,10 @@ body {
     @apply !text-amber-400;
 }
 
+.dark .text-amber-500 {
+    @apply !text-amber-300;
+}
+
 .dark .text-blue-800 {
     @apply !text-blue-300;
 }
@@ -387,19 +496,19 @@ body {
 }
 
 .dark .text-rose-600 {
-    @apply !text-rose-400;
+    @apply !text-rose-300;
 }
 
 .dark .text-amber-600 {
-    @apply !text-amber-400;
+    @apply !text-amber-300;
 }
 
 .dark .text-emerald-600 {
-    @apply !text-emerald-400;
+    @apply !text-emerald-300;
 }
 
 .dark .text-indigo-600 {
-    @apply !text-indigo-400;
+    @apply !text-indigo-300;
 }
 
 .dark .text-rose-800 {
@@ -453,6 +562,11 @@ body {
 
 .dark .bg-gradient-to-r.from-amber-200.to-yellow-200 {
     @apply !bg-gradient-to-r !from-amber-700 !to-yellow-700;
+}
+
+/* 黑暗模式表头背景渐变 */
+.dark .bg-gradient-to-r.from-amber-100.to-yellow-100 {
+    @apply !bg-gray-700;
 }
 
 /* 黑暗模式边框颜色 */
@@ -510,35 +624,6 @@ body {
 
 .dark .border-indigo-500 {
     @apply !border-indigo-400;
-}
-
-/* 黑暗模式卡片内部背景渐变 */
-.dark .bg-gradient-to-r.from-blue-50.to-indigo-50 {
-    @apply !bg-gradient-to-r !from-blue-800 !to-indigo-800;
-}
-
-.dark .bg-gradient-to-r.from-green-50.to-emerald-50 {
-    @apply !bg-gradient-to-r !from-green-800 !to-emerald-800;
-}
-
-.dark .bg-gradient-to-r.from-amber-50.to-yellow-50 {
-    @apply !bg-gradient-to-r !from-amber-800 !to-yellow-800;
-}
-
-.dark .bg-gradient-to-r.from-rose-50.to-pink-50 {
-    @apply !bg-gradient-to-r !from-rose-800 !to-pink-800;
-}
-
-.dark .bg-gradient-to-r.from-purple-50.to-violet-50 {
-    @apply !bg-gradient-to-r !from-purple-800 !to-violet-800;
-}
-
-.dark .bg-gradient-to-r.from-amber-100.to-yellow-100 {
-    @apply !bg-gradient-to-r !from-amber-800 !to-yellow-800;
-}
-
-.dark .bg-gradient-to-r.from-amber-50.to-yellow-50 {
-    @apply !bg-gradient-to-r !from-amber-800 !to-yellow-800;
 }
 
 .dark .text-gray-600 {

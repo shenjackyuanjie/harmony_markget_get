@@ -138,10 +138,10 @@
 
         <!-- Apps Table -->
         <div class="chart-card-amber mb-6">
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div class="p-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                    <div class="flex flex-col border-amber-100 sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                         <button id="searchHelpBtn" class="btn-base btn-gradient-amber"
                             title="搜索帮助">搜索功能帮助</button>
                         <input type="text" id="searchInput" class="flex-1 min-w-0 input-base placeholder-amber-400" placeholder="搜索应用">
@@ -162,56 +162,56 @@
                         <button id="searchBtn" class="btn-base btn-gradient-amber">搜索</button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-amber-200">
-                        <thead class="bg-gradient-to-r from-amber-100 to-yellow-100">
-                            <tr>
-                                <th class="table-header-base">
-                                    序号</th>
-                                <th class="table-header-base">
-                                    应用名称</th>
-                                <th class="table-header-base">
-                                    开发者</th>
-                                <th class="table-header-base">
-                                    分类</th>
-                                <th class="table-header-base">
-                                    评分</th>
-                                <th class="table-header-base table-header-sortable" data-sort="total_star_rating_count">
-                                    评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
-                                </th>
-                                <th class="table-header-base table-header-sortable" data-sort="download_count">
-                                    下载量 <span class="ml-1 text-amber-500 font-bold">↓</span>
-                                </th>
-                                <th class="table-header-base table-header-sortable" data-sort="size_bytes">
-                                    大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                </th>
-                                <th class="table-header-base table-header-sortable" data-sort="metrics_created_at">
-                                    上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                </th>
-                                <th class="table-header-base table-header-sortable" data-sort="create_at">
-                                    应用爬取时间 <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                </th>
-                                <th class="table-header-base table-header-sortable" data-sort="listed_at">
-                                    应用上架时间(可能不准) <span class="ml-1 text-amber-500 font-bold">↑</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="appTableBody" class="bg-gradient-to-r from-amber-50 to-yellow-50 divide-y divide-amber-100">
-                            <tr>
-                                <td colspan="12" class="text-center py-12">
-                                    <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <nav aria-label="Page navigation" class="mt-6">
-                    <ul id="pagination" class="flex justify-center space-x-2"></ul>
-                </nav>
             </div>
+            <div class="overflow-x-auto app-table">
+                <table class="min-w-full divide-y divide-amber-200">
+                    <thead class="border-amber-100">
+                        <tr>
+                            <th class="table-header-base">
+                                序号</th>
+                            <th class="table-header-base">
+                                应用名称</th>
+                            <th class="table-header-base">
+                                开发者</th>
+                            <th class="table-header-base">
+                                分类</th>
+                            <th class="table-header-base">
+                                评分</th>
+                            <th class="table-header-base table-header-sortable" data-sort="total_star_rating_count">
+                                评分数量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                            </th>
+                            <th class="table-header-base table-header-sortable" data-sort="download_count">
+                                下载量 <span class="ml-1 text-amber-500 font-bold">↓</span>
+                            </th>
+                            <th class="table-header-base table-header-sortable" data-sort="size_bytes">
+                                大小 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                            </th>
+                            <th class="table-header-base table-header-sortable" data-sort="metrics_created_at">
+                                上次数据更新 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                            </th>
+                            <th class="table-header-base table-header-sortable" data-sort="create_at">
+                                应用爬取时间 <span class="ml-1 text-amber-500 font-bold">↑</span>
+                            </th>
+                            <th class="table-header-base table-header-sortable" data-sort="listed_at">
+                                应用上架时间(可能不准) <span class="ml-1 text-amber-500 font-bold">↑</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="appTableBody" class="divide-y divide-amber-100">
+                        <tr>
+                            <td colspan="12" class="text-center py-12">
+                                <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin">
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="app-table">
+                <ul id="pagination" class="flex justify-center space-x-2"></ul>
+            </nav>
         </div>
     </div>
 
