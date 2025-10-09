@@ -415,6 +415,22 @@
                 <input type="text" id="remarkInput" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="备注信息">
             </div>
 
+            <!-- 应用详情模态框 -->
+            <div id="appDetailModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+              <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                  <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <!-- 模态框内容 -->
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                  <div id="appDetailContent" class="p-6">
+                    <!-- 内容将通过JS填充 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- 查询按钮 -->
             <button id="queryBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 mb-2">查询</button>
 
