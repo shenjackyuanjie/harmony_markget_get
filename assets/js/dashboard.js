@@ -601,6 +601,5 @@ document.addEventListener("DOMContentLoaded", () => {
         e.stopPropagation(); // 防止事件冒泡
         localStorage.removeItem('submitUsername');
         document.getElementById("usernameInput").value = "";
-        alert("已清除记忆的用户名");
     });
 });

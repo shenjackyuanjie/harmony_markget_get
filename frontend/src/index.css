@@ -98,7 +98,7 @@ body {
 
 /* 表格头部基础样式 */
 .table-header-base {
-    @apply px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider bg-gradient-to-r from-amber-50;
+    @apply px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider;
 }
 
 /* 可排序表头样式 */
@@ -146,11 +146,11 @@ body {
 
 /* 模态框样式 */
 .modal-backdrop {
-    @apply fixed inset-0 bg-black hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-opacity duration-300;
+    @apply fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center;
 }
 
 .modal-container {
-    @apply relative top-8 mx-auto p-5 border w-11/12 md:w-11/12 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md max-h-[90vh] overflow-y-auto transition-transform duration-300 transform;
+    @apply relative mx-auto p-5 border w-11/12 md:w-11/12 lg:w-4/5 xl:w-3/4 shadow-lg rounded-md max-h-[90vh] overflow-y-auto transition-transform duration-300 transform;
 }
 
 .modal-indigo {
@@ -167,16 +167,16 @@ body {
 
 /* 应用详情模态框 */
 .app-detail-modal {
-    @apply fixed inset-0 bg-black hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-opacity duration-300;
+    @apply fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center;
 }
 
 .app-detail-container {
-    @apply relative top-8 mx-auto p-5 border border-cyan-200 w-11/12 md:w-10/12 lg:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-cyan-50 to-blue-50 transition-transform duration-300 transform;
+    @apply relative mx-auto p-5 border border-cyan-200 w-11/12 md:w-10/12 lg:w-3/4 shadow-lg rounded-md bg-gradient-to-r from-cyan-50 to-blue-50 transition-transform duration-300 transform;
 }
 
 /* 投稿模态框 */
 .submit-modal {
-    @apply fixed inset-0 bg-black/50 items-center justify-center hidden z-50;
+    @apply fixed inset-0 bg-black/50 items-center justify-center z-50;
 }
 
 .submit-container {

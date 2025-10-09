@@ -102,11 +102,11 @@
 
 /* 黑暗模式表格 */
 .dark .table-header-base {
-    @apply !text-slate-200;
+    @apply !text-slate-200 bg-amber-700;
 }
 
 .dark .table-header-sortable:hover {
-    @apply !bg-amber-700;
+    @apply !bg-amber-600;
 }
 
 /* 黑暗模式表格内容 */
