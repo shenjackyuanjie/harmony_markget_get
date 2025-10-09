@@ -1,7 +1,7 @@
 // 工具函数模块
 
-export { updateUrlParam, getUrlParams } from './url-params';
-export { copyToClipboard } from './clipboard';
+export { updateUrlParam, getUrlParams } from './url-params.ts';
+export { copyToClipboard } from './clipboard.ts';
 
 // 更新最后更新时间
 export function updateLastUpdate(): void {

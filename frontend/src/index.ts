@@ -35,9 +35,30 @@ window.copyToClipboard = (text: string, button?: HTMLElement) => {
   copyToClipboard(text, button);
 };
 
+// 初始化模态框状态
+function initializeModals(): void {
+  const modalIds = [
+    "helpModal",
+    "searchHelpModal", 
+    "contactModal",
+    "appDetailModal",
+    "submitModal"
+  ];
+  
+  modalIds.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+  });
+}
+
 // 初始化应用
 function initializeApp(): void {
   console.log("初始化应用...");
+  
+  // 初始化模态框状态
+  initializeModals();
   
   // 初始化暗黑模式
   darkModeManager;

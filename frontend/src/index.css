@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+/* 基础工具类 */
+.hidden {
+    display: none !important;
+}
+
 /* 基础样式 */
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -176,7 +181,7 @@ body {
 
 /* 投稿模态框 */
 .submit-modal {
-    @apply fixed inset-0 bg-black/50 items-center justify-center z-50;
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50;
 }
 
 .submit-container {

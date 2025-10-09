@@ -49,19 +49,9 @@ export class DarkModeManager {
       });
 
     // 暗黑模式切换按钮
-    const darkModeToggle = document.getElementById("darkModeToggle");
+    const darkModeToggle = document.getElementById("dart_mode_button");
     if (darkModeToggle) {
       darkModeToggle.addEventListener("click", () => {
-        this.toggle();
-      });
-    }
-
-    // 暗黑模式切换按钮（移动端）
-    const darkModeToggleMobile = document.getElementById(
-      "darkModeToggleMobile",
-    );
-    if (darkModeToggleMobile) {
-      darkModeToggleMobile.addEventListener("click", () => {
         this.toggle();
       });
     }
@@ -111,32 +101,31 @@ export class DarkModeManager {
   }
 
   private updateDarkModeToggle(): void {
-    const darkModeToggle = document.getElementById("darkModeToggle");
-    const darkModeToggleMobile = document.getElementById(
-      "darkModeToggleMobile",
-    );
+    const darkModeToggle = document.getElementById("dart_mode_button");
 
     const updateButton = (button: HTMLElement | null) => {
       if (button) {
-        const icon = button.querySelector("i");
-        const text = button.querySelector("span");
+        const svg = button.querySelector("svg");
 
-        if (icon) {
+        if (svg) {
           if (this.isDarkMode) {
-            icon.className = "fas fa-sun";
+            // 切换为太阳图标（浅色模式）
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
           } else {
-            icon.className = "fas fa-moon";
+            // 切换为月亮图标（深色模式）
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
           }
         }
 
-        if (text) {
-          text.textContent = this.isDarkMode ? "浅色模式" : "深色模式";
+        // 更新按钮文本 - 查找最后一个子节点（文本节点）
+        const lastChild = button.lastChild;
+        if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
+          lastChild.textContent = this.isDarkMode ? "切换浅色模式" : "切换黑暗模式";
         }
       }
     };
 
     updateButton(darkModeToggle);
-    updateButton(darkModeToggleMobile);
   }
 }
 
