@@ -353,26 +353,7 @@
         </div>
     </div>
 
-    <!-- App Detail Modal -->
-    <div id="appDetailModal" class="app-detail-modal hidden">
-        <div class="app-detail-container">
-            <div class="mt-3">
-                <div class="flex justify-between items-center">
-                    <h5 id="appDetailTitle" class="text-lg font-semibold text-cyan-900 bg-gradient-to-r from-cyan-200 to-blue-200 px-4 py-2 rounded-lg shadow-sm">
-                        应用详情</h5>
-                    <button type="button" class="btn-animation text-blue-400 hover:text-blue-600 transition-all duration-300 transform hover:rotate-180" onclick="document.getElementById('appDetailModal').classList.add('hidden')">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="my-4" id="appDetailContent"></div>
-            </div>
-            <div class="flex justify-end pt-2">
-                <button onclick="document.getElementById('appDetailModal').classList.add('hidden')" class="btn-animation px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:from-cyan-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-300 transform hover:scale-105 hover:shadow-md">关闭</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- 投稿模态框 -->
     <div id="submitModal" class="submit-modal hidden">
@@ -424,8 +405,181 @@
 
                 <!-- 模态框内容 -->
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                  <div id="appDetailContent" class="p-6">
-                    <!-- 内容将通过JS填充 -->
+                  <div id="appDetailContent">
+                    <!-- 加载动画 -->
+                    <div class="loader flex justify-center items-center py-8">
+                      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                    
+                    <!-- 应用详情内容 -->
+                    <div class="app-detail-content hidden">
+                      <div class="bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <!-- 应用头部信息 -->
+                        <div class="p-6 border-b">
+                          <div class="flex items-start space-x-4">
+                            <img id="appDetailIcon" src="/img/default-app-icon.png" 
+                                 class="w-20 h-20 rounded-lg shadow-md"
+                                 alt="应用图标"
+                                 onerror="this.src='/img/default-app-icon.png'">
+                            <div class="flex-1">
+                              <h2 id="appDetailName" class="text-2xl font-bold text-gray-900 mb-2">应用名称</h2>
+                              <div class="space-y-1">
+                                <p id="appDetailDeveloper" class="text-gray-600">开发者: 未知</p>
+                                <p id="appDetailAppId" class="text-gray-600">应用ID: </p>
+                                <div class="flex items-center space-x-4">
+                                  <span id="appDetailType" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    应用类型
+                                  </span>
+                                  <span id="appDetailRating" class="text-gray-600"></span>
+                                </div>
+                              </div>
+                            </div>
+                            <button onclick="closeAppDetail()" class="text-gray-400 hover:text-gray-600">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <!-- 详细信息标签页 -->
+                        <div class="border-b">
+                          <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                            <button onclick="switchDetailTab('basic')" class="detail-tab active py-4 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600" data-tab="basic">
+                              基本信息
+                            </button>
+                            <button onclick="switchDetailTab('metrics')" class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="metrics">
+                              数据指标
+                            </button>
+                            <button onclick="switchDetailTab('technical')" class="detail-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="technical">
+                              技术信息
+                            </button>
+                          </nav>
+                        </div>
+                        
+                        <!-- 标签页内容 -->
+                        <div class="p-6">
+                          <!-- 基本信息标签页 -->
+                          <div id="basic-tab" class="tab-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-gray-900">应用信息</h3>
+                                <div class="space-y-2">
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">包名:</span>
+                                    <span id="appDetailPackageName" class="font-mono text-sm">未知</span>
+                                  </div>
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">创建时间:</span>
+                                    <span id="appDetailCreatedAt">未知</span>
+                                  </div>
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">上架时间:</span>
+                                    <span id="appDetailListedAt">未知</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-gray-900">评分信息</h3>
+                                <div class="space-y-2">
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">平均评分:</span>
+                                    <span id="appDetailAverageRating">无评分</span>
+                                  </div>
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">评分人数:</span>
+                                    <span id="appDetailRatingCount">0</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- 数据指标标签页 -->
+                          <div id="metrics-tab" class="tab-content hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-gray-900">下载统计</h3>
+                                <div class="space-y-2">
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">总下载量:</span>
+                                    <span id="appDetailDownloadCount" class="font-semibold">0</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="space-y-4">
+                                <h3 class="text-lg font-semibold text-gray-900">应用大小</h3>
+                                <div class="space-y-2">
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">安装包大小:</span>
+                                    <span id="appDetailSize">0</span>
+                                  </div>
+                                  <div class="flex justify-between">
+                                    <span class="text-gray-600">最后更新:</span>
+                                    <span id="appDetailUpdatedAt">未知</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- 技术信息标签页 -->
+                          <div id="technical-tab" class="tab-content hidden">
+                            <div class="space-y-6">
+                              <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">技术信息</h3>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                  <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                      <span class="text-gray-600">应用ID:</span>
+                                      <div class="flex items-center space-x-2">
+                                        <span id="appDetailTechnicalAppId" class="font-mono text-sm"></span>
+                                        <button onclick="copyAppId('')" class="text-blue-600 hover:text-blue-800">
+                                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </div>
+                                    <div class="flex justify-between">
+                                      <span class="text-gray-600">包名:</span>
+                                      <div class="flex items-center space-x-2">
+                                        <span id="appDetailTechnicalPackageName" class="font-mono text-sm">未知</span>
+                                        <button onclick="copyPackageName('')" class="text-blue-600 hover:text-blue-800">
+                                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+                          <button onclick="exportAppDetail('')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                            导出详情
+                          </button>
+                          <button onclick="closeAppDetail()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+                            关闭
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 错误状态 -->
+                    <div class="error-content hidden text-center py-8">
+                      <div class="text-red-500 mb-4">加载应用详情失败</div>
+                      <button onclick="closeAppDetail()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                        关闭
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

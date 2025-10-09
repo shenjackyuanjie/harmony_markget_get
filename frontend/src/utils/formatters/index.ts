@@ -17,7 +17,7 @@ export function formatNumber(num: number): string {
  * @param size - 文件大小（字节）
  * @returns 格式化后的大小字符串
  */
-export function formatSize(size: number): string {
+export function format_size(size: number): string {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
   if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;

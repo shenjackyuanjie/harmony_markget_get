@@ -7,7 +7,7 @@ export { copyToClipboard } from './clipboard.ts';
 // 格式化工具
 export {
   formatNumber,
-  formatSize,
+  format_size as formatSize,
   formatDate,
   formatLocalDate,
   formatTimeAgo,

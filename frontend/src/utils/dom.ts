@@ -1,7 +1,7 @@
 // DOM操作和渲染工具模块
 
 import type { App } from '../types';
-import { formatNumber, formatSize, formatDate, formatLocalDate, formatAppType, formatRating } from './formatters';
+import { formatNumber, format_size, formatDate, formatLocalDate, formatAppType, formatRating } from './formatters';
 import { DEFAULT_APP_ICON, PAGE_SIZE } from './constants';
 
 /**
@@ -92,7 +92,7 @@ export function renderAppTable(
         ${formatNumber(metric.download_count || 0)}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        ${formatSize(metric.size_bytes || 0)}
+        ${format_size(metric.size_bytes || 0)}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         ${formatDate(metric.created_at)}

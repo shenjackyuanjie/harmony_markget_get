@@ -196,54 +196,6 @@ function restoreFromUrlParams(): void {
 }
 
 /**
- * 初始化自动刷新功能
- */
-function initAutoRefresh(): void {
-  let autoRefreshInterval: NodeJS.Timeout;
-  
-  const enableAutoRefresh = () => {
-    // 每5分钟自动刷新一次
-    autoRefreshInterval = setInterval(async () => {
-      try {
-        await dashboardStore.refresh();
-        updateLastUpdate();
-        console.log('自动刷新完成');
-      } catch (error) {
-        console.error('自动刷新失败:', error);
-      }
-    }, 5 * 60 * 1000); // 5分钟
-  };
-  
-  const disableAutoRefresh = () => {
-    if (autoRefreshInterval) {
-      clearInterval(autoRefreshInterval);
-    }
-  };
-  
-  // 页面可见性变化时控制自动刷新
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      disableAutoRefresh();
-    } else {
-      enableAutoRefresh();
-    }
-  });
-  
-  // 页面获得焦点时刷新数据
-  window.addEventListener('focus', async () => {
-    try {
-      await dashboardStore.refresh();
-      updateLastUpdate();
-    } catch (error) {
-      console.error('页面焦点刷新失败:', error);
-    }
-  });
-  
-  // 初始启用自动刷新
-  enableAutoRefresh();
-}
-
-/**
  * 初始化错误处理
  */
 function initErrorHandling(): void {
@@ -338,34 +290,14 @@ export async function initDashboard(): Promise<void> {
   }
 }
 
-/**
- * 清理函数
- */
-export function cleanupDashboard(): void {
-  // 清理定时器
-  // 清理事件监听器
-  // 清理图表实例
-  if (typeof window.destroyAllCharts === 'function') {
-    window.destroyAllCharts();
-  }
-  
-  // 清理通知
-  if (typeof window.clearAllNotifications === 'function') {
-    window.clearAllNotifications();
-  }
-}
 
 // 导出初始化函数供外部调用
-if (typeof window !== 'undefined') {
   window.initDashboard = initDashboard;
-  window.cleanupDashboard = cleanupDashboard;
-}
 
 // 类型声明
 declare global {
   interface Window {
     initDashboard?: () => Promise<void>;
-    cleanupDashboard?: () => void;
     updateChartTheme?: (isDark: boolean) => void;
     destroyAllCharts?: () => void;
     clearAllNotifications?: () => void;
