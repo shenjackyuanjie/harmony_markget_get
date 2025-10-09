@@ -68,7 +68,7 @@ export {
 export {
   preloadImages,
   renderDownloadChart,
-  renderStarChart,
+  render_rating_chart as renderStarChart,
   loadAllCharts,
   destroyAllCharts,
   updateChartTheme,

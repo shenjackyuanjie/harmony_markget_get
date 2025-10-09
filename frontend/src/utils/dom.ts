@@ -1,6 +1,6 @@
 // DOM操作和渲染工具模块
 
-import type { App } from '../types';
+import type { App } from './types';
 import { formatNumber, format_size, formatDate, formatLocalDate, formatAppType, formatRating } from './formatters';
 import { DEFAULT_APP_ICON, PAGE_SIZE } from './constants';
 

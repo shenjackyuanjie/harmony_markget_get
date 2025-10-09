@@ -60,6 +60,10 @@
     @apply !bg-gradient-to-r !from-amber-800 !to-yellow-800 !border-gray-700 !text-slate-200;
 }
 
+.dark .chart-card-green {
+    @apply !bg-gradient-to-r !from-green-800 !to-lime-800 !border-gray-700 !text-slate-200;
+}
+
 /* 黑暗模式模态框 */
 .dark .modal-indigo {
     @apply !border-gray-600 !bg-gradient-to-r !from-slate-800 !to-slate-700 !text-slate-200;

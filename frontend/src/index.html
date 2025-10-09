@@ -7,9 +7,9 @@
 </head>
 
 <body class="theme-transition">
-    <div class="px-4 py-6">
+    <div class="px-4 py-4">
         <!-- Header -->
-        <div class="mb-6">
+        <div class="mb-4">
             <div class="card-gradient-blue">
                 <div class="px-5 py-4">
                     <h1 class="text-2xl font-semibold text-indigo-900 mb-3 animate-pulse">
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div class="stats-card-rose">
                 <div class="py-3">
                     <h5 class="text-rose-600 text-sm font-medium card-title">已爬取总数</h5>
@@ -109,43 +109,63 @@
         </div>
 
         <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="lg:col-span-2">
-                <div class="chart-card-blue">
-                    <div class="p-4 border-b border-blue-100">
-                        <h5 class="text-lg font-semibold text-blue-800 mb-0 card-title">总下载榜</h5>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <div class="p-2 chart-container" style="min-width: 1400px;">
-                            <canvas id="top_download_chart"></canvas>
-                        </div>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div class="chart-card-purple">
+                <div class="p-4 border-b border-purple-100">
+                    <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">总应用评分分布</h5>
+                </div>
+                <div class="p-2 chart-container">
+                    <canvas id="rating_chart"></canvas>
                 </div>
             </div>
-            <div>
-                <div class="chart-card-purple">
-                    <div class="p-4 border-b border-purple-100">
-                        <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">总应用评分分布</h5>
-                    </div>
-                    <div class="p-2 chart-container">
-                        <canvas id="starChart"></canvas>
-                    </div>
+            <div class="chart-card-green">
+                <div class="p-4 border-b border-green-100">
+                    <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">目标API版本分布</h5>
+                </div>
+                <div class="p-2 chart-container">
+                    <canvas id="target_api_chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card-purple">
+                <div class="p-4 border-b border-purple-100">
+                    <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">最低API版本分布</h5>
+                </div>
+                <div class="p-2 chart-container">
+                    <canvas id="min_api_chart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card-green">
+                <div class="p-4 border-b border-green-100">
+                    <h5 class="text-lg font-semibold text-purple-800 mb-0 card-title">上架终端占比</h5>
+                </div>
+                <div class="p-2 chart-container">
+                    <canvas id="target_device_chart"></canvas>
                 </div>
             </div>
         </div>
-        <div class="chart-card-teal mb-6">
+        <div class="chart-card-blue mb-4">
+            <div class="p-4 border-b border-blue-100">
+                <h5 class="text-lg font-semibold text-blue-800 mb-0 card-title">总下载榜</h5>
+            </div>
+            <div class="overflow-x-auto">
+                <div class="p-2 chart-container" style="min-width: 1400px;">
+                    <canvas id="top_down_chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="chart-card-teal mb-4">
             <div class="p-4 border-b border-teal-100">
                 <h5 class="text-lg font-semibold text-teal-800 mb-0 card-title">非华为应用/内置应用下载榜</h5>
             </div>
             <div class="overflow-x-auto">
                 <div class="p-2 chart-container" style="min-width: 2200px;">
-                    <canvas id="top_download_chart_not_huawei"></canvas>
+                    <canvas id="top_down_no_hw_chart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Apps Table -->
-        <div class="chart-card-amber mb-6">
+        <div class="chart-card-amber mb-4">
             <div class="p-4">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <h5 class="text-lg font-semibold text-amber-800 mb-0">应用列表 (施工中, 功能可能出现 bug)</h5>

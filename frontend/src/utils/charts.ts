@@ -1,6 +1,6 @@
 // 图表渲染工具模块
 
-import type { StarDistribution, RankingApp } from '../types';
+import type { StarDistribution, RankingApp } from './types';
 import { formatNumber } from './formatters';
 import { CHART_COLORS } from './constants';
 
@@ -11,6 +11,9 @@ declare global {
     ChartDataLabels: any;
   }
 }
+
+
+const chart_ids = ['top_down_chart', 'top_down_no_hw_chart', 'rating_chart', 'target_api_chart', 'min_api_chart', 'target_device_chart'];
 
 /**
  * 预加载应用图标图像
@@ -24,7 +27,7 @@ export async function preloadImages(apps: RankingApp[]): Promise<(HTMLImageEleme
       preloadedImages[index] = null;
       return Promise.resolve();
     }
-    
+
     return new Promise<void>((resolve) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
@@ -39,7 +42,7 @@ export async function preloadImages(apps: RankingApp[]): Promise<(HTMLImageEleme
       img.src = app.icon_url!;
     });
   });
-  
+
   await Promise.all(loadPromises);
   return preloadedImages;
 }
@@ -59,15 +62,9 @@ function createChart(
 ): void {
   const canvas = document.getElementById(ctxId) as HTMLCanvasElement;
   if (!canvas) return;
-  
+
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  
-  // 销毁现有图表
-  const chartKey = `${ctxId}_chart`;
-  if (window[chartKey]) {
-    window[chartKey].destroy();
-  }
 
   // 自定义插件：在柱状图上绘制图标
   const iconPlugin = {
@@ -110,7 +107,7 @@ function createChart(
             } else {
               console.warn('应用详情显示函数未定义');
             }
-            
+
             // 更新URL参数
             if (typeof window.updateUrlParam === 'function') {
               window.updateUrlParam('app_id', app.app_id);
@@ -195,10 +192,10 @@ export async function renderDownloadChart(
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
     let apps: RankingApp[] = [];
-    
+
     if (data.success && data.data && Array.isArray(data.data)) {
       apps = data.data.map((item: [any, any]) => ({
         name: item[0].name,
@@ -229,19 +226,19 @@ export async function renderDownloadChart(
 /**
  * 加载星级分布饼图
  */
-export async function renderStarChart(): Promise<void> {
+export async function render_rating_chart(): Promise<void> {
   try {
     const response = await fetch('/api/charts/star-distribution');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
     const starData = data.data || data;
 
     const canvas = document.getElementById("starChart") as HTMLCanvasElement;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -307,9 +304,9 @@ export async function renderStarChart(): Promise<void> {
  */
 export async function loadAllCharts(): Promise<void> {
   await Promise.all([
-    renderDownloadChart('/api/rankings/top-downloads?limit=20', 'top_download_chart', 0.999),
-    renderDownloadChart('/api/rankings/top-downloads?limit=30&exclude_pattern=huawei', 'top_download_chart_not_huawei', 0.9),
-    renderStarChart(),
+    renderDownloadChart('/api/rankings/top-downloads?limit=20', 'top_down_chart', 0.9),
+    renderDownloadChart('/api/rankings/top-downloads?limit=30&exclude_pattern=huawei', 'top_down_no_hw_chart', 0.9),
+    render_rating_chart(),
   ]);
 }
 
@@ -317,16 +314,15 @@ export async function loadAllCharts(): Promise<void> {
  * 销毁所有图表实例
  */
 export function destroyAllCharts(): void {
-  const chartIds = ['top_download_chart', 'top_download_chart_not_huawei', 'starChart'];
-  
-  chartIds.forEach(id => {
+
+  chart_ids.forEach(id => {
     const chartKey = `${id}_chart`;
     if (window[chartKey]) {
       window[chartKey].destroy();
       delete window[chartKey];
     }
   });
-  
+
   if (window.starChart) {
     window.starChart.destroy();
     delete window.starChart;
@@ -340,12 +336,12 @@ export function destroyAllCharts(): void {
 export function updateChartTheme(isDark: boolean): void {
   const textColor = isDark ? '#e5e7eb' : '#374151';
   const gridColor = isDark ? '#374151' : '#e5e7eb';
-  
+
   // 更新所有图表的文字和网格颜色
   Object.keys(window).forEach(key => {
     if (key.endsWith('_chart') && window[key] && window[key].options) {
       const chart = window[key];
-      
+
       // 更新坐标轴颜色
       if (chart.options.scales) {
         Object.values(chart.options.scales).forEach((scale: any) => {
@@ -357,7 +353,7 @@ export function updateChartTheme(isDark: boolean): void {
           }
         });
       }
-      
+
       // 更新图例颜色
       if (chart.options.plugins && chart.options.plugins.legend) {
         chart.options.plugins.legend.labels = {
@@ -365,7 +361,7 @@ export function updateChartTheme(isDark: boolean): void {
           color: textColor,
         };
       }
-      
+
       chart.update();
     }
   });
