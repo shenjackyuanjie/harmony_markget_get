@@ -73,8 +73,7 @@ async fn async_main() -> anyhow::Result<()> {
             let api_url = config.api_url().to_string();
             let locale = config.locale().to_string();
             let app_id = format!("{start}{id:07}");
-            let comment =
-                serde_json::json!({"user": format!("guess_market-{}", env!("CARGO_PKG_VERSION"))});
+            let comment = serde_json::json!({"user": format!("guess_market-{}", env!("CARGO_PKG_VERSION")), "platform": "guess_market_bin"});
             // let app_id = format!("com.chinasoft.app.api12.{}", i32_to_letters(*id as i32));
             // let app_id = format!("com.fkccc.{}", i32_to_letters(*id as i32));
             // let app_id = format!("xkkj.uni.UNI{:X}", id);

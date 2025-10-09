@@ -197,11 +197,7 @@ impl Database {
     }
 
     /// 插入应用数据到 app_data_history 表
-    pub async fn insert_data_history(
-        &self,
-        app_id: &str,
-        data: &JsonValue,
-    ) -> Result<()> {
+    pub async fn insert_data_history(&self, app_id: &str, data: &JsonValue) -> Result<()> {
         let query = r#"
             INSERT INTO app_data_history (app_id, pkg_name, raw_json_data)
             VALUES ($1,
@@ -219,11 +215,7 @@ impl Database {
     }
 
     /// 插入评分数据到 app_rating_history 表
-    pub async fn insert_rating_history(
-        &self,
-        app_id: &str,
-        rating: &JsonValue,
-    ) -> Result<()> {
+    pub async fn insert_rating_history(&self, app_id: &str, rating: &JsonValue) -> Result<()> {
         let query = r#"
             INSERT INTO app_rating_history (app_id, pkg_name, raw_json_rating)
             VALUES ($1,

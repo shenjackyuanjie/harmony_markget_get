@@ -924,9 +924,7 @@ impl Database {
         ORDER BY
             count DESC, device_code"#;
 
-        let rows = sqlx::query(QUERY)
-            .fetch_all(&self.pool)
-            .await?;
+        let rows = sqlx::query(QUERY).fetch_all(&self.pool).await?;
 
         let mut device_codes = Vec::new();
         for row in rows {

@@ -62,6 +62,27 @@ CREATE TABLE app_rating_history (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()         -- 数据创建或记录时间
 );
 
+CREATE TABLE substance_info (
+    substance_id   TEXT PRIMARY KEY,
+    title          TEXT NOT NULL,
+    subtitle       TEXT,
+    name           TEXT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE substance_history (
+    id                 BIGSERIAL PRIMARY KEY,
+    substance_id       TEXT NOT NULL REFERENCES substance_info(substance_id) ON DELETE CASCADE,
+    raw_json_substance JSONB NOT NULL DEFAULT '{}'::JSONB,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE substance_app_map (
+    substance_id   TEXT NOT NULL REFERENCES substance_info(substance_id) ON DELETE CASCADE,
+    app_id         TEXT NOT NULL REFERENCES app_info(app_id) ON DELETE CASCADE,
+    PRIMARY KEY (substance_id, app_id)
+);
+
 CREATE TABLE app_metrics (
     id                  BIGSERIAL PRIMARY KEY,                      -- 主键ID
     app_id              TEXT NOT NULL REFERENCES app_info(app_id),  -- 对应 app_info 的 app_id
@@ -237,3 +258,59 @@ CREATE INDEX idx_app_data_history_created_at ON app_data_history (created_at);
 
 CREATE INDEX idx_app_rating_history_app_pkg_rating ON app_rating_history (app_id, pkg_name, raw_json_rating);
 CREATE INDEX idx_app_rating_history_created_at ON app_rating_history (created_at);
+
+-- 1) substance_info
+-- 快速按主键已自然支持；补充常用查询字段索引
+CREATE INDEX idx_substance_info_name ON substance_info (name);
+CREATE INDEX idx_substance_info_title ON substance_info (title);
+CREATE INDEX idx_substance_info_created_at ON substance_info (created_at);
+
+-- 2) substance_history
+-- 常按 substance_id 查历史记录（FK 上通常需要并发查询优化）
+CREATE INDEX idx_substance_history_substance_id ON substance_history (substance_id);
+-- 按时间范围查询历史记录
+CREATE INDEX idx_substance_history_created_at ON substance_history (created_at);
+-- 如果需要基于 JSONB 内容查询（例如 raw_json_substance ->> 'field'），建立 GIN 索引
+CREATE INDEX idx_substance_history_raw_json_gin ON substance_history USING GIN (raw_json_substance);
+
+-- 3) substance_app_map
+-- 主键 (substance_id, app_id) 已存在，补充按 app_id 反向查找的索引
+CREATE INDEX idx_substance_app_map_app_id ON substance_app_map (app_id);
+-- 如需按 app_id 按时间或其它维度排序/筛选，可考虑复合索引（示例：按 app_id 再按 substance_id）
+CREATE INDEX idx_substance_app_map_appid_substanceid ON substance_app_map (app_id, substance_id);
+
+-- 1. 创建或替换一个函数，用于更新 app_info.listed_at
+CREATE OR REPLACE FUNCTION update_app_listed_at_on_metric_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_listed_at TIMESTAMPTZ;
+    new_listed_at TIMESTAMPTZ;
+BEGIN
+    -- 获取当前 app_info.listed_at
+    SELECT listed_at INTO current_listed_at
+    FROM app_info
+    WHERE app_id = NEW.app_id;
+
+    -- 计算新的 listed_at
+    -- 取 app_info 中已有的 listed_at 和 app_metrics 中最小的 release_date 的最小值
+    SELECT LEAST(current_listed_at, MIN(TO_TIMESTAMP(am.release_date / 1000)))
+    INTO new_listed_at
+    FROM app_metrics am
+    WHERE am.app_id = NEW.app_id;
+
+    -- 如果计算出的新 listed_at 不同于当前的 listed_at，则进行更新
+    IF new_listed_at IS NOT NULL AND current_listed_at IS DISTINCT FROM new_listed_at THEN
+        UPDATE app_info
+        SET listed_at = new_listed_at
+        WHERE app_id = NEW.app_id;
+    END IF;
+
+    RETURN NEW; -- 触发器函数必须返回 NEW 或 OLD
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. 创建一个触发器，在 app_metrics 插入后执行上述函数
+CREATE OR REPLACE TRIGGER trg_update_app_listed_at
+AFTER INSERT ON app_metrics
+FOR EACH ROW
+EXECUTE FUNCTION update_app_listed_at_on_metric_insert();
