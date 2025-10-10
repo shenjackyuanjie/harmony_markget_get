@@ -448,8 +448,12 @@ pub async fn submit_substance(
         .await
     {
         Ok((substance, raw_value)) => {
-            // // 保存 substance 数据
-            let is_new = match state.db.save_substance(&substance, &raw_value, comment).await {
+            // 保存 substance 数据
+            let is_new = match state
+                .db
+                .save_substance(&substance, &raw_value, comment)
+                .await
+            {
                 Ok(b) => b,
                 Err(e) => {
                     event!(
@@ -504,7 +508,11 @@ pub async fn submit_substance(
                 }
             }
             let len = substance.data.len();
-            Json(ApiResponse::success(json!({"data": substance, "is_new": is_new}), Some(len as u32), None))
+            Json(ApiResponse::success(
+                json!({"data": substance, "is_new": is_new}),
+                Some(len as u32),
+                None,
+            ))
         }
         Err(e) => {
             event!(

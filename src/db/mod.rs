@@ -192,7 +192,8 @@ impl Database {
         comment: Option<JsonValue>,
     ) -> Result<bool> {
         let is_new = !self.substance_exists(&substance.id).await;
-        self.insert_substance(substance, if is_new { None } else { comment }).await?;
+        self.insert_substance(substance, if is_new { None } else { comment })
+            .await?;
         self.insert_substance_history(&substance.id, raw_substance)
             .await?;
 

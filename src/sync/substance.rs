@@ -1,6 +1,6 @@
 use anyhow::Result;
-use serde_json::Value as JsonValue;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 use crate::{
     model::AppQuery,
@@ -162,13 +162,16 @@ pub async fn get_app_from_substance(
             }
         }
 
-        (SubstanceData {
-            id: substance_id.to_string(),
-            title: title.unwrap_or_default(),
-            sub_title,
-            name,
-            data: apps,
-        }, pages.clone())
+        (
+            SubstanceData {
+                id: substance_id.to_string(),
+                title: title.unwrap_or_default(),
+                sub_title,
+                name,
+                data: apps,
+            },
+            pages.clone(),
+        )
     };
 
     Ok(data)

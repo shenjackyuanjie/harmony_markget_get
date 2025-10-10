@@ -304,7 +304,9 @@ impl Database {
                     r#"
                     SELECT {SELECT_APP_INFO_FIELDS}, {}, {}
                     FROM app_latest_info
-                    WHERE {} ILIKE $1 {} AND {sort_key} IS NOT NULL
+                    WHERE {} ILIKE $1 {}
+                    AND {sort_key} IS NOT NULL
+                    AND app_id != 'C5765880207854862721'
                     ORDER BY {sort_key} {}
                     LIMIT $2 OFFSET $3
                 "#,
@@ -338,6 +340,7 @@ impl Database {
                     SELECT {SELECT_APP_INFO_FIELDS}, {}, {}
                     FROM app_latest_info
                     WHERE {sort_key} IS NOT NULL
+                    AND app_id != 'C5765880207854862721'
                     ORDER BY {sort_key} {}
                     LIMIT $1 OFFSET $2
                 "#,
@@ -867,6 +870,7 @@ impl Database {
                 FROM app_latest_info
                 WHERE download_count IS NOT NULL
                   AND dev_en_name !~* $2
+                  AND app_id != 'C5765880207854862721'
                 ORDER BY download_count DESC
                 LIMIT $1
                 "#,
@@ -894,6 +898,7 @@ impl Database {
                     api_release_type, metrics_created_at, listed_at, comment
                 FROM app_latest_info
                 WHERE download_count IS NOT NULL
+                AND app_id != 'C5765880207854862721'
                 ORDER BY download_count DESC
                 LIMIT $1
                 "#,
