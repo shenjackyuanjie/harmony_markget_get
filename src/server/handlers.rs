@@ -426,7 +426,7 @@ pub async fn get_app_download_history(
                 "http服务获取应用 {} 下载量历史失败: {e}",
                 pkg_name
             );
-            Json(ApiResponse::error(json!({"error": "Database error"})))
+            Json(ApiResponse::error("Database error"))
         }
     }
 }
@@ -448,18 +448,18 @@ pub async fn submit_substance(
         .await
     {
         Ok((substance, raw_value)) => {
-            // 保存 substance 数据
-            if let Err(e) = state
-                .db
-                .save_substance(&substance, &raw_value, comment)
-                .await
-            {
-                event!(
-                    Level::WARN,
-                    "substance {} 对应的数据保存失败: {e}",
-                    substance_id
-                );
-            }
+            // // 保存 substance 数据
+            let is_new = match state.db.save_substance(&substance, &raw_value, comment).await {
+                Ok(b) => b,
+                Err(e) => {
+                    event!(
+                        Level::WARN,
+                        "substance {} 对应的数据保存失败: {e}",
+                        substance_id
+                    );
+                    return Json(ApiResponse::error("Database error"));
+                }
+            };
 
             for query in substance.data.iter() {
                 match crate::sync::query_app(
@@ -504,7 +504,7 @@ pub async fn submit_substance(
                 }
             }
             let len = substance.data.len();
-            Json(ApiResponse::success(substance, Some(len as u32), None))
+            Json(ApiResponse::success(json!({"data": substance, "is_new": is_new}), Some(len as u32), None))
         }
         Err(e) => {
             event!(
