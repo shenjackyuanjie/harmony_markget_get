@@ -48,6 +48,19 @@ impl Database {
         })
     }
 
+    /// 检查 substance 是否存在
+    pub async fn substance_exists(&self, substance_id: &str) -> bool {
+        let query = "SELECT COUNT(*) FROM substance_info WHERE substance_id = $1";
+        let count: Option<i64> = sqlx::query(query)
+            .bind(substance_id)
+            .fetch_one(&self.pool)
+            .await
+            .ok()
+            .map(|r| r.get(0));
+
+        count.map(|c| c > 0).unwrap_or(false)
+    }
+
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_query: &AppQuery) -> bool {
         let query = format!(

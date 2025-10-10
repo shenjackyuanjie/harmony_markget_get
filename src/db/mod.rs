@@ -190,8 +190,9 @@ impl Database {
         substance: &SubstanceData,
         raw_substance: &JsonValue,
         comment: Option<JsonValue>,
-    ) -> Result<()> {
-        self.insert_substance(substance, comment).await?;
+    ) -> Result<bool> {
+        let is_new = !self.substance_exists(&substance.id).await;
+        self.insert_substance(substance, if is_new { None } else { comment }).await?;
         self.insert_substance_history(&substance.id, raw_substance)
             .await?;
 
@@ -206,6 +207,6 @@ impl Database {
             format!("插入新的 substance {} ({})", substance.id, substance.title).bright_green()
         );
 
-        Ok(())
+        Ok(is_new)
     }
 }
