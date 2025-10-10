@@ -1,4 +1,5 @@
 use anyhow::Result;
+use serde_json::Value as JsonValue;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -37,7 +38,7 @@ pub async fn get_app_from_substance(
     client: &reqwest::Client,
     api_url: &str,
     substance_id: impl ToString,
-) -> Result<SubstanceData> {
+) -> Result<(SubstanceData, JsonValue)> {
     let body = serde_json::json!({
         "pageId": format!("webAgSubstanceDetail|{}", substance_id.to_string()),
         "pageNum": 1,
@@ -161,13 +162,13 @@ pub async fn get_app_from_substance(
             }
         }
 
-        SubstanceData {
+        (SubstanceData {
             id: substance_id.to_string(),
             title: title.unwrap_or_default(),
             sub_title,
             name,
             data: apps,
-        }
+        }, pages.clone())
     };
 
     Ok(data)

@@ -27,51 +27,6 @@ struct Response {
     get_data: bool,
 }
 
-pub async fn submit_app(
-    State(state): State<Arc<AppState>>,
-    Json(data): Json<JsonValue>,
-) -> Json<ApiResponse> {
-    // 获取 app_id 或者 pkg_name
-    let app_id = data.get("app_id").and_then(|v| v.as_str());
-    let pkg_name = data.get("pkg_name").and_then(|v| v.as_str());
-    if app_id.is_none() && pkg_name.is_none() {
-        return Json(ApiResponse::error(
-            "app_id 和 pkg_name 至少给一个, 总不能一个不给吧".to_string(),
-        ));
-    } else if app_id.is_some() && pkg_name.is_some() {
-        return Json(ApiResponse::error(
-            "app_id 和 pkg_name 至多给一个, 你两个都给是什么意思".to_string(),
-        ));
-    }
-    let query = match (app_id, pkg_name) {
-        (Some(id), None) => AppQuery::app_id(id),
-        (None, Some(name)) => AppQuery::pkg_name(name),
-        _ => unreachable!(),
-    };
-    let app_exists = state.db.app_exists(&query).await;
-
-    let listed_at: Option<DateTime<Local>> = data
-        .get("listed_at")
-        .and_then(|v| v.as_str())
-        .and_then(|d| DateTime::from_str(d).ok());
-
-    let comment = data.get("comment");
-
-    let comment_str = comment
-        .map(|c| c.to_string())
-        .unwrap_or_else(|| "None".to_string());
-
-    println!(
-        "接收到投稿 data: query: {:?}, listed_at: {:?}, comment: {:?}",
-        query, listed_at, comment_str
-    );
-    if app_exists {
-        query_app(state, query, None, None).await
-    } else {
-        query_app(state, query, listed_at, comment.cloned()).await
-    }
-}
-
 pub async fn query_app(
     state: Arc<AppState>,
     query: AppQuery,
@@ -479,6 +434,7 @@ pub async fn get_app_download_history(
 pub async fn submit_substance(
     State(state): State<Arc<AppState>>,
     Path(substance_id): Path<String>,
+    Json(data): Json<JsonValue>,
 ) -> impl IntoResponse {
     event!(
         Level::INFO,
@@ -486,10 +442,25 @@ pub async fn submit_substance(
         substance_id
     );
 
+    let comment = data.get("comment").cloned();
+
     match crate::sync::get_app_from_substance(&state.client, state.cfg.api_url(), &substance_id)
         .await
     {
-        Ok(substance) => {
+        Ok((substance, raw_value)) => {
+            // 保存 substance 数据
+            if let Err(e) = state
+                .db
+                .save_substance(&substance, &raw_value, comment)
+                .await
+            {
+                event!(
+                    Level::WARN,
+                    "substance {} 对应的数据保存失败: {e}",
+                    substance_id
+                );
+            }
+
             for query in substance.data.iter() {
                 match crate::sync::query_app(
                     &state.client,
@@ -543,5 +514,50 @@ pub async fn submit_substance(
             );
             Json(ApiResponse::error("Failed to get substance"))
         }
+    }
+}
+
+pub async fn submit_app(
+    State(state): State<Arc<AppState>>,
+    Json(data): Json<JsonValue>,
+) -> Json<ApiResponse> {
+    // 获取 app_id 或者 pkg_name
+    let app_id = data.get("app_id").and_then(|v| v.as_str());
+    let pkg_name = data.get("pkg_name").and_then(|v| v.as_str());
+    if app_id.is_none() && pkg_name.is_none() {
+        return Json(ApiResponse::error(
+            "app_id 和 pkg_name 至少给一个, 总不能一个不给吧".to_string(),
+        ));
+    } else if app_id.is_some() && pkg_name.is_some() {
+        return Json(ApiResponse::error(
+            "app_id 和 pkg_name 至多给一个, 你两个都给是什么意思".to_string(),
+        ));
+    }
+    let query = match (app_id, pkg_name) {
+        (Some(id), None) => AppQuery::app_id(id),
+        (None, Some(name)) => AppQuery::pkg_name(name),
+        _ => unreachable!(),
+    };
+    let app_exists = state.db.app_exists(&query).await;
+
+    let listed_at: Option<DateTime<Local>> = data
+        .get("listed_at")
+        .and_then(|v| v.as_str())
+        .and_then(|d| DateTime::from_str(d).ok());
+
+    let comment = data.get("comment");
+
+    let comment_str = comment
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| "None".to_string());
+
+    println!(
+        "接收到投稿 data: query: {:?}, listed_at: {:?}, comment: {:?}",
+        query, listed_at, comment_str
+    );
+    if app_exists {
+        query_app(state, query, None, None).await
+    } else {
+        query_app(state, query, listed_at, comment.cloned()).await
     }
 }

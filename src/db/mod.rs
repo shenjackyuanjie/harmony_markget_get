@@ -1,4 +1,5 @@
 use crate::model::{AppInfo, AppMetric, AppQuery, AppRating, RawJsonData, RawRatingData};
+use crate::sync::substance::SubstanceData;
 
 use anyhow::Result;
 use chrono::{DateTime, Local};
@@ -99,7 +100,7 @@ impl Database {
         raw_data: &(RawJsonData, JsonValue),
         raw_rating: Option<&RawRatingData>,
         listed_at: Option<DateTime<Local>>,
-        comment: Option<serde_json::Value>,
+        comment: Option<JsonValue>,
     ) -> Result<(bool, bool, bool)> {
         // 转换原始JSON数据用于比较
         let (raw_data, raw_value) = raw_data;
@@ -181,5 +182,30 @@ impl Database {
         //     );
         // }
         Ok((insert_data.0, insert_data.1, insert_rate))
+    }
+
+    /// 保存 substance 数据到数据库
+    pub async fn save_substance(
+        &self,
+        substance: &SubstanceData,
+        raw_substance: &JsonValue,
+        comment: Option<JsonValue>,
+    ) -> Result<()> {
+        self.insert_substance(substance, comment).await?;
+        self.insert_substance_history(&substance.id, raw_substance)
+            .await?;
+
+        for app_query in &substance.data {
+            let query = self.app_query_to_app_id(app_query).await?;
+            self.insert_substance_app_map(&substance.id, query.name())
+                .await?;
+        }
+
+        println!(
+            "{}",
+            format!("插入新的 substance {} ({})", substance.id, substance.title).bright_green()
+        );
+
+        Ok(())
     }
 }

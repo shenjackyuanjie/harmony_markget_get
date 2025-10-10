@@ -67,6 +67,7 @@ CREATE TABLE substance_info (
     title          TEXT NOT NULL,
     subtitle       TEXT,
     name           TEXT,
+    comment        JSONB,                             -- 评论或注释数据（JSON格式）
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

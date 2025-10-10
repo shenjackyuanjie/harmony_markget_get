@@ -3,6 +3,7 @@ use serde_json::Value as JsonValue;
 
 use crate::db::Database;
 use crate::model::{AppInfo, AppMetric, AppRating};
+use crate::sync::substance::SubstanceData;
 
 impl Database {
     /// 插入应用信息到 app_info 表
@@ -226,6 +227,70 @@ impl Database {
         sqlx::query(query)
             .bind(app_id)
             .bind(rating)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+    /// 插入 substance 到 substance_info 表
+    pub async fn insert_substance(
+        &self,
+        substance: &SubstanceData,
+        comment: Option<JsonValue>,
+    ) -> Result<()> {
+        const QUERY: &str = r#"
+            INSERT INTO substance_info (substance_id, title, subtitle, name, comment)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (substance_id) DO UPDATE SET
+                title = EXCLUDED.title,
+                subtitle = EXCLUDED.subtitle,
+                name = EXCLUDED.name,
+                comment = EXCLUDED.comment
+        "#;
+
+        sqlx::query(QUERY)
+            .bind(&substance.id)
+            .bind(&substance.title)
+            .bind(&substance.sub_title)
+            .bind(&substance.name)
+            .bind(comment)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 插入 substance history 到 substance_history 表
+    pub async fn insert_substance_history(
+        &self,
+        substance_id: &str,
+        substance: &JsonValue,
+    ) -> Result<()> {
+        const QUERY: &str = r#"
+            INSERT INTO substance_history (substance_id, raw_json_substance)
+            VALUES ($1, $2::jsonb)
+        "#;
+
+        sqlx::query(QUERY)
+            .bind(substance_id)
+            .bind(substance)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// 插入 substance 和 app 的映射关系到 substance_app_map 表
+    pub async fn insert_substance_app_map(&self, substance_id: &str, app_id: &str) -> Result<()> {
+        const QUERY: &str = r#"
+            INSERT INTO substance_app_map (substance_id, app_id)
+            VALUES ($1, $2)
+            ON CONFLICT (substance_id, app_id) DO NOTHING
+        "#;
+
+        sqlx::query(QUERY)
+            .bind(substance_id)
+            .bind(app_id)
             .execute(&self.pool)
             .await?;
 
