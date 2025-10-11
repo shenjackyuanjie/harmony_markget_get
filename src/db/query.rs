@@ -61,6 +61,18 @@ impl Database {
         count.map(|c| c > 0).unwrap_or(false)
     }
 
+    pub async fn have_app_by_name(&self, app_name: &str) -> bool {
+        let query = "SELECT COUNT(*) FROM app_info WHERE name = $1";
+        let count: Option<i64> = sqlx::query(query)
+            .bind(app_name)
+            .fetch_one(&self.pool)
+            .await
+            .ok()
+            .map(|r| r.get(0));
+
+        count.map(|c| c > 0).unwrap_or(false)
+    }
+
     /// 检查应用是否已存在
     pub async fn app_exists(&self, app_query: &AppQuery) -> bool {
         let query = format!(

@@ -22,9 +22,13 @@ fn main() -> anyhow::Result<()> {
 async fn async_main() -> anyhow::Result<()> {
     let src_url = "https://nextmax.cn";
 
+    let config = config::Config::load().with_context(|| "无法加载配置文件")?;
     let client = reqwest::ClientBuilder::new()
         .build()
         .with_context(|| "无法创建 Reqwest 客户端")?;
+
+    let db = crate::db::Database::new(config.database_url(), config.db_max_connect()).await?;
+
     event!(Level::INFO, "Starting...");
     let start_time = std::time::Instant::now();
     let response = client.get(format!("{src_url}/all_apps")).send().await?;
@@ -41,6 +45,8 @@ async fn async_main() -> anyhow::Result<()> {
     );
 
     let app_card_match = r#"<div class="app-card" onclick="window.location.href='/app/"#;
+    // <img data-src="https://appimg-drcn.dbankcdn.com/application/icon144/ff24bbc8ef444929bf0188f621bdebba.png" alt="滴滴出行" src="dat
+    let app_name_match = r#"<img data-src="https://appimg-drcn.dbankcdn.com/application/icon144/"#;
     let app_lst = body
         .split("\n")
         .map(|l| l.trim())
@@ -50,6 +56,31 @@ async fn async_main() -> anyhow::Result<()> {
                 .trim_end_matches("\'\">")
                 .parse::<u32>()
         });
+    
+    let app_name_lst = body
+        .split("\n")
+        .map(|l| l.trim())
+        .filter(|l| l.starts_with(app_name_match))
+        .map(|l| {
+            // 取 alt="xxxxx" 里面的 xxxx
+            l.trim_start_matches(app_name_match)
+                .split_once(r#"alt=""#)
+                .map(|(_, name)| name)
+                .unwrap_or("")
+                .split_once(r#"" src=""#)
+                .map(|(name, _)| name)
+                .unwrap_or("")
+        });
+
+    let mut not_exist_lst = Vec::new();
+    for app_name in app_name_lst {
+        let exists = db.have_app_by_name(app_name).await;
+        if !exists {
+            not_exist_lst.push(app_name);
+        }
+    }
+    event!(Level::INFO, "共有 {} 个应用未入库", not_exist_lst.len());
+    println!("未入库应用: {:?}", not_exist_lst);
 
     let app_lst = {
         let mut app_ids = Vec::new();
@@ -89,7 +120,7 @@ async fn async_main() -> anyhow::Result<()> {
                     .find(|l| l.contains(app_gallery_match))
                     .unwrap_or("");
 
-                app_gallery_text
+                let temp = app_gallery_text
                     .replace(
                         r#"<a href="https://appgallery.huawei.com/app/detail?id="#,
                         "",
@@ -98,7 +129,15 @@ async fn async_main() -> anyhow::Result<()> {
                     .split("&amp;")
                     .next()
                     .unwrap_or("")
-                    .to_string()
+                    .trim()
+                    .to_string();
+                if temp.contains('"') {
+                    // 去掉引号以及之后的内容
+                    temp.split('"').next().unwrap_or("").to_string()
+                } else {
+                    temp.to_string()
+                }
+                
             };
             event!(Level::INFO, "页面 {} 找到了 appid {}", app, app_id);
             apps.push(app_id);
